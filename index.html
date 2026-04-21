@@ -103,7 +103,6 @@
     .field-label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
     .field-label .required-star { color: var(--error); margin-left: 2px; }
 
-    /* Buttons */
     .btn-submit {
       background: linear-gradient(135deg, var(--firebase), var(--firebase-orange));
       color: #000;
@@ -223,7 +222,6 @@
     .history-item:hover .btn-delete-history { opacity: 1; }
     .btn-delete-history:hover { background: rgba(239, 68, 68, 0.25); border-color: var(--error); transform: scale(1.1); }
 
-    /* Cards */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -231,7 +229,6 @@
       padding: 24px;
     }
 
-    /* Status Dots */
     .status-dot {
       width: 8px;
       height: 8px;
@@ -257,7 +254,6 @@
 
     .history-item:hover { border-color: var(--firebase); transform: translateX(4px); }
 
-    /* Banners */
     .connection-banner {
       background: linear-gradient(135deg, rgba(255, 202, 40, 0.15), rgba(255, 167, 38, 0.08));
       border: 1px solid rgba(255, 202, 40, 0.3);
@@ -284,7 +280,6 @@
       border-color: rgba(239, 68, 68, 0.3);
     }
 
-    /* Modals */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -329,7 +324,6 @@
       flex-direction: column;
     }
 
-    /* Toast */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -360,6 +354,7 @@
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
+      display: inline-block;
     }
 
     .currency-wrapper { position: relative; }
@@ -381,7 +376,6 @@
     .tab-btn:hover { color: var(--fg); background: rgba(255, 255, 255, 0.05); }
     .tab-btn.active { color: var(--firebase); background: rgba(255, 202, 40, 0.15); }
 
-    /* Document Styles */
     .documents-container {
       background: #e2e8f0;
       flex: 1;
@@ -448,7 +442,6 @@
 
     .btn-print-doc:hover { background: #475569; }
 
-    /* Document Content Styles */
     .doc-header-center { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
     .doc-company-name { font-size: 18px; font-weight: 700; color: #000; letter-spacing: 0.5px; line-height: 1.3; }
     .doc-form-title { font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 3px; color: #000; }
@@ -517,11 +510,10 @@
     ::-webkit-scrollbar-track { background: var(--bg-secondary); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* Setup Steps */
     .setup-step { background: var(--bg-secondary); border-left: 4px solid var(--firebase); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
     .step-number { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--firebase), var(--firebase-orange)); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
     .config-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; color: var(--firebase); }
-    .copy-btn { background: var(--firebase); color: #000; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Space Grotesk', sans-serif; transition: all 0.2s; }
+    .copy-btn { background: var(--firebase); color: #000; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Space Grotesk', sans-serif; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
     .copy-btn:hover { background: var(--firebase-orange); transform: scale(1.05); }
 
     .example-config-box { background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); border: 2px dashed var(--success); border-radius: 10px; padding: 16px; margin: 12px 0; }
@@ -534,7 +526,6 @@
     .validation-error li { color: #fca5a5; font-size: 13px; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
     .validation-error li::before { content: "⚠️"; flex-shrink: 0; }
 
-    /* Sync Status Indicators */
     .sync-status-badge {
       display: inline-flex;
       align-items: center;
@@ -563,6 +554,32 @@
       color: #fff;
       border: 1px solid rgba(139, 92, 246, 0.5);
     }
+
+    /* ===== FIX: Debug console di halaman ===== */
+    .debug-console {
+      position: fixed;
+      bottom: 80px;
+      right: 24px;
+      width: 420px;
+      max-height: 200px;
+      overflow-y: auto;
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #0f0;
+      z-index: 300;
+      display: none;
+    }
+
+    .debug-console.visible { display: block; }
+    .debug-console .debug-line { padding: 2px 0; border-bottom: 1px solid #1a1a2e; }
+    .debug-console .debug-line.error { color: #f44; }
+    .debug-console .debug-line.success { color: #0f0; }
+    .debug-console .debug-line.warn { color: #fa0; }
+    .debug-console .debug-line.info { color: #4af; }
   </style>
 </head>
 <body>
@@ -588,8 +605,12 @@
             <div class="status-dot connecting" id="statusDot"></div>
             <span class="text-sm text-[--muted]" id="statusText">Menghubungkan...</span>
           </div>
+          <!-- FIX: Tombol debug console -->
+          <button id="debugToggle" class="btn-secondary" title="Toggle Debug Console" style="padding:8px 12px;font-size:11px;">
+            🐛
+          </button>
           <button id="setupBtn" class="btn-secondary" aria-label="Pengaturan">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 00-1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572 1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 00-1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572 1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </button>
         </div>
       </div>
@@ -649,7 +670,8 @@
 
               <div class="grid md:grid-cols-2 gap-4">
                 <div><label class="field-label" for="no_invoice">No Invoice / Berkas</label><input type="text" id="no_invoice" name="no_invoice" class="input-field mono" placeholder="(opsional)"></div>
-                <div><label class="field-label" for="status">Status Pembayaran<span class="required-star">*</span></label><select id="status" name="status" class="input-field" required><option value="">Pilih status</option value="Lunas">Lunas</option><option value="Belum Lunas">Belum Lunas</option></select></div>
+                <!-- FIX: HTML option yang benar -->
+                <div><label class="field-label" for="status">Status Pembayaran<span class="required-star">*</span></label><select id="status" name="status" class="input-field" required><option value="">Pilih status</option><option value="Lunas">Lunas</option><option value="Belum Lunas">Belum Lunas</option></select></div>
               </div>
 
               <div>
@@ -752,7 +774,7 @@
                 <div id="configError" class="text-xs text-red-400 mt-2 hidden"></div>
               </div>
               
-              <button onclick="saveFirebaseConfig()" class="copy-btn mt-3 w-full justify-center">💾 Simpan & Connect</button>
+              <button onclick="saveFirebaseConfig()" class="copy-btn mt-3 w-full">💾 Simpan & Connect</button>
             </div>
           </div>
         </div>
@@ -795,7 +817,7 @@
           </ul>
         </div>
 
-        <button onclick="closeSetupModal()" class="copy-btn mt-4 w-full justify-center">Tutup & Mulai Pakai</button>
+        <button onclick="closeSetupModal()" class="copy-btn mt-4 w-full">Tutup & Mulai Pakai</button>
       </div>
     </div>
   </div>
@@ -807,7 +829,7 @@
         <h2 class="text-lg font-semibold text-slate-800">Preview Dokumen</h2>
         <div class="flex items-center gap-2 flex-wrap">
           <button class="btn-pdf" onclick="downloadAsPDF()">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3m3 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             Download PDF
           </button>
           <button class="btn-print-doc" onclick="window.print()">
@@ -894,7 +916,7 @@
         <p class="text-sm text-gray-300 mb-6" id="deleteItemInfo">Invoice: INV-001 • Rp 1.500.000</p>
         <div class="flex gap-3 justify-center">
           <button onclick="closeDeleteModal()" class="btn-secondary px-8">Batal</button>
-          <button onclick="confirmDelete()" class="px-8 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors">Ya, Hapus</button>
+          <button onclick="confirmDelete()" class="px-8 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors cursor-pointer">Ya, Hapus</button>
         </div>
       </div>
     </div>
@@ -903,17 +925,18 @@
   <!-- Toast -->
   <div id="toast" class="toast" role="alert"></div>
 
-  <!-- JAVASCRIPT -->
+  <!-- Debug Console -->
+  <div id="debugConsole" class="debug-console"></div>
+
   <script>
     // =============================================
-       // CONFIGURATION
+    // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
       FIREBASE_CONFIG: 'financesync_firebase_config_v5',
       WEBHOOK_URL: 'financesync_webhook_url_v5'
     };
 
-    // Default Webhook URL (user's existing script)
     const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec';
 
     let db = null;
@@ -933,9 +956,40 @@
     let elements = {};
 
     // =============================================
+    // DEBUG LOGGER - Menampilkan error di halaman
+    // =============================================
+    const debugConsole = {
+      el: null,
+      visible: false,
+      init() {
+        this.el = document.getElementById('debugConsole');
+      },
+      log(msg, type = 'info') {
+        if (!this.el) return;
+        const line = document.createElement('div');
+        line.className = 'debug-line ' + type;
+        const time = new Date().toLocaleTimeString();
+        line.textContent = `[${time}] ${msg}`;
+        this.el.appendChild(line);
+        this.el.scrollTop = this.el.scrollHeight;
+        // Juga log ke browser console
+        if (type === 'error') console.error('[FinanceSync]', msg);
+        else if (type === 'warn') console.warn('[FinanceSync]', msg);
+        else console.log('[FinanceSync]', msg);
+      },
+      toggle() {
+        this.visible = !this.visible;
+        if (this.el) this.el.classList.toggle('visible', this.visible);
+      }
+    };
+
+    // =============================================
     // INITIALIZATION
     // =============================================
     function init() {
+      debugConsole.init();
+      debugConsole.log('App initializing...', 'info');
+
       elements = {
         form: document.getElementById('dataForm'),
         submitBtn: document.getElementById('submitBtn'),
@@ -977,29 +1031,40 @@
       // Set tanggal hari ini
       document.getElementById('tanggal').valueAsDate = new Date();
 
-      // Initialize
+      // Initialize form items
       renderFormItems();
       setupEventListeners();
       
       // Try connect
       initDualConnection();
+
+      debugConsole.log('Init complete. Waiting for connection...', 'info');
     }
 
     // =============================================
     // LOAD SAVED CONFIGURATIONS
     // =============================================
     function loadSavedConfigs() {
-      // Load Firebase Config
       const savedFirebaseConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
       if (savedFirebaseConfig) {
-        elements.firebaseConfigInput.value = savedFirebaseConfig;
+        // FIX: Tampilkan config yang sudah tersimpan dalam format JSON yang rapi
+        try {
+          const parsed = JSON.parse(savedFirebaseConfig);
+          elements.firebaseConfigInput.value = JSON.stringify(parsed, null, 2);
+          debugConsole.log('Firebase config loaded from localStorage', 'success');
+        } catch (e) {
+          elements.firebaseConfigInput.value = savedFirebaseConfig;
+          debugConsole.log('Saved config is not valid JSON', 'warn');
+        }
+      } else {
+        debugConsole.log('No saved Firebase config found', 'info');
       }
 
-      // Load Webhook URL
       const savedWebhookUrl = localStorage.getItem(CONFIG_KEYS.WEBHOOK_URL);
       if (savedWebhookUrl) {
         state.webhookUrl = savedWebhookUrl;
         elements.webhookUrlInput.value = savedWebhookUrl;
+        debugConsole.log('Webhook URL loaded from localStorage', 'success');
       }
     }
 
@@ -1007,65 +1072,83 @@
     // DUAL CONNECTION INITIALIZER
     // =============================================
     async function initDualConnection() {
+      debugConsole.log('initDualConnection() called', 'info');
       showBanner('connecting', '⏳ Menyiapkan Dual Sync...', 'Menghubungkan Firebase & Spreadsheet...');
       
-      const hasFirebaseConfig = !!localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
+      const savedConfigStr = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
+      const hasFirebaseConfig = !!savedConfigStr;
       const hasWebhookUrl = !!state.webhookUrl;
 
+      debugConsole.log(`Has Firebase config: ${hasFirebaseConfig}, Has Webhook: ${hasWebhookUrl}`, 'info');
+
       if (!hasFirebaseConfig) {
-        // Show setup modal first
+        debugConsole.log('No Firebase config — showing setup modal', 'warn');
         setTimeout(() => showSetupModal(), 1000);
+        showBanner('error', '⚠️ Belum Terkonfigurasi', 'Klik "Setup" untuk konfigurasi Firebase + Spreadsheet.');
         return;
       }
 
-      // Step 1: Connect to Firebase
+      // ========== STEP 1: Connect to Firebase ==========
       try {
-        const config = JSON.parse(localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG));
-        
+        const config = JSON.parse(savedConfigStr);
+        debugConsole.log('Parsing Firebase config... apiKey: ' + (config.apiKey ? '✅' : '❌') + ', projectId: ' + (config.projectId ? '✅' : '❌'), 'info');
+
+        // FIX: Cek apakah Firebase sudah diinisialisasi sebelumnya
         if (!firebase.apps.length) {
+          debugConsole.log('Initializing Firebase app...', 'info');
           firebase.initializeApp(config);
+        } else {
+          debugConsole.log('Firebase app already initialized (' + firebase.apps.length + ' apps)', 'info');
         }
         
         db = firebase.firestore();
+        debugConsole.log('Firestore instance created', 'success');
         
-        // Test connection
-        await db.collection('submissions').limit(1).get();
+        // Test connection dengan timeout
+        debugConsole.log('Testing Firestore connection...', 'info');
+        const testPromise = db.collection('submissions').limit(1).get();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connection timeout (10s)')), 10000)
+        );
+        
+        await Promise.race([testPromise, timeoutPromise]);
         
         state.isConnected = true;
-        console.log('[✅ Firebase] Connected!');
+        debugConsole.log('✅ Firebase Connected!', 'success');
         
       } catch (error) {
-        console.error('[❌ Firebase Error]:', error);
+        console.error('[Firebase Error]:', error);
+        debugConsole.log('❌ Firebase Error: ' + error.message, 'error');
         state.isConnected = false;
+        db = null;
         showToast('❌ Firebase error: ' + error.message, 'error');
       }
 
-      // Step 2: Test Webhook (Spreadsheet)
+      // ========== STEP 2: Test Webhook (Spreadsheet) ==========
       if (hasWebhookUrl) {
+        debugConsole.log('Testing Spreadsheet webhook...', 'info');
         try {
-          const response = await fetch(state.webhookUrl + '?test=' + Date.now(), {
+          // no-cors request: kita tidak bisa baca response, tapi setidaknya tidak throw error
+          await fetch(state.webhookUrl + '?test=' + Date.now(), {
             method: 'GET',
             mode: 'no-cors'
           });
           
-          if (response.ok) {
-            state.isSheetsConnected = true;
-            console.log('[✅ Spreadsheet] Connected!');
-          } else {
-            state.isSheetsConnected = false;
-            console.log('[⚠️ Spreadsheet] Warning: Non-200 response');
-          }
+          // Karena no-cors, response.type akan 'opaque' dan kita tidak bisa baca status
+          // Anggap berhasil jika tidak throw error
+          state.isSheetsConnected = true;
+          debugConsole.log('✅ Spreadsheet webhook reachable', 'success');
           
         } catch (error) {
           state.isSheetsConnected = false;
-          console.warn('[⚠️ Spreadsheet] Warning:', error.message);
+          debugConsole.log('⚠️ Spreadsheet warning: ' + error.message, 'warn');
         }
       }
 
-      // Update UI based on connection status
+      // Update UI
       updateConnectionUI();
       
-      // Start listening if Firebase connected
+      // Start listening jika Firebase connected
       if (state.isConnected) {
         startRealtimeListener();
       }
@@ -1082,12 +1165,10 @@
       banner.style.display = 'flex';
       banner.className = 'connection-banner no-print';
       
-      // Reset badges
       elements.badgeFirebase.classList.add('hidden');
       elements.badgeSheets.classList.add('hidden');
       
       if (state.isConnected && state.isSheetsConnected) {
-        // BOTH connected!
         banner.classList.add('dual-connected');
         dot.className = 'status-dot success';
         text.textContent = '✅ Dual Sync Active';
@@ -1105,7 +1186,6 @@
         elements.bannerMessage.textContent = 'Firebase & Spreadsheet terhubung. Data akan tersinkronis ke kedua-duanya.';
         
       } else if (state.isConnected) {
-        // Only Firebase
         banner.classList.add('connected');
         dot.className = 'status-dot success';
         text.textContent = '🔥 Firebase Active';
@@ -1118,71 +1198,111 @@
         elements.bannerTitle.textContent = '⚠️ Hanya Firebase';
         elements.bannerMessage.textContent = 'Spreadsheet belum terhubung. Data tetap tersimpan di Firebase.';
         
-      } else if (state.isSheetsConnected) {
-        // Only Spreadsheet (rare case)
+      } else {
         banner.classList.remove('connected', 'dual-connected');
         banner.classList.add('error');
         dot.className = 'status-dot error';
-        text.textContent = '⚠️ Hanya Spreadsheet';
+        text.textContent = '❌ Belum terhubung';
         text.className = 'text-sm text-[--error]';
         
-        elements.badgeSheets.textContent = '📊 Spreadsheet';
-        elements.badgeSheets.classList.remove('hidden');
-        elements.badgeSheets.className = 'sync-status-badge sheets';
-        
         elements.bannerTitle.textContent = '❌ Firebase belum terhubung';
-        elements.bannerMessage.textContent = 'Setup Firebase terlebih dahulu untuk dual sync.';
-        
-      } else {
-        // Nothing connected
-        banner.classList.remove('connected', 'dual-connected');
-        banner.classList.add('error');
-        dot.className = 'status-dot connecting';
-        text.textContent = '⚠️ Belum ada koneksi';
-        text.className = 'text-sm text-[--warning]';
-        
-        elements.bannerTitle.textContent = '⚠️ Belum Terkonfigurasi';
-        elements.bannerMessage.textContent = 'Klik "Setup" untuk konfigurasi Firebase + Spreadsheet.';
+        elements.bannerMessage.textContent = 'Setup Firebase terlebih dahulu untuk dual sync. Klik tombol ⚙️ di atas.';
       }
+    }
+
+    // =============================================
+    // SHOW BANNER HELPER
+    // =============================================
+    function showBanner(type, title, message) {
+      const banner = elements.connectionBanner;
+      banner.style.display = 'flex';
+      banner.className = 'connection-banner no-print';
+      
+      if (type === 'connecting') {
+        banner.classList.add('');
+      } else if (type === 'connected') {
+        banner.classList.add('connected');
+      } else if (type === 'error') {
+        banner.classList.add('error');
+      }
+      
+      elements.bannerTitle.textContent = title;
+      elements.bannerMessage.textContent = message;
     }
 
     // =============================================
     // SETUP MODAL FUNCTIONS
     // =============================================
-    window.showSetupModal = function() { elements.setupModal.classList.add('show'); };
+    window.showSetupModal = function() { 
+      debugConsole.log('Opening setup modal', 'info');
+      elements.setupModal.classList.add('show'); 
+    };
     
-    window.closeSetupModal = function() { elements.setupModal.classList.remove('show'); };
+    window.closeSetupModal = function() { 
+      debugConsole.log('Closing setup modal', 'info');
+      elements.setupModal.classList.remove('show'); 
+    };
 
+    // =============================================
+    // FIX: saveFirebaseConfig - Bug utama ada di sini
+    // =============================================
     window.saveFirebaseConfig = async function() {
+      debugConsole.log('saveFirebaseConfig() called', 'info');
+      
       const inputStr = elements.firebaseConfigInput.value.trim();
       const errorEl = elements.configError;
       errorEl.classList.add('hidden');
       errorEl.textContent = '';
       
-      if (!inputStr) { showError('❌ Paste Firebase config!'); return; }
+      if (!inputStr) { 
+        showError('❌ Paste Firebase config dulu!'); 
+        return; 
+      }
+      
+      debugConsole.log('Input length: ' + inputStr.length + ' chars', 'info');
       
       // Smart parse
       const result = smartParseConfig(inputStr);
-      if (!result.success) { showError('❌ ' + (result.error || 'Format tidak valid')); return; }
-      
-      const config = result.config;
-      if (!config.apiKey || !config.projectId) { showError('❌ Config tidak lengkap'); return; }
-      
-      // Save Firebase config
-      localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
-      
-      // Also save webhook URL if different
-      const currentWebhook = elements.webhookUrl.value.trim();
-      if (currentWebhook && currentWebhookUrl !== DEFAULT_WEBHOOK_URL) {
-        state.webhookUrl = currentWebhook;
-        localStorage.setItem(CONFIG_KEYS.WEBHOOK_URL, currentWebhook);
+      if (!result.success) { 
+        debugConsole.log('Parse failed: ' + (result.error || 'Unknown'), 'error');
+        showError('❌ ' + (result.error || 'Format tidak valid. Paste HANYA objek JSON { ... }')); 
+        return; 
       }
       
-      showToast('✅ Config tersimpan! Menghubungkan...', 'info');
-      closeSetupModal();
+      const config = result.config;
+      debugConsole.log('Parsed config: apiKey=' + (config.apiKey ? '✅' : '❌') + ', projectId=' + (config.projectId ? config.projectId : '❌'), 'info');
       
-      // Re-initialize connection
-      await initDualConnection();
+      if (!config.apiKey || !config.projectId) { 
+        showError('❌ Config tidak lengkap. Pastikan ada apiKey dan projectId.'); 
+        return; 
+      }
+      
+      // ===== FIX BUG #1: Tambahkan try-catch =====
+      try {
+        // Save Firebase config ke localStorage
+        localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
+        debugConsole.log('Firebase config saved to localStorage', 'success');
+
+        // ===== FIX BUG #2: currentWebhookUrl → currentWebhook =====
+        const currentWebhook = elements.webhookUrlInput.value.trim();
+        if (currentWebhook) {
+          state.webhookUrl = currentWebhook;
+          localStorage.setItem(CONFIG_KEYS.WEBHOOK_URL, currentWebhook);
+          debugConsole.log('Webhook URL saved: ' + currentWebhook.substring(0, 50) + '...', 'success');
+        }
+        
+        showToast('✅ Config tersimpan! Menghubungkan...', 'info');
+        closeSetupModal();
+        
+        // Re-initialize connection
+        debugConsole.log('Calling initDualConnection()...', 'info');
+        await initDualConnection();
+        
+      } catch (error) {
+        debugConsole.log('❌ saveFirebaseConfig ERROR: ' + error.message, 'error');
+        console.error('[saveFirebaseConfig]', error);
+        showError('❌ Error: ' + error.message);
+      }
     };
 
     function showError(msg) {
@@ -1191,15 +1311,22 @@
       showToast(msg, 'error');
     }
 
-    // Smart Config Parser (same as before)
+    // =============================================
+    // Smart Config Parser
+    // =============================================
     function smartParseConfig(inputStr) {
       let str = inputStr.trim();
+      
+      // Attempt 1: Direct JSON parse
       try {
         const config = JSON.parse(str);
         if (config.apiKey && config.projectId) return { success: true, config };
-      } catch (e) {}
+      } catch (e) {
+        debugConsole.log('Direct JSON parse failed, trying extraction...', 'warn');
+      }
       
-      const jsonPattern = /\{[^{}]*"apiKey"\s*:\s*"[^"}]*\}/g;
+      // Attempt 2: Find JSON pattern with "apiKey"
+      const jsonPattern = /\{[^{}]*"apiKey"\s*:\s*"[^"}]*"[^{}]*\}/g;
       const matches = str.match(jsonPattern);
       if (matches && matches.length > 0) {
         for (let match of matches) {
@@ -1210,25 +1337,38 @@
         }
       }
       
+      // Attempt 3: Find outermost braces
       const firstBrace = str.indexOf('{');
       const lastBrace = str.lastIndexOf('}');
       if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
         try {
           const config = JSON.parse(str.substring(firstBrace, lastBrace + 1));
           if (config.apiKey || config.projectId) return { success: true, config, extracted: true };
-        } catch (e) {}
+        } catch (e) {
+          debugConsole.log('Outermost brace extraction failed', 'warn');
+        }
       }
       
-      let cleaned = str.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/const\s+\w+\s*=\s*/g, '').trim();
-      const cleanMatch = cleaned.match(/\{[^}]*"apiKey"[^}]*\}/);
-      if (cleanMatch) {
+      // Attempt 4: Strip JS artifacts (comments, const declarations)
+      let cleaned = str
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/const\s+\w+\s*=\s*/g, '')
+        .replace(/;$/, '')
+        .trim();
+        
+      const cleanFirst = cleaned.indexOf('{');
+      const cleanLast = cleaned.lastIndexOf('}');
+      if (cleanFirst !== -1 && cleanLast !== -1) {
         try {
-          const config = JSON.parse(cleanMatch[0]);
+          const config = JSON.parse(cleaned.substring(cleanFirst, cleanLast + 1));
           if (config.apiKey) return { success: true, config, extracted: true };
-        } catch (e) {}
+        } catch (e) {
+          debugConsole.log('Cleaned extraction failed', 'warn');
+        }
       }
       
-      return { success: false, error: 'Could not find valid Firebase config' };
+      return { success: false, error: 'Tidak bisa menemukan config JSON yang valid. Pastikan format: {"apiKey": "...", "projectId": "...", ...}' };
     }
 
     // =============================================
@@ -1248,19 +1388,17 @@
       elements.closeModal.addEventListener('click', () => elements.setupModal.classList.remove('show'));
       elements.setupModal.addEventListener('click', (e) => { if (e.target === elements.setupModal) elements.setupModal.classList.remove('show'); });
       elements.closeDocModal.addEventListener('click', () => elements.documentModal.classList.remove('show'));
+      
       elements.clearHistory.addEventListener('click', () => {
-        if (confirm('Hapus SEMUA data dari Firebase & Spreadsheet?')) {
-          if (db) {
-            db.collection('submissions').get().then(snapshot => {
-              const batch = db.batch();
-              snapshot.docs.forEach(doc => batch.delete(doc.ref));
-              return batch.commit();
-            }).then(() => {
-              showToast('🗑️ Semua data dihapus', 'success');
-            }).catch(err => showToast('Error: ' + err.message, 'error'));
-          } else {
-            showToast('Tidak ada koneksi ke database', 'error');
-          }
+        if (!db) { showToast('Tidak ada koneksi ke database', 'error'); return; }
+        if (confirm('Hapus SEMUA data dari Firebase? Data di Spreadsheet tidak akan terhapus.')) {
+          db.collection('submissions').get().then(snapshot => {
+            const batch = db.batch();
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            return batch.commit();
+          }).then(() => {
+            showToast('🗑️ Semua data dihapus dari Firebase', 'success');
+          }).catch(err => showToast('Error: ' + err.message, 'error'));
         }
       });
 
@@ -1273,12 +1411,27 @@
         });
       });
 
+      // Debug toggle
+      document.getElementById('debugToggle').addEventListener('click', () => {
+        debugConsole.toggle();
+      });
+
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           elements.setupModal.classList.remove('show');
           elements.documentModal.classList.remove('show');
           elements.deleteConfirmModal.classList.remove('show');
         }
+      });
+
+      // Form reset handler
+      elements.form.addEventListener('reset', () => {
+        setTimeout(() => {
+          state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+          renderFormItems();
+          document.getElementById('tanggal').valueAsDate = new Date();
+          elements.validationError.classList.remove('show');
+        }, 10);
       });
     }
 
@@ -1413,21 +1566,21 @@
       document.getElementById('p1_kode').textContent = data.kode || '-';
       document.getElementById('p1_jenis').textContent = data.jenis_pengajuan || '-';
       document.getElementById('p1_total').textContent = ft;
-      document.getElementById('p1_dibuat').textContent = data.dibuat_oleh;
-      document.getElementById('p1_disetujui').textContent = data.disetujui_oleh;
+      document.getElementById('p1_dibuat').textContent = data.dibuat_oleh || '-';
+      document.getElementById('p1_disetujui').textContent = data.disetujui_oleh || '-';
 
       document.getElementById('p2_tanggal').textContent = formatDate(data.tanggal);
       document.getElementById('p2_kode').textContent = data.kode || '-';
       document.getElementById('p2_dibayarkan').textContent = data.dibayarkan_kepada || '-';
       document.getElementById('p2_jenis').textContent = data.jenis_pengajuan || '-';
       document.getElementById('p2_total').textContent = ft;
-      document.getElementById('p2_name_keuangan').textContent = data.keuangan;
-      document.getElementById('p2_name_dirkeuangan').textContent = data.dir_keuangan;
-      document.getElementById('p2_name_direktur').textContent = data.direktur_utama;
-      document.getElementById('p2_name_accounting').textContent = data.accounting;
+      document.getElementById('p2_name_keuangan').textContent = data.keuangan || '-';
+      document.getElementById('p2_name_dirkeuangan').textContent = data.dir_keuangan || '-';
+      document.getElementById('p2_name_direktur').textContent = data.direktur_utama || '-';
+      document.getElementById('p2_name_accounting').textContent = data.accounting || '-';
 
-      document.getElementById('p1_table_body').innerHTML = data.items.map((item, idx) => `<tr><td class="col-no">${idx + 1}</td><td class="col-item">${escapeHtml(item.ket)}</td><td class="col-vol">${escapeHtml(item.qty)}</td><td class="col-nominal">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td><td class="col-ket">${escapeHtml(item.keterangan || '-')}</td></tr>`).join('');
-      document.getElementById('p2_table_body').innerHTML = data.items.map((item, idx) => `<tr><td style="text-align:center">${idx + 1}</td><td>${escapeHtml(item.ket)}</td><td style="text-align:center">${escapeHtml(item.qty)}</td><td style="text-align:right">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td></tr>`).join('');
+      document.getElementById('p1_table_body').innerHTML = data.items.map((item, idx) => `<tr><td class="col-no">${idx + 1}</td><td class="col-item">${escapeHtml(item.ket)}</td><td class="col-vol">${escapeHtml(String(item.qty))}</td><td class="col-nominal">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td><td class="col-ket">${escapeHtml(item.keterangan || '-')}</td></tr>`).join('');
+      document.getElementById('p2_table_body').innerHTML = data.items.map((item, idx) => `<tr><td style="text-align:center">${idx + 1}</td><td>${escapeHtml(item.ket)}</td><td style="text-align:center">${escapeHtml(String(item.qty))}</td><td style="text-align:right">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td></tr>`).join('');
 
       const hasNote = data.catatan_tambahan && data.catatan_tambahan.trim();
       document.getElementById('p1_notes_manual_wrapper').style.display = hasNote ? 'block' : 'none';
@@ -1464,12 +1617,11 @@
     window.downloadAsPDF = downloadAsPDF;
 
     // =============================================
-    // SUBMIT HANDLER - DUAL WRITE
+    // FIX: SUBMIT HANDLER - Bug #3 (docRef scope)
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
 
-      // Validate first
       if (!validateForm()) {
         showToast('❌ Mohon lengkapi semua field yang ditandai *', 'error');
         return;
@@ -1490,6 +1642,7 @@
       let firebaseSuccess = false;
       let sheetsSuccess = false;
       let errorMessage = '';
+      let savedDocId = null;  // FIX: Simpan doc ID di luar try block
 
       // ========== STEP 1: SAVE TO FIREBASE (PRIMARY) ==========
       try {
@@ -1502,55 +1655,69 @@
           sheets_error: null
         });
 
-        console.log('[✅ Firebase] Saved! ID:', docRef.id);
+        savedDocId = docRef.id;  // FIX: Simpan ID untuk dipakai nanti
         firebaseSuccess = true;
         state.lastFormData = { ...data, id: docRef.id };
+        debugConsole.log('✅ Firebase saved! ID: ' + docRef.id, 'success');
 
       } catch (error) {
-        console.error('[❌ Firebase Save Error]:', error);
+        console.error('[Firebase Save Error]:', error);
+        debugConsole.log('❌ Firebase save failed: ' + error.message, 'error');
         errorMessage = 'Firebase: ' + error.message;
       }
 
       // ========== STEP 2: SEND TO SPREADSHEET (SECONDARY) ==========
       if (state.webhookUrl) {
         try {
+          debugConsole.log('Sending to Spreadsheet webhook...', 'info');
+          
           const response = await fetch(state.webhookUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' },  // FIX: Google Apps Script membutuhkan text/plain untuk CORS
             body: JSON.stringify({
               ...data,
               _source: 'FinanceSync Pro',
               _timestamp: new Date().toISOString(),
-              _firebase_id: docRef?.id || 'pending'
+              _firebase_id: savedDocId || 'pending'  // FIX: Gunakan savedDocId, bukan docRef
             })
           });
 
-          if (response.ok) {
-            const result = await response.json();
+          // FIX: Google Apps Script Web App mungkin return berbagai format
+          let result;
+          try {
+            result = await response.json();
+          } catch (jsonErr) {
+            // Jika response bukan JSON, anggap berhasil jika status 200
+            if (response.ok) {
+              result = { success: true };
+            } else {
+              throw new Error('HTTP ' + response.status + ': Response bukan JSON');
+            }
+          }
+          
+          if (response.ok && (result.success !== false)) {
+            sheetsSuccess = true;
+            debugConsole.log('✅ Spreadsheet saved!', 'success');
             
-            if (result.success) {
-              sheetsSuccess = true;
-              console.log('[✅ Spreadsheet] Saved! Row:', result.row_number);
-              
-              // Update the document in Firebase with sync info
-              if (docRef) {
-                await docRef.update({
+            // Update Firebase document dengan sync info
+            if (savedDocId) {
+              try {
+                await db.collection('submissions').doc(savedDocId).update({
                   sheets_synced: true,
                   sheets_synced_at: new Date().toISOString()
                 });
+                debugConsole.log('✅ Firebase doc updated with sheets_synced', 'success');
+              } catch (updateErr) {
+                debugConsole.log('⚠️ Could not update Firebase doc: ' + updateErr.message, 'warn');
               }
-            } else {
-              throw new Error(result.message || 'Unknown spreadsheet error');
             }
           } else {
-            throw new Error('HTTP ' + response.status);
+            throw new Error(result.message || result.error || 'Unknown spreadsheet error');
           }
 
         } catch (error) {
-          console.warn('[⚠️ Spreadsheet Warning]:', error.message);
+          debugConsole.log('⚠️ Spreadsheet warning: ' + error.message, 'warn');
           errorMessage = 'Spreadsheet: ' + error.message;
-          
-          // Still consider it as partial success if Firebase succeeded
         }
       }
 
@@ -1558,28 +1725,21 @@
       elements.submitBtn.disabled = false;
       
       if (firebaseSuccess && sheetsSuccess) {
-        // BOTH SUCCESS!
         showToast('✅✅ Dual Sync Berhasil! (Firebase + Spreadsheet)', 'firebase');
         updateConnectionUI();
-        
-        // Open preview
         populateDocuments(data);
         elements.documentModal.classList.add('show');
         
       } else if (firebaseSuccess) {
-        // Only Firebase
-        showToast('✅ Disimpan di Firebase. ⚠️ Spreadsheet gagal: ' + errorMessage, 'info');
+        showToast('✅ Disimpan di Firebase. ⚠️ Spreadsheet: ' + errorMessage, 'info');
         updateConnectionUI();
         
       } else if (sheetsSuccess) {
-        // Only Spreadsheet (very rare)
-        showToast('⚠️ Disimpan di Spreadsheet. ❌ Firebase gagal: ' + errorMessage, 'warning');
+        showToast('⚠️ Disimpan di Spreadsheet saja. ❌ Firebase: ' + errorMessage, 'info');
         updateConnectionUI();
         
       } else {
-        // Both failed
         showToast('❌ Gagal menyimpan: ' + errorMessage, 'error');
-        updateConnectionUI();
       }
 
       // Reset form after successful submission
@@ -1590,7 +1750,7 @@
         document.getElementById('tanggal').valueAsDate = new Date();
       }
 
-      elements.submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan Dual Sync</span>`;
+      elements.submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>`;
     }
 
     // =============================================
@@ -1598,6 +1758,8 @@
     // =============================================
     function startRealtimeListener() {
       if (state.unsubscribeListener) state.unsubscribeListener();
+      
+      debugConsole.log('Starting Firestore realtime listener...', 'info');
       
       state.unsubscribeListener = db
         .collection('submissions')
@@ -1611,13 +1773,19 @@
           },
           (error) => {
             console.error('[Listener] Error:', error);
-            showToast('⚠️ Realtime listener error', 'error');
+            debugConsole.log('❌ Listener error: ' + error.message, 'error');
+            
+            // FIX: Jika permission denied, beri pesan yang jelas
+            if (error.code === 'permission-denied') {
+              showToast('❌ Firebase: Permission denied. Cek Firestore Security Rules Anda.', 'error');
+              debugConsole.log('PERMISSION DENIED: Pastikan Firestore rules mengizinkan read/write untuk collection "submissions"', 'error');
+            }
           }
         );
     }
 
     // =============================================
-    // RENDER HISTORY WITH DELETE
+    // RENDER HISTORY
     // =============================================
     function renderHistory() {
       let filtered = state.currentTab === 'all'
@@ -1694,9 +1862,11 @@
       try {
         await db.collection('submissions').doc(state.pendingDeleteId).delete();
         showToast('🗑️ Data berhasil dihapus dari Firebase!', 'success');
+        debugConsole.log('Deleted doc: ' + state.pendingDeleteId, 'success');
         closeDeleteModal();
       } catch (error) {
         console.error('[Delete] Error:', error);
+        debugConsole.log('❌ Delete failed: ' + error.message, 'error');
         showToast('❌ Gagal menghapus: ' + error.message, 'error');
         closeDeleteModal();
       }
@@ -1708,9 +1878,11 @@
         state.items = (item.items || []).map(i => ({
           ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || ''
         }));
+        if (state.items.length === 0) state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
         renderFormItems();
         populateDocuments(item);
         elements.documentModal.classList.add('show');
+        debugConsole.log('Loaded history item: ' + id, 'info');
       }
     };
 
@@ -1741,10 +1913,12 @@
     // =============================================
     // UTILITIES
     // =============================================
+    let toastTimeout;
     function showToast(message, type) {
+      clearTimeout(toastTimeout);
       elements.toast.textContent = message;
       elements.toast.className = `toast ${type} show`;
-      setTimeout(() => elements.toast.classList.remove('show'), 4000);
+      toastTimeout = setTimeout(() => elements.toast.classList.remove('show'), 5000);
     }
 
     function formatDate(dateStr) {
