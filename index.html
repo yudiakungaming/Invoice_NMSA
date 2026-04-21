@@ -6,7 +6,7 @@
   <title>FinanceSync - Pengajuan HO & Keuangan (Firebase)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Firebase SDK (v9 compat) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
@@ -99,7 +99,6 @@
       .animate-in { animation: none; opacity: 1; }
     }
 
-    /* Input Fields */
     .input-field {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
@@ -121,7 +120,6 @@
     .input-field::placeholder { color: var(--muted); }
     .input-field:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* Buttons */
     .btn-submit {
       background: linear-gradient(135deg, var(--firebase), var(--firebase-orange));
       color: #000;
@@ -208,30 +206,6 @@
 
     .btn-remove-item:hover { background: rgba(239, 68, 68, 0.2); }
 
-    .btn-firebase-setup {
-      background: linear-gradient(135deg, #ffca28, #ffa726);
-      color: #000;
-      font-weight: 700;
-      padding: 16px 32px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      font-size: 15px;
-      font-family: 'Space Grotesk', sans-serif;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 8px 30px rgba(255, 202, 40, 0.35);
-      animation: float 3s ease-in-out infinite;
-    }
-
-    .btn-firebase-setup:hover {
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 0 12px 40px rgba(255, 202, 40, 0.5);
-    }
-
-    /* Cards & Status */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -276,7 +250,6 @@
 
     .history-item:hover { border-color: var(--firebase); transform: translateX(4px); }
 
-    /* Firebase Banner */
     .firebase-banner {
       background: linear-gradient(135deg, rgba(255, 202, 40, 0.15), rgba(255, 167, 38, 0.08));
       border: 1px solid rgba(255, 202, 40, 0.3);
@@ -298,7 +271,6 @@
       border-color: rgba(239, 68, 68, 0.3);
     }
 
-    /* Modals */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -343,7 +315,6 @@
       flex-direction: column;
     }
 
-    /* Toast */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -375,7 +346,6 @@
       animation: spin 0.7s linear infinite;
     }
 
-    /* Form Labels */
     .field-label {
       display: block;
       font-size: 13px;
@@ -782,7 +752,19 @@
 
     .copy-btn:hover { background: var(--firebase-orange); transform: scale(1.05); }
 
-    /* Firebase Logo Animation */
+    .example-config-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      border: 2px dashed var(--success);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 12px 0;
+    }
+
+    .wrong-example {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+      border-color: var(--error);
+    }
+
     .firebase-logo {
       width: 48px;
       height: 48px;
@@ -1035,9 +1017,8 @@
               <h3 class="font-semibold text-base mb-2">Buat Firebase Project</h3>
               <ol class="text-sm text-[--muted] space-y-2 list-decimal list-inside">
                 <li>Buka <strong class="text-[--firebase]">Firebase Console</strong></li>
-                <li>Klik <strong>"Add project"</strong> / "Tambah proyek"</li>
-                <li>Nama project: <code class="mono text-xs bg-[--bg] px-2 py-1 rounded">financesync-nmsa</code></li>
-                <li>Disable Google Analytics (opsional)</li>
+                <li>Klik <strong>"Add project"</strong></li>
+                <li>Nama: <code class="mono text-xs bg-[--bg] px-2 py-1 rounded">financesync-nmsa</code></li>
                 <li>Klik <strong>"Create project"</strong></li>
               </ol>
               <button onclick="window.open('https://console.firebase.google.com/', '_blank')" class="copy-btn mt-3">
@@ -1054,72 +1035,80 @@
             <div class="flex-1">
               <h3 class="font-semibold text-base mb-2">Aktifkan Firestore Database</h3>
               <ol class="text-sm text-[--muted] space-y-2 list-decimal list-inside">
-                <li>Di sidebar, klik <strong>"Build"</strong> → <strong>"Firestore Database"</strong></li>
+                <li>Klik <strong>"Build"</strong> → <strong>"Firestore Database"</strong></li>
                 <li>Klik <strong>"Create database"</strong></li>
-                <li>Pilih location: <strong>asia-southeast2 (Singapore)</strong> ⚡</li>
-                <li>Pilih mode: <strong>Start in test mode</strong> (untuk sekarang)</li>
+                <li>Location: <strong>asia-southeast2 (Singapore)</strong></li>
+                <li>Mode: <strong>Start in test mode</strong></li>
                 <li>Klik <strong>"Enabled"</strong></li>
               </ol>
             </div>
           </div>
         </div>
 
-        <!-- Step 3 -->
+        <!-- Step 3 - DENGAN CONTOH VISUAL! -->
         <div class="setup-step">
           <div class="flex items-start gap-3">
             <div class="step-number">3</div>
             <div class="flex-1">
-              <h3 class="font-semibold text-base mb-2">Dapatkan Config Credentials</h3>
-              <ol class="text-sm text-[--muted] space-y-2 list-decimal list-inside">
-                <li>Klik icon <strong>⚙️ Settings</strong> (gear) di sidebar</li>
-                <li>Pilih <strong>"General"</strong> tab</li>
-                <li>Scroll ke bagian <strong>"Your apps"</strong></li>
-                <li>Klik <strong>"Web"</strong> (icon `</>`)</li>
-                <li>Register app nickname: <code class="mono text-xs bg-[--bg] px-2 py-1 rounded">FinanceSync App</code></li>
-                <li><strong>COPY</strong> firebaseConfig object yang muncul!</li>
-              </ol>
+              <h3 class="font-semibold text-base mb-2">Dapatkan & Paste Config (PERHATIKAN!)</h3>
               
+              <p class="text-sm text-[--muted] mb-3">
+                Setelah register Web App, Firebase akan menampilkan kode. <strong class="text-red-400">COPY HANYA BAGIAN DALAM { ... }!</strong>
+              </p>
+
+              <!-- CONTOH SALAH ❌ -->
+              <div class="example-config-box wrong-example">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-lg">❌</span>
+                  <strong class="text-red-400 text-sm">SALAH - Jangan copy ini:</strong>
+                </div>
+                <div class="config-box text-red-300" style="color: #fca5a5;">
+// Import the functions you need from the SDKs you need<br>
+import { initializeApp } from "firebase/app";<br><br>
+const firebaseConfig = {<br>
+&nbsp;&nbsp;apiKey: "AIzaSy...",<br>
+&nbsp;&nbsp;authDomain: "...",<br>
+&nbsp;&nbsp;...<br>
+};<br><br>
+const app = initializeApp(firebaseConfig);
+                </div>
+              </div>
+
+              <!-- CONTOH BENAR ✅ -->
+              <div class="example-config-box">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-lg">✅</span>
+                  <strong class="text-green-400 text-sm">BENAR - Copy HANYA ini:</strong>
+                </div>
+                <div class="config-box">
+{
+  "apiKey": "AIzaSy...",
+  "authDomain": "your-project.firebaseapp.com",
+  "projectId": "your-project-id",
+  "storageBucket": "your-project.appspot.com",
+  "messagingSenderId": "123456789012",
+  "appId": "1:123456789012:web:abc123"
+}
+                </div>
+                <p class="text-xs text-gray-400 mt-2 italic">
+                  💡 Tips: Mulai dari { dan akhiri dengan }, tanpa kata lain!
+                </p>
+              </div>
+
               <div class="mt-3">
                 <label class="field-label">Paste Firebase Config di sini:</label>
-                <textarea id="firebaseConfigInput" class="input-field resize-none" rows="4" placeholder='{
+                <textarea id="firebaseConfigInput" class="input-field resize-none" rows="5" placeholder='{
   "apiKey": "...",
   "authDomain": "...",
   "projectId": "...",
-  ...}' style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></textarea>
+  ...
+}' style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></textarea>
+                
+                <div id="configError" class="text-xs text-red-400 mt-2 hidden"></div>
               </div>
               
               <button onclick="saveFirebaseConfig()" class="copy-btn mt-3 w-full justify-center">
                 💾 Simpan & Connect ke Firebase
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 4 -->
-        <div class="setup-step">
-          <div class="flex items-start gap-3">
-            <div class="step-number">4</div>
-            <div class="flex-1">
-              <h3 class="font-semibold text-base mb-2">Update Security Rules (Opsional)</h3>
-              <p class="text-sm text-[--muted] mb-2">Agar data aman, update Firestore Rules:</p>
-              <ol class="text-sm text-[--muted] space-y-1 list-decimal list-inside">
-                <li>Buka <strong>Firestore Database</strong> → tab <strong>"Rules"</strong></li>
-                <li>Hapus rules default, paste rules baru:</li>
-              </ol>
-              
-              <div class="config-box mt-2" id="firestoreRulesDisplay">
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /submissions/{docId} {
-      allow read, write: if true; // Open for now
-    }
-  }
-}
-              </div>
-              
-              <button onclick="copyFirestoreRules()" class="copy-btn mt-2">
-                📋 Copy Rules
               </button>
             </div>
           </div>
@@ -1131,15 +1120,13 @@ service cloud.firestore {
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            Keuntungan Firebase vs Google Sheets
+            Keuntungan Firebase
           </h3>
           <ul class="text-xs text-gray-300 space-y-1">
             <li>✅ <strong>Tidak ada CORS error</strong> - 100% reliable</li>
             <li>✅ <strong>Real-time sync</strong> - Data muncul instan</li>
             <li>✅ <strong>Offline support</strong> - Tetap bisa input tanpa internet</li>
-            <li>✅ <strong>Auto-backup</strong> - Data aman di cloud Google</li>
-            <li>✅ <strong>Free tier generous</strong> - 1GB storage, 50k reads/hari</li>
-            <li>✅ <strong>Scalable</strong> - Bisa handle ribuan user</li>
+            <li>✅ <strong>Free tier generous</strong> - 1GB storage, 50k reads/day</li>
           </ul>
         </div>
 
@@ -1346,18 +1333,14 @@ service cloud.firestore {
   <!-- Toast -->
   <div id="toast" class="toast" role="alert"></div>
 
-  <!-- JAVASCRIPT - FIREBASE INTEGRATION -->
+  <!-- JAVASCRIPT - FIREBASE WITH SMART PARSING -->
   <script>
-    /* =============================================
-       FIREBASE CONFIGURATION STORAGE
-    ============================================= */
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config',
-      HISTORY_LOCAL: 'financesync_local_history'
+      FIREBASE_CONFIG: 'financesync_firebase_config_v3',
+      HISTORY_LOCAL: 'financesync_local_history_v3'
     };
 
-    /* State */
-    let db = null; // Firestore instance
+    let db = null;
     let state = {
       isConnected: false,
       isConnecting: true,
@@ -1365,12 +1348,11 @@ service cloud.firestore {
       currentTab: 'all',
       lastFormData: null,
       items: [{ ket: '', qty: '', nominal: 0, keterangan: '' }],
-      unsubscribeListener: null // For real-time listener
+      unsubscribeListener: null
     };
 
     let elements = {};
 
-    /* Initialize Firebase */
     function init() {
       elements = {
         form: document.getElementById('dataForm'),
@@ -1397,21 +1379,95 @@ service cloud.firestore {
         bannerMessage: document.getElementById('bannerMessage'),
         statusDot: document.getElementById('statusDot'),
         statusText: document.getElementById('statusText'),
-        firebaseConfigInput: document.getElementById('firebaseConfigInput')
+        firebaseConfigInput: document.getElementById('firebaseConfigInput'),
+        configError: document.getElementById('configError')
       };
 
-      // Set tanggal hari ini
       document.getElementById('tanggal').valueAsDate = new Date();
-
-      // Try to initialize Firebase with saved config
       initFirebase();
-
-      // Render UI
       renderFormItems();
       setupEventListeners();
     }
 
-    /* Initialize Firebase with saved config or show setup modal */
+    /* SMART CONFIG PARSER - Auto-fix common mistakes */
+    function smartParseConfig(inputStr) {
+      let str = inputStr.trim();
+      
+      console.log('[SmartParser] Input length:', str.length);
+      
+      // Try 1: Direct JSON parse
+      try {
+        const config = JSON.parse(str);
+        if (config.apiKey && config.projectId) {
+          console.log('[SmartParser] ✅ Valid JSON detected');
+          return { success: true, config };
+        }
+      } catch (e) {
+        console.log('[SmartParser] Not direct JSON, trying extraction...');
+      }
+      
+      // Try 2: Extract JSON from JavaScript code
+      // Pattern: find { ... } that contains "apiKey"
+      const jsonPattern = /\{[^{}]*"apiKey"\s*:\s*"[^"]*"[^{}]*\}/g;
+      const matches = str.match(jsonPattern);
+      
+      if (matches && matches.length > 0) {
+        console.log('[SmartParser] Found potential config object');
+        
+        for (let match of matches) {
+          try {
+            const config = JSON.parse(match);
+            if (config.apiKey && config.projectId) {
+              console.log('[SmartParser] ✅ Extracted valid config from JS code');
+              return { success: true, config, extracted: true };
+            }
+          } catch (e) {
+            continue;
+          }
+        }
+      }
+      
+      // Try 3: More aggressive extraction - find first { to last }
+      const firstBrace = str.indexOf('{');
+      const lastBrace = str.lastIndexOf('}');
+      
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        const extracted = str.substring(firstBrace, lastBrace + 1);
+        
+        try {
+          const config = JSON.parse(extracted);
+          if (config.apiKey || config.authDomain || config.projectId) {
+            console.log('[SmartParser] ✅ Extracted from brace positions');
+            return { success: true, config, extracted: true };
+          }
+        } catch (e) {
+          console.log('[SmartParser] Brace extraction failed:', e.message);
+        }
+      }
+      
+      // Try 4: Remove comments and try again
+      let cleaned = str
+        .replace(/\/\/.*$/gm, '') // Remove single line comments
+        .replace(/\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
+        .replace(/const\s+\w+\s*=\s*/g, '') // Remove variable assignment
+        .trim();
+      
+      // Find JSON in cleaned string
+      const cleanMatch = cleaned.match(/\{[^}]*"apiKey"[^}]*\}/);
+      if (cleanMatch) {
+        try {
+          const config = JSON.parse(cleanMatch[0]);
+          if (config.apiKey) {
+            console.log('[SmartParser] ✅ Extracted after cleaning comments');
+            return { success: true, config, extracted: true };
+          }
+        } catch (e) {}
+      }
+      
+      // All attempts failed
+      return { success: false, error: 'Could not find valid Firebase config in input' };
+    }
+
     async function initFirebase() {
       const savedConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
       
@@ -1425,17 +1481,14 @@ service cloud.firestore {
           
           db = firebase.firestore();
           
-          // Test connection by trying to read
           await db.collection('submissions').limit(1).get();
           
-          // Success!
           state.isConnected = true;
           state.isConnecting = false;
           
           updateConnectionUI('connected', '🔥 Terhubung ke Firebase!', `Cloud Firestore aktif • Real-time sync enabled`);
-          showToast('✅ Firebase berhasil terhubung! Data akan disinkronisasi secara real-time.', 'firebase');
+          showToast('✅ Firebase berhasil terhubung!', 'firebase');
           
-          // Start listening for real-time updates
           startRealtimeListener();
           
         } catch (error) {
@@ -1443,20 +1496,13 @@ service cloud.firestore {
           state.isConnected = false;
           state.isConnecting = false;
           
-          updateConnectionUI('error', '❌ Gagal Terhubung ke Firebase', error.message || 'Periksa konfigurasi');
-          showToast('❌ Firebase connection failed: ' + error.message, 'error');
-          
-          // Show setup modal after 2 seconds
-          setTimeout(() => showSetupModal(), 2000);
+          updateConnectionUI('error', '❌ Gagal Terhubung', error.message);
+          setTimeout(() => showSetupModal(), 1500);
         }
       } else {
-        // No config found - show setup modal
         state.isConnected = false;
         state.isConnecting = false;
-        
         updateConnectionUI('warning', '⚠️ Firebase Belum Dikonfigurasi', 'Klik "Setup Firebase" untuk memulai');
-        
-        // Show setup modal after 1 second
         setTimeout(() => showSetupModal(), 1000);
       }
     }
@@ -1465,49 +1511,70 @@ service cloud.firestore {
       elements.setupModal.classList.add('show');
     };
 
-    /* Save Firebase Configuration */
     window.saveFirebaseConfig = function() {
-      const configStr = elements.firebaseConfigInput.value.trim();
+      const inputStr = elements.firebaseConfigInput.value.trim();
+      const errorEl = elements.configError;
       
-      if (!configStr) {
-        showToast('❌ Paste Firebase config terlebih dahulu', 'error');
+      errorEl.classList.add('hidden');
+      errorEl.textContent = '';
+      
+      if (!inputStr) {
+        showError('❌ Paste Firebase config terlebih dahulu!');
         return;
       }
       
-      try {
-        const config = JSON.parse(configStr);
+      // Use smart parser
+      const result = smartParseConfig(inputStr);
+      
+      if (!result.success) {
+        showError('❌ ' + (result.error || 'Format tidak valid. Pastikan Anda copy HANYA bagian { ... }'));
         
-        // Validate required fields
-        if (!config.apiKey || !config.projectId || !config.appId) {
-          throw new Error('Config tidak valid. Pastikan apiKey, projectId, dan appId ada.');
-        }
-        
-        // Save to localStorage
-        localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
-        
-        showToast('💾 Config tersimpan! Menghubungkan...', 'info');
-        elements.setupModal.classList.remove('show');
-        
-        // Re-initialize Firebase
-        initFirebase();
-        
-      } catch (error) {
-        showToast('❌ Error parsing config: ' + error.message, 'error');
+        // Show detailed help
+        errorEl.innerHTML = `
+          <div class="mt-2 p-2 bg-red-900/30 rounded text-xs">
+            <strong>Tips:</strong><br>
+            • Cari teks <code>const firebaseConfig = {</code><br>
+            • Copy SEMUA isi di dalam kurung kurawal { sampai }<br>
+            • Jangan include: <code>const</code>, <code>//</code>, <code>import</code>, dll
+          </div>
+        `;
+        errorEl.classList.remove('hidden');
+        return;
       }
+      
+      const config = result.config;
+      
+      // Validate required fields
+      if (!config.apiKey || !config.projectId) {
+        showError('❌ Config tidak lengkap. Pastikan ada "apiKey" dan "projectId"');
+        return;
+      }
+      
+      // Save to localStorage
+      localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
+      
+      if (result.extracted) {
+        showToast('✅ Config berhasil diekstraksi & disimpan! Menghubungkan...', 'info');
+      } else {
+        showToast('💾 Config tersimpan! Menghubungkan...', 'info');
+      }
+      
+      elements.setupModal.classList.remove('show');
+      
+      // Re-initialize Firebase
+      initFirebase();
     };
 
-    /* Copy Firestore Rules */
-    window.copyFirestoreRules = function() {
-      const rules = document.getElementById('firestoreRulesDisplay').textContent.trim();
-      navigator.clipboard.writeText(rules).then(() => {
-        showToast('📋 Firestore Rules berhasil dicopy!', 'success');
-      });
-    };
+    function showError(msg) {
+      elements.configError.textContent = msg;
+      elements.configError.classList.remove('hidden');
+      showToast(msg, 'error');
+      elements.configError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 
-    /* Start Real-time Listener for submissions collection */
     function startRealtimeListener() {
       if (state.unsubscribeListener) {
-        state.unsubscribeListener(); // Unsubscribe old listener
+        state.unsubscribeListener();
       }
       
       state.unsubscribeListener = db
@@ -1516,7 +1583,7 @@ service cloud.firestore {
         .limit(50)
         .onSnapshot(
           (snapshot) => {
-            console.log('[Firebase] Real-time update received:', snapshot.size, 'documents');
+            console.log('[Firebase] Real-time update:', snapshot.size, 'documents');
             
             state.history = snapshot.docs.map(doc => ({
               id: doc.id,
@@ -1534,7 +1601,6 @@ service cloud.firestore {
         );
     }
 
-    /* Update Connection UI */
     function updateConnectionUI(status, title, message) {
       const banner = elements.connectionBanner;
       const dot = elements.statusDot;
@@ -1567,7 +1633,6 @@ service cloud.firestore {
       elements.bannerMessage.textContent = message;
     }
 
-    /* Event Listeners */
     function setupEventListeners() {
       elements.form.addEventListener('submit', handleSubmit);
       elements.previewBtn.addEventListener('click', handlePreview);
@@ -1592,7 +1657,6 @@ service cloud.firestore {
       elements.clearHistory.addEventListener('click', () => {
         if (confirm('Hapus semua riwayat dari Firebase?')) {
           if (db && confirm('PERINGATAN: Ini akan menghapus SEMUA data dari cloud! Lanjutkan?')) {
-            // Delete all documents in batch
             db.collection('submissions').get().then(snapshot => {
               const batch = db.batch();
               snapshot.docs.forEach(doc => batch.delete(doc.ref));
@@ -1603,7 +1667,6 @@ service cloud.firestore {
               showToast('Error menghapus: ' + err.message, 'error');
             });
           } else {
-            // Just clear local view
             state.history = [];
             renderHistory();
             updateStats();
@@ -1629,7 +1692,6 @@ service cloud.firestore {
       });
     }
 
-    /* Form Items */
     function renderFormItems() {
       const container = document.getElementById('itemsContainer');
       container.innerHTML = '';
@@ -1701,7 +1763,6 @@ service cloud.firestore {
       return total;
     }
 
-    /* Get Form Data */
     function getFormData() {
       const fd = new FormData(elements.form);
       return {
@@ -1727,7 +1788,6 @@ service cloud.firestore {
       };
     }
 
-    /* Preview Document */
     function handlePreview() {
       const data = getFormData();
       if (data.items.length === 0 || data.items.every(i => !i.ket)) {
@@ -1739,7 +1799,6 @@ service cloud.firestore {
       elements.documentModal.classList.add('show');
     }
 
-    /* Populate Documents */
     function populateDocuments(data) {
       const ft = 'Rp ' + formatNumber(data.total_nominal);
 
@@ -1789,7 +1848,6 @@ service cloud.firestore {
       }
     }
 
-    /* Submit Handler - Save to Firebase */
     async function handleSubmit(e) {
       e.preventDefault();
 
@@ -1805,7 +1863,6 @@ service cloud.firestore {
       elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan ke Cloud...';
 
       try {
-        // Add document to Firestore
         const docRef = await db.collection('submissions').add({
           ...data,
           created_at: new Date().toISOString(),
@@ -1816,13 +1873,11 @@ service cloud.firestore {
 
         showToast(`✅ Data berhasil disimpan! ID: ${docRef.id.substring(0, 8)}...`, 'firebase');
 
-        // Reset form
         elements.form.reset();
         state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
         renderFormItems();
         document.getElementById('tanggal').valueAsDate = new Date();
 
-        // Show preview
         populateDocuments(data);
         elements.documentModal.classList.add('show');
 
@@ -1840,7 +1895,6 @@ service cloud.firestore {
       `;
     }
 
-    /* Render History */
     function renderHistory() {
       let filtered = state.currentTab === 'all'
         ? state.history
@@ -1893,7 +1947,6 @@ service cloud.firestore {
       }).join('');
     }
 
-    /* Load Item from History */
     window.loadHistoryItem = function(id) {
       const item = state.history.find(h => h.id === id);
       if (item) {
@@ -1906,12 +1959,11 @@ service cloud.firestore {
       }
     };
 
-    /* Update Stats */
     function updateStats() {
       animateCounter(elements.totalData, state.history.length);
       animateCounter(elements.sentData, state.history.filter(h => h.synced).length);
       animateCounter(elements.pendingData, state.history.filter(h => !h.synced).length);
-      animateCounter(elements.failedData, 0); // No offline errors with Firebase
+      animateCounter(elements.failedData, 0);
     }
 
     function animateCounter(el, target) {
@@ -1928,14 +1980,12 @@ service cloud.firestore {
       requestAnimationFrame(update);
     }
 
-    /* Toast */
     function showToast(message, type) {
       elements.toast.textContent = message;
       elements.toast.className = `toast ${type} show`;
       setTimeout(() => elements.toast.classList.remove('show'), 4000);
     }
 
-    /* Format Helpers */
     function formatDate(dateStr) {
       if (!dateStr) return '-';
       const date = new Date(dateStr + 'T00:00:00');
@@ -1952,7 +2002,6 @@ service cloud.firestore {
       return div.innerHTML;
     }
 
-    /* Init on Load */
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
