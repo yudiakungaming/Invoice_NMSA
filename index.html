@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinanceSync - Pengajuan HO & Keuangan</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -140,26 +139,22 @@
       color: var(--fg);
     }
 
-    .btn-action-page {
+    .btn-print {
+      background: #334155;
       color: white;
       font-weight: 600;
-      padding: 10px 20px;
-      border-radius: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;
       font-family: 'Space Grotesk', sans-serif;
       transition: all 0.25s ease;
       display: inline-flex;
       align-items: center;
       gap: 8px;
     }
-    
-    .btn-pdf-all { background: linear-gradient(135deg, #dc2626, #ef4444); }
-    .btn-pdf-all:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
-
-    .btn-print-all { background: #334155; }
-    .btn-print-all:hover { background: #475569; }
+    .btn-print:hover { background: #475569; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(51,65,85,0.35); }
 
     .btn-add-item {
       background: rgba(59, 130, 246, 0.15);
@@ -320,10 +315,7 @@
       margin-bottom: 6px;
     }
 
-    .currency-wrapper {
-      position: relative;
-    }
-
+    .currency-wrapper { position: relative; }
     .currency-wrapper .prefix {
       position: absolute;
       left: 14px;
@@ -332,7 +324,6 @@
       color: var(--muted);
       font-size: 14px;
     }
-
     .currency-wrapper input { padding-left: 36px; }
 
     .tab-btn {
@@ -346,11 +337,10 @@
       cursor: pointer;
       transition: all 0.2s ease;
     }
-
     .tab-btn:hover { color: var(--fg); background: rgba(255,255,255,0.05); }
     .tab-btn.active { color: var(--accent); background: var(--accent-glow); }
 
-    /* ========== DOCUMENT STYLES (PDF & PRINT) ========== */
+    /* ========== DOCUMENT STYLES ========== */
     
     .documents-container {
       background: #e2e8f0;
@@ -405,6 +395,23 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
+    .btn-print-doc {
+      background: #334155;
+      color: white;
+      font-weight: 600;
+      padding: 10px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-print-doc:hover { background: #475569; }
+
     .doc-header-center {
       text-align: center;
       border-bottom: 2px solid #1e40af;
@@ -436,32 +443,11 @@
       margin-bottom: 20px;
     }
 
-    .doc-info-item {
-      display: flex;
-      gap: 8px;
-      font-size: 13px;
-    }
+    .doc-info-item { display: flex; gap: 8px; font-size: 13px; }
+    .doc-info-label { font-weight: 600; min-width: 80px; color: #334155; }
+    .doc-info-value { border-bottom: 1px dashed #94a3b8; flex: 1; padding-bottom: 1px; min-height: 18px; }
 
-    .doc-info-label {
-      font-weight: 600;
-      min-width: 80px;
-      color: #334155;
-    }
-
-    .doc-info-value {
-      border-bottom: 1px dashed #94a3b8;
-      flex: 1;
-      padding-bottom: 1px;
-      min-height: 18px;
-    }
-
-    .doc-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 15px;
-      font-size: 12px;
-    }
-
+    .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px; }
     .doc-table th {
       background: #1e40af;
       color: white;
@@ -471,23 +457,12 @@
       font-size: 11px;
       border: 1px solid #1e40af;
     }
-
-    .doc-table td {
-      border: 1px solid #cbd5e1;
-      padding: 6px 8px;
-      vertical-align: top;
-    }
-
+    .doc-table td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: top; }
     .doc-table .col-no { width: 40px; text-align: center; }
     .doc-table .col-item { min-width: 180px; }
     .doc-table .col-qty { width: 70px; text-align: center; }
     .doc-table .col-nominal { width: 120px; text-align: right; }
-
-    .doc-total-row td {
-      background: #f1f5f9;
-      font-weight: 700;
-      font-size: 13px;
-    }
+    .doc-total-row td { background: #f1f5f9; font-weight: 700; font-size: 13px; }
 
     .doc-signatures-p1 {
       display: grid;
@@ -506,16 +481,8 @@
       height: 130px;
     }
 
-    .doc-sig-label {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: #334155;
-      margin-bottom: 5px;
-    }
-
+    .doc-sig-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #334155; margin-bottom: 5px; }
     .doc-sig-space { flex-grow: 1; width: 100%; }
-
     .doc-sig-name {
       width: 80%;
       font-weight: 700;
@@ -535,15 +502,7 @@
     }
 
     .doc-header-left .doc-company-name { text-align: left; font-size: 20px; }
-
-    .doc-form-title-right {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 5px;
-    }
-
+    .doc-form-title-right { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
     .doc-tanggal-box { font-size: 12px; }
     .doc-tanggal-box span { border-bottom: 1px solid #1e293b; padding: 0 8px; }
 
@@ -551,10 +510,6 @@
     .doc-payment-row { display: flex; gap: 10px; margin-bottom: 6px; }
     .doc-payment-label { min-width: 140px; font-weight: 600; }
     .doc-payment-value { border-bottom: 1px dashed #94a3b8; flex: 1; padding-bottom: 1px; }
-    
-    .doc-payment-method { display: flex; gap: 20px; margin-top: 10px; font-size: 12px; }
-    .doc-checkbox { width: 12px; height: 12px; border: 1px solid #1e293b; display: inline-flex; align-items: center; justify-content: center; }
-    .doc-checkbox.checked::after { content: '✓'; font-size: 9px; font-weight: bold; }
 
     .doc-notes { margin-top: 20px; padding: 10px 12px; border: 1px solid #cbd5e1; background: #f8fafc; }
     .doc-notes-title { font-weight: 700; font-size: 12px; margin-bottom: 4px; }
@@ -571,7 +526,7 @@
     .sig-name { font-weight: 700; font-size: 12px; color: #0f172a; margin-bottom: 2px; }
     .sig-title { font-size: 11px; color: #64748b; font-weight: 400; }
 
-    /* ========== @page RULE (WAJIB DI LUAR @media print) ========== */
+    /* ========== @page WAJIB DI LUAR @media print ========== */
     @page {
       size: A4 portrait;
       margin: 0;
@@ -587,12 +542,10 @@
         print-color-adjust: exact !important;
       }
       
-      /* Sembunyikan SEMUA elemen yang bukan dokumen */
       .no-print, .bg-pattern, .bg-gradient, header, main > div:first-child, .page-toolbar {
         display: none !important;
       }
 
-      /* Tampilkan modal dokumen sebagai konten utama */
       #documentModal {
         position: absolute;
         top: 0;
@@ -630,11 +583,6 @@
         margin: 0;
       }
 
-      /* INTI PERBAIKAN PRINT: 
-         - height FIXED 297mm (bukan min-height, bukan auto)
-         - overflow hidden untuk potong konten yang kelebihan
-         - TIDAK ada page-break-inside: avoid (ini yang bikin halaman kosong)
-         - page-break-after: always memastikan tiap .document-page = 1 halaman fisik */
       .document-page {
         box-shadow: none;
         margin: 0;
@@ -646,13 +594,11 @@
         padding: 35px 50px; 
       }
       
-      /* Halaman terakhir: JANGAN tambah page break sesudahnya */
       .document-page:last-child {
         page-break-after: auto;
         break-after: auto;
       }
 
-      /* Paksa warna latar elemen penting agar tidak transparan saat print */
       .doc-table th {
         background-color: #1e40af !important;
         -webkit-print-color-adjust: exact !important;
@@ -788,12 +734,8 @@
                   <label class="field-label">Rincian Barang / Jasa</label>
                   <span class="text-xs text-[--muted]">Isi nominal per item</span>
                 </div>
-                
                 <div id="itemsContainer" class="space-y-2"></div>
-
-                <button type="button" onclick="addFormItem()" class="btn-add-item mt-3">
-                  + Tambah Item Baru
-                </button>
+                <button type="button" onclick="addFormItem()" class="btn-add-item mt-3">+ Tambah Item Baru</button>
               </div>
 
               <div class="grid md:grid-cols-2 gap-4">
@@ -827,16 +769,14 @@
                   </svg>
                   <span>Kirim ke Spreadsheet</span>
                 </button>
-                <button type="button" id="previewBtn" class="btn-print-all">
+                <button type="button" id="previewBtn" class="btn-print">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                   </svg>
-                  <span>Preview & Download</span>
+                  <span>Preview & Print</span>
                 </button>
-                <button type="reset" class="text-[--muted] hover:text-[--fg] transition-colors text-sm">
-                  Reset
-                </button>
+                <button type="reset" class="text-[--muted] hover:text-[--fg] transition-colors text-sm">Reset</button>
               </div>
             </form>
           </div>
@@ -846,9 +786,7 @@
           <div class="card animate-in delay-4">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold">Riwayat</h2>
-              <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">
-                Hapus
-              </button>
+              <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus</button>
             </div>
 
             <div class="flex gap-1 mb-4 p-1 bg-[--bg-secondary] rounded-lg">
@@ -882,13 +820,11 @@
           </svg>
         </button>
       </div>
-
       <div class="space-y-5">
         <div>
           <label class="field-label">URL Webhook (Google Apps Script)</label>
           <input type="url" id="webhookUrl" class="input-field mono text-sm" placeholder="https://script.google.com/macros/s/xxx/exec">
         </div>
-
         <div class="bg-[--bg-secondary] rounded-xl p-4">
           <h3 class="font-medium text-sm mb-3 flex items-center gap-2">
             <svg class="w-4 h-4 text-[--accent]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -905,7 +841,6 @@
             <li>Copy URL dan paste di atas, lalu Simpan</li>
           </ol>
         </div>
-
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="field-label mb-0">Kode Script</label>
@@ -928,7 +863,6 @@
     }
     
     var lastRow = sheet.getLastRow();
-    
     var itemDetails = "";
     if(data.items && data.items.length > 0) {
        itemDetails = data.items.map(i => i.ket + " (" + i.qty + ") - " + i.nominal).join("; ");
@@ -955,7 +889,6 @@
 }</pre>
           </div>
         </div>
-
         <button id="saveConfig" class="btn-submit w-full justify-center">Simpan Konfigurasi</button>
       </div>
     </div>
@@ -967,7 +900,13 @@
       <div class="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 no-print page-toolbar">
         <h2 class="text-lg font-semibold text-slate-800">Preview Dokumen</h2>
         <div class="flex items-center gap-2">
-           <button id="closeDocModal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup">
+          <button class="btn-print-doc" onclick="window.print()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            </svg>
+            Print Dokumen
+          </button>
+          <button id="closeDocModal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -976,30 +915,14 @@
       </div>
 
       <div class="documents-container">
-        <div class="page-toolbar no-print">
-          <button class="btn-action-page btn-print-all" onclick="window.print()">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-            </svg>
-            Print Dokumen
-          </button>
-          <button class="btn-action-page btn-pdf-all" onclick="downloadCombinedPDF()">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            Download PDF
-          </button>
-        </div>
-
         <div id="pdf-wrapper" class="pdf-wrapper">
           
-          <!-- HALAMAN 1: Form Pengajuan HO -->
+          <!-- HALAMAN 1 -->
           <div class="document-page">
             <div class="doc-header-center">
               <div class="doc-company-name">PT. NUSANTARA MINERAL SUKSES ABADI</div>
               <div class="doc-form-title">FORMULIR PENGAJUAN HO</div>
             </div>
-
             <div class="doc-info-grid">
               <div class="doc-info-item">
                 <span class="doc-info-label">Lokasi</span>
@@ -1018,7 +941,6 @@
                 <span class="doc-info-value" id="p1_jenis"></span>
               </div>
             </div>
-
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1036,14 +958,12 @@
                 </tr>
               </tfoot>
             </table>
-
             <div id="p1_notes_manual_wrapper" style="display:none;">
               <div class="doc-notes" style="margin-top: 20px;">
                 <div class="doc-notes-title">CATATAN:</div>
                 <div class="doc-notes-manual" id="p1_notes_manual"></div>
               </div>
             </div>
-
             <div class="doc-signatures-p1">
               <div class="doc-sig-box">
                 <div class="doc-sig-label">Dibuat Oleh</div>
@@ -1056,14 +976,13 @@
                 <div class="doc-sig-name" id="p1_disetujui"></div>
               </div>
             </div>
-
             <div class="doc-notes">
               <div class="doc-notes-title">NOTE:</div>
               <div class="doc-notes-content">Dokumen ini adalah bukti pengajuan resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div>
             </div>
           </div>
 
-          <!-- HALAMAN 2: Bukti Pengeluaran Kas/Bank -->
+          <!-- HALAMAN 2 -->
           <div class="document-page">
             <div class="doc-header-flex">
               <div class="doc-header-left">
@@ -1071,12 +990,9 @@
               </div>
               <div class="doc-header-right">
                 <div class="doc-form-title-right">BUKTI PENGELUARAN KAS / BANK</div>
-                <div class="doc-tanggal-box">
-                  Tanggal: <span id="p2_tanggal"></span>
-                </div>
+                <div class="doc-tanggal-box">Tanggal: <span id="p2_tanggal"></span></div>
               </div>
             </div>
-
             <div class="doc-payment-info">
               <div class="doc-payment-row">
                 <span class="doc-payment-label">Kode</span>
@@ -1098,7 +1014,6 @@
                 </span>
               </div>
             </div>
-
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1116,14 +1031,12 @@
                 </tr>
               </tfoot>
             </table>
-
             <div id="p2_notes_manual_wrapper" style="display:none;">
               <div class="doc-notes" style="margin-top: 20px;">
                 <div class="doc-notes-title">CATATAN:</div>
                 <div class="doc-notes-manual" id="p2_notes_manual"></div>
               </div>
             </div>
-
             <div class="doc-signatures-2x2">
               <div class="doc-sig-row">
                 <div class="sig-block-page2">
@@ -1139,7 +1052,6 @@
                   <div class="sig-title">Dir. Keuangan</div>
                 </div>
               </div>
-
               <div class="doc-sig-row">
                 <div class="sig-block-page2">
                   <div class="sig-action">Disetujui</div>
@@ -1155,7 +1067,6 @@
                 </div>
               </div>
             </div>
-
             <div class="doc-notes">
               <div class="doc-notes-title">NOTE:</div>
               <div class="doc-notes-content">Dokumen ini adalah bukti pengeluaran kas/bank resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div>
@@ -1207,9 +1118,7 @@
       };
 
       if (state.webhookUrl) elements.webhookInput.value = state.webhookUrl;
-
-      const today = new Date();
-      document.getElementById('tanggal').valueAsDate = today;
+      document.getElementById('tanggal').valueAsDate = new Date();
 
       renderFormItems();
       renderHistory();
@@ -1226,16 +1135,13 @@
         if (e.target.value !== 'Lunas') document.getElementById('tanggal_pembayaran').value = '';
       });
 
-      if (elements.statusInput.value !== 'Lunas') {
-        elements.paymentDateContainer.style.display = 'none';
-      }
+      if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
 
       elements.setupBtn.addEventListener('click', () => elements.setupModal.classList.add('show'));
       elements.closeModal.addEventListener('click', () => elements.setupModal.classList.remove('show'));
       elements.setupModal.addEventListener('click', (e) => {
         if (e.target === elements.setupModal) elements.setupModal.classList.remove('show');
       });
-
       elements.closeDocModal.addEventListener('click', () => elements.documentModal.classList.remove('show'));
 
       elements.saveConfig.addEventListener('click', () => {
@@ -1282,38 +1188,33 @@
       });
     }
 
-    /* ========== ITEM FORM LOGIC ========== */
     function renderFormItems() {
       const container = document.getElementById('itemsContainer');
       container.innerHTML = '';
-      
       state.items.forEach((item, index) => {
         const row = document.createElement('div');
         row.className = 'grid grid-cols-12 gap-2 items-start';
         row.innerHTML = `
           <div class="col-span-5">
-             <label class="field-label text-[10px]">Uraian</label>
-             <input type="text" class="input-field text-sm" placeholder="Nama barang/jasa" 
-                value="${escapeHtml(item.ket)}" oninput="updateItem(${index}, 'ket', this.value)">
+            <label class="field-label text-[10px]">Uraian</label>
+            <input type="text" class="input-field text-sm" placeholder="Nama barang/jasa" value="${escapeHtml(item.ket)}" oninput="updateItem(${index}, 'ket', this.value)">
           </div>
           <div class="col-span-2">
-             <label class="field-label text-[10px]">Qty</label>
-             <input type="text" class="input-field text-sm text-center" placeholder="1" 
-                value="${escapeHtml(item.qty)}" oninput="updateItem(${index}, 'qty', this.value)">
+            <label class="field-label text-[10px]">Qty</label>
+            <input type="text" class="input-field text-sm text-center" placeholder="1" value="${escapeHtml(item.qty)}" oninput="updateItem(${index}, 'qty', this.value)">
           </div>
           <div class="col-span-4">
-             <label class="field-label text-[10px]">Nominal</label>
-             <div class="currency-wrapper">
-                <span class="prefix" style="font-size:12px">Rp</span>
-                <input type="number" class="input-field text-sm mono" placeholder="0" 
-                   value="${item.nominal || ''}" oninput="updateItem(${index}, 'nominal', this.value)">
-             </div>
+            <label class="field-label text-[10px]">Nominal</label>
+            <div class="currency-wrapper">
+              <span class="prefix" style="font-size:12px">Rp</span>
+              <input type="number" class="input-field text-sm mono" placeholder="0" value="${item.nominal || ''}" oninput="updateItem(${index}, 'nominal', this.value)">
+            </div>
           </div>
           <div class="col-span-1 flex justify-end">
-             ${state.items.length > 1 ? `
-             <button type="button" onclick="removeFormItem(${index})" class="btn-remove-item" title="Hapus">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-             </button>` : '<div style="height:38px"></div>'}
+            ${state.items.length > 1 ? `
+            <button type="button" onclick="removeFormItem(${index})" class="btn-remove-item" title="Hapus">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>` : '<div style="height:38px"></div>'}
           </div>
         `;
         container.appendChild(row);
@@ -1345,8 +1246,6 @@
 
     function getFormData() {
       const formData = new FormData(elements.form);
-      const totalNominal = calculateTotal();
-      
       return {
         tanggal: formData.get('tanggal') || '',
         lokasi: formData.get('lokasi') || '',
@@ -1355,7 +1254,7 @@
         no_invoice: formData.get('no_invoice') || '',
         status: formData.get('status') || '',
         items: [...state.items],
-        total_nominal: totalNominal,
+        total_nominal: calculateTotal(),
         tanggal_pembayaran: formData.get('tanggal_pembayaran') || '',
         dibayarkan_kepada: formData.get('dibayarkan_kepada') || '',
         catatan_tambahan: formData.get('catatan_tambahan') || '',
@@ -1379,63 +1278,6 @@
       elements.documentModal.classList.add('show');
     }
 
-    /* ========== PDF DOWNLOAD (CLONE APPROACH - ANTI HALAMAN KOSONG) ========== */
-    window.downloadCombinedPDF = function() {
-      if (!state.lastFormData) return;
-
-      const element = document.getElementById('pdf-wrapper');
-      const filename = `Dokumen_Keuangan_${state.lastFormData.no_invoice || Date.now()}.pdf`;
-
-      /* Clone elemen agar UI asli tidak terganggu */
-      const clone = element.cloneNode(true);
-      
-      /* Override gaya pada clone: 
-         - height:auto supaya konten mengalir natural (tidak terpotong)
-         - min-height:297mm supaya halaman tetap setinggi A4 minimum
-         Ini mencegah html2pdf membuat halaman kosong di antara */
-      const pages = clone.querySelectorAll('.document-page');
-      pages.forEach(page => {
-        page.style.height = 'auto';
-        page.style.minHeight = '297mm';
-        page.style.overflow = 'visible';
-      });
-
-      /* Sembunyikan clone di luar viewport, tetap bisa di-render */
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      clone.style.width = '210mm';
-      clone.style.background = 'white';
-      document.body.appendChild(clone);
-
-      const opt = {
-        margin: 0,
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true,
-          letterRendering: true,
-          /* windowWidth = lebar A4 dalam px @ 96dpi, 
-             memastikan rendering sesuai lebar kertas */
-          windowWidth: 794
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        /* Hormati CSS page-break yang sudah ada di .document-page */
-        pagebreak: { mode: ['css', 'legacy'] }
-      };
-
-      showToast('Sedang membuat PDF...', 'success');
-      html2pdf().set(opt).from(clone).save().then(() => {
-        showToast('PDF berhasil didownload', 'success');
-        document.body.removeChild(clone);
-      }).catch((err) => {
-        console.error(err);
-        showToast('Gagal generate PDF', 'error');
-        document.body.removeChild(clone);
-      });
-    };
-
     function populateDocuments(data) {
       const formattedTotal = 'Rp ' + formatNumber(data.total_nominal);
 
@@ -1452,7 +1294,6 @@
       document.getElementById('p2_dibayarkan').textContent = data.dibayarkan_kepada || '-';
       document.getElementById('p2_jenis').textContent = data.jenis_pengajuan || '-';
       document.getElementById('p2_total').textContent = formattedTotal;
-      
       document.getElementById('p2_name_keuangan').textContent = data.keuangan;
       document.getElementById('p2_name_dirkeuangan').textContent = data.dir_keuangan;
       document.getElementById('p2_name_direktur').textContent = data.direktur_utama;
@@ -1464,7 +1305,7 @@
       tbody2.innerHTML = '';
 
       data.items.forEach((item, idx) => {
-        const rowHTML = `
+        const row = `
           <tr>
             <td style="text-align: center;">${idx + 1}</td>
             <td>${escapeHtml(item.ket)}</td>
@@ -1472,23 +1313,20 @@
             <td style="text-align: right;">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td>
           </tr>
         `;
-        tbody1.innerHTML += rowHTML;
-        tbody2.innerHTML += rowHTML;
+        tbody1.innerHTML += row;
+        tbody2.innerHTML += row;
       });
 
-      const p1NotesWrapper = document.getElementById('p1_notes_manual_wrapper');
-      const p1NotesContent = document.getElementById('p1_notes_manual');
-      const p2NotesWrapper = document.getElementById('p2_notes_manual_wrapper');
-      const p2NotesContent = document.getElementById('p2_notes_manual');
+      const p1W = document.getElementById('p1_notes_manual_wrapper');
+      const p1C = document.getElementById('p1_notes_manual');
+      const p2W = document.getElementById('p2_notes_manual_wrapper');
+      const p2C = document.getElementById('p2_notes_manual');
 
       if (data.catatan_tambahan && data.catatan_tambahan.trim()) {
-        p1NotesWrapper.style.display = 'block';
-        p1NotesContent.textContent = data.catatan_tambahan.trim();
-        p2NotesWrapper.style.display = 'block';
-        p2NotesContent.textContent = data.catatan_tambahan.trim();
+        p1W.style.display = 'block'; p1C.textContent = data.catatan_tambahan.trim();
+        p2W.style.display = 'block'; p2C.textContent = data.catatan_tambahan.trim();
       } else {
-        p1NotesWrapper.style.display = 'none';
-        p2NotesWrapper.style.display = 'none';
+        p1W.style.display = 'none'; p2W.style.display = 'none';
       }
     }
 
@@ -1502,13 +1340,7 @@
       }
 
       const data = getFormData();
-
-      const historyItem = {
-        id: Date.now(),
-        ...data,
-        status_submit: 'pending',
-        timestamp: new Date().toISOString()
-      };
+      const historyItem = { id: Date.now(), ...data, status_submit: 'pending', timestamp: new Date().toISOString() };
 
       state.history.unshift(historyItem);
       state.lastFormData = data;
@@ -1528,12 +1360,7 @@
         });
 
         const idx = state.history.findIndex(h => h.id === historyItem.id);
-        if (idx !== -1) {
-          state.history[idx].status_submit = 'success';
-          saveHistory();
-          renderHistory();
-          updateStats();
-        }
+        if (idx !== -1) { state.history[idx].status_submit = 'success'; saveHistory(); renderHistory(); updateStats(); }
 
         showToast('Data berhasil dikirim', 'success');
         populateDocuments(data);
@@ -1541,12 +1368,7 @@
 
       } catch (error) {
         const idx = state.history.findIndex(h => h.id === historyItem.id);
-        if (idx !== -1) {
-          state.history[idx].status_submit = 'error';
-          saveHistory();
-          renderHistory();
-          updateStats();
-        }
+        if (idx !== -1) { state.history[idx].status_submit = 'error'; saveHistory(); renderHistory(); updateStats(); }
         showToast('Gagal: ' + error.message, 'error');
       }
 
@@ -1560,10 +1382,7 @@
     }
 
     function renderHistory() {
-      let filtered = state.history;
-      if (state.currentTab !== 'all') {
-        filtered = state.history.filter(h => h.status_submit === state.currentTab);
-      }
+      let filtered = state.currentTab === 'all' ? state.history : state.history.filter(h => h.status_submit === state.currentTab);
 
       if (filtered.length === 0) {
         elements.historyList.innerHTML = `
@@ -1572,8 +1391,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
             <p class="text-sm">Belum ada data</p>
-          </div>
-        `;
+          </div>`;
         return;
       }
 
@@ -1593,8 +1411,7 @@
             </div>
             <div class="text-xs text-[--muted] text-right whitespace-nowrap">${formatTime(item.timestamp)}</div>
           </div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
     window.loadHistoryItem = function(id) {
@@ -1608,34 +1425,26 @@
     };
 
     function updateStats() {
-      const total = state.history.length;
-      const success = state.history.filter(h => h.status_submit === 'success').length;
-      const pending = state.history.filter(h => h.status_submit === 'pending').length;
-      const failed = state.history.filter(h => h.status_submit === 'error').length;
-
-      animateCounter(elements.totalData, total);
-      animateCounter(elements.sentData, success);
-      animateCounter(elements.pendingData, pending);
-      animateCounter(elements.failedData, failed);
+      animateCounter(elements.totalData, state.history.length);
+      animateCounter(elements.sentData, state.history.filter(h => h.status_submit === 'success').length);
+      animateCounter(elements.pendingData, state.history.filter(h => h.status_submit === 'pending').length);
+      animateCounter(elements.failedData, state.history.filter(h => h.status_submit === 'error').length);
     }
 
     function animateCounter(el, target) {
       const current = parseInt(el.textContent) || 0;
       if (current === target) return;
-      const duration = 400;
       const start = performance.now();
+      const duration = 400;
       function update(t) {
-        const progress = Math.min((t - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        el.textContent = Math.round(current + (target - current) * eased);
-        if (progress < 1) requestAnimationFrame(update);
+        const p = Math.min((t - start) / duration, 1);
+        el.textContent = Math.round(current + (target - current) * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(update);
       }
       requestAnimationFrame(update);
     }
 
-    function saveHistory() {
-      localStorage.setItem('submissionHistory', JSON.stringify(state.history));
-    }
+    function saveHistory() { localStorage.setItem('submissionHistory', JSON.stringify(state.history)); }
 
     function showToast(message, type) {
       elements.toast.textContent = message;
@@ -1645,25 +1454,16 @@
 
     function formatDate(dateStr) {
       if (!dateStr) return '-';
-      const date = new Date(dateStr + 'T00:00:00');
-      return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      return new Date(dateStr + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
     function formatTime(iso) {
-      return new Date(iso).toLocaleString('id-ID', {
-        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-      });
+      return new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     }
 
-    function formatNumber(num) {
-      return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    }
+    function formatNumber(num) { return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text || '';
-      return div.innerHTML;
-    }
+    function escapeHtml(text) { const d = document.createElement('div'); d.textContent = text || ''; return d.innerHTML; }
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
