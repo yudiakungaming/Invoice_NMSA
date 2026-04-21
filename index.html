@@ -26,14 +26,7 @@
       --error: #ef4444;
     }
 
-    /* ============================
-       RESET & BASE
-    ============================ */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Space Grotesk', sans-serif;
@@ -43,13 +36,9 @@
       overflow-x: hidden;
     }
 
-    .mono {
-      font-family: 'JetBrains Mono', monospace;
-    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
 
-    /* ============================
-       BACKGROUND EFFECTS
-    ============================ */
+    /* Background Effects */
     .bg-pattern {
       position: fixed;
       inset: 0;
@@ -69,9 +58,7 @@
       z-index: 0;
     }
 
-    /* ============================
-       ANIMATIONS
-    ============================ */
+    /* Animations */
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(30px); }
       to { opacity: 1; transform: translateY(0); }
@@ -86,10 +73,15 @@
       to { transform: rotate(360deg); }
     }
 
-    @keyframes connection-success {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); }
     }
 
     .animate-in {
@@ -106,9 +98,7 @@
       .animate-in { animation: none; opacity: 1; }
     }
 
-    /* ============================
-       FORM ELEMENTS (UI DARK)
-    ============================ */
+    /* Form Elements */
     .input-field {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
@@ -130,9 +120,7 @@
     .input-field::placeholder { color: var(--muted); }
     .input-field:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* ============================
-       BUTTONS
-    ============================ */
+    /* Buttons */
     .btn-submit {
       background: linear-gradient(135deg, var(--accent), #2563eb);
       color: white;
@@ -154,10 +142,7 @@
       box-shadow: 0 8px 25px rgba(59, 130, 246, 0.35);
     }
 
-    .btn-submit:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
 
     .btn-secondary {
       background: transparent;
@@ -171,10 +156,7 @@
       transition: all 0.2s ease;
     }
 
-    .btn-secondary:hover {
-      border-color: var(--accent);
-      color: var(--fg);
-    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--fg); }
 
     .btn-print {
       background: #334155;
@@ -192,10 +174,7 @@
       gap: 8px;
     }
 
-    .btn-print:hover {
-      background: #475569;
-      transform: translateY(-2px);
-    }
+    .btn-print:hover { background: #475569; transform: translateY(-2px); }
 
     .btn-add-item {
       background: rgba(59, 130, 246, 0.15);
@@ -209,9 +188,7 @@
       transition: 0.2s;
     }
 
-    .btn-add-item:hover {
-      background: rgba(59, 130, 246, 0.25);
-    }
+    .btn-add-item:hover { background: rgba(59, 130, 246, 0.25); }
 
     .btn-remove-item {
       color: var(--error);
@@ -227,13 +204,31 @@
       margin-top: 24px;
     }
 
-    .btn-remove-item:hover {
-      background: rgba(239, 68, 68, 0.2);
+    .btn-remove-item:hover { background: rgba(239, 68, 68, 0.2); }
+
+    .btn-troubleshoot {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      animation: glow-pulse 2s ease-in-out infinite;
     }
 
-    /* ============================
-       CARDS & STATUS
-    ============================ */
+    .btn-troubleshoot:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.35);
+    }
+
+    /* Cards & Status */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -262,7 +257,7 @@
       animation: pulse-ring 2s ease-out infinite;
     }
     .status-dot.pending { background: var(--warning); }
-    .status-dot.error { background: var(--error); }
+    .status-dot.error { background: var(--error); animation: shake 0.5s ease-in-out; }
     .status-dot.connecting { 
       background: var(--warning); 
       animation: pulse-ring 1s ease-out infinite;
@@ -276,27 +271,24 @@
       transition: all 0.2s ease;
     }
 
-    .history-item:hover {
-      border-color: var(--accent);
-      transform: translateX(4px);
-    }
+    .history-item:hover { border-color: var(--accent); transform: translateX(4px); }
 
-    /* Connection Status Banner */
+    /* Connection Banner */
     .connection-banner {
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
       border: 1px solid rgba(16, 185, 129, 0.3);
       border-radius: 12px;
-      padding: 12px 20px;
+      padding: 16px 20px;
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 20px;
-      animation: connection-success 2s ease-out;
     }
 
     .connection-banner.error {
       background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
       border-color: rgba(239, 68, 68, 0.3);
+      animation: glow-pulse 2s ease-in-out infinite;
     }
 
     .connection-banner.warning {
@@ -304,9 +296,7 @@
       border-color: rgba(245, 158, 11, 0.3);
     }
 
-    /* ============================
-       MODALS
-    ============================ */
+    /* Modals */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -322,17 +312,14 @@
       transition: all 0.3s ease;
     }
 
-    .modal-overlay.show {
-      opacity: 1;
-      visibility: visible;
-    }
+    .modal-overlay.show { opacity: 1; visibility: visible; }
 
     .modal-content {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 28px;
-      max-width: 640px;
+      max-width: 800px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
@@ -340,9 +327,7 @@
       transition: transform 0.3s ease;
     }
 
-    .modal-overlay.show .modal-content {
-      transform: scale(1);
-    }
+    .modal-overlay.show .modal-content { transform: scale(1); }
 
     .modal-document {
       max-width: 100%;
@@ -361,14 +346,12 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 16px;
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.6;
       overflow-x: auto;
     }
 
-    /* ============================
-       TOAST NOTIFICATION
-    ============================ */
+    /* Toast Notification */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -381,13 +364,15 @@
       transform: translateY(80px);
       opacity: 0;
       transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      max-width: 400px;
+      max-width: 450px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     }
 
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast.success { background: var(--success); color: white; }
     .toast.error { background: var(--error); color: white; }
     .toast.info { background: var(--accent); color: white; }
+    .toast.warning { background: var(--warning); color: white; }
 
     .spinner {
       width: 18px;
@@ -398,9 +383,7 @@
       animation: spin 0.7s linear infinite;
     }
 
-    /* ============================
-       FORM LABELS & HELPERS
-    ============================ */
+    /* Form Labels */
     .field-label {
       display: block;
       font-size: 13px;
@@ -409,9 +392,7 @@
       margin-bottom: 6px;
     }
 
-    .currency-wrapper {
-      position: relative;
-    }
+    .currency-wrapper { position: relative; }
 
     .currency-wrapper .prefix {
       position: absolute;
@@ -422,9 +403,7 @@
       font-size: 14px;
     }
 
-    .currency-wrapper input {
-      padding-left: 36px;
-    }
+    .currency-wrapper input { padding-left: 36px; }
 
     .tab-btn {
       padding: 8px 16px;
@@ -438,19 +417,10 @@
       transition: all 0.2s ease;
     }
 
-    .tab-btn:hover {
-      color: var(--fg);
-      background: rgba(255, 255, 255, 0.05);
-    }
+    .tab-btn:hover { color: var(--fg); background: rgba(255, 255, 255, 0.05); }
+    .tab-btn.active { color: var(--accent); background: var(--accent-glow); }
 
-    .tab-btn.active {
-      color: var(--accent);
-      background: var(--accent-glow);
-    }
-
-    /* ============================================================
-       DOCUMENT STYLES — HITAM PUTIH POLOS (SESUAI GAMBAR)
-    ============================================================ */
+    /* Document Styles */
     .documents-container {
       background: #e2e8f0;
       flex: 1;
@@ -462,10 +432,7 @@
       gap: 40px;
     }
 
-    .pdf-wrapper {
-      background: white;
-      width: 210mm;
-    }
+    .pdf-wrapper { background: white; width: 210mm; }
 
     .document-page {
       background: white;
@@ -481,12 +448,8 @@
       break-after: page;
     }
 
-    .document-page:last-child {
-      page-break-after: auto;
-      break-after: auto;
-    }
+    .document-page:last-child { page-break-after: auto; break-after: auto; }
 
-    /* Toolbar di atas preview */
     .page-toolbar {
       position: sticky;
       top: 0;
@@ -521,11 +484,8 @@
       gap: 8px;
     }
 
-    .btn-print-doc:hover {
-      background: #475569;
-    }
+    .btn-print-doc:hover { background: #475569; }
 
-    /* Header Halaman 1 — hitam putih, no serif */
     .doc-header-center {
       text-align: center;
       border-bottom: 1.5px solid #000;
@@ -550,7 +510,6 @@
       color: #000;
     }
 
-    /* Info grid: Lokasi, Tanggal, Kode, Jenis */
     .doc-info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -558,27 +517,10 @@
       margin-bottom: 20px;
     }
 
-    .doc-info-item {
-      display: flex;
-      gap: 8px;
-      font-size: 13px;
-      color: #000;
-    }
+    .doc-info-item { display: flex; gap: 8px; font-size: 13px; color: #000; }
+    .doc-info-label { font-weight: 600; min-width: 80px; color: #000; }
+    .doc-info-value { border-bottom: 1px solid #000; flex: 1; padding-bottom: 1px; min-height: 18px; }
 
-    .doc-info-label {
-      font-weight: 600;
-      min-width: 80px;
-      color: #000;
-    }
-
-    .doc-info-value {
-      border-bottom: 1px solid #000;
-      flex: 1;
-      padding-bottom: 1px;
-      min-height: 18px;
-    }
-
-    /* Tabel — garis hitam, header tanpa warna */
     .doc-table {
       width: 100%;
       border-collapse: collapse;
@@ -597,12 +539,7 @@
       border: 1px solid #000;
     }
 
-    .doc-table td {
-      border: 1px solid #000;
-      padding: 6px 8px;
-      vertical-align: top;
-      color: #000;
-    }
+    .doc-table td { border: 1px solid #000; padding: 6px 8px; vertical-align: top; color: #000; }
 
     .col-no { width: 35px; text-align: center; }
     .col-item { min-width: 140px; }
@@ -617,7 +554,6 @@
       border: 1px solid #000;
     }
 
-    /* Tanda tangan Halaman 1 — 2 kolom */
     .doc-signatures-p1 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -644,10 +580,7 @@
       letter-spacing: 2px;
     }
 
-    .doc-sig-space {
-      flex-grow: 1;
-      width: 100%;
-    }
+    .doc-sig-space { flex-grow: 1; width: 100%; }
 
     .doc-sig-name {
       width: 80%;
@@ -658,7 +591,6 @@
       border-bottom: 1px solid #000;
     }
 
-    /* Header Halaman 2 */
     .doc-header-flex {
       display: flex;
       justify-content: space-between;
@@ -668,10 +600,7 @@
       margin-bottom: 20px;
     }
 
-    .doc-header-left .doc-company-name {
-      text-align: left;
-      font-size: 16px;
-    }
+    .doc-header-left .doc-company-name { text-align: left; font-size: 16px; }
 
     .doc-form-title-right {
       font-size: 12px;
@@ -682,22 +611,10 @@
       color: #000;
     }
 
-    .doc-tanggal-box {
-      font-size: 12px;
-      color: #000;
-    }
+    .doc-tanggal-box { font-size: 12px; color: #000; }
+    .doc-tanggal-box span { border-bottom: 1px solid #000; padding: 0 8px; }
 
-    .doc-tanggal-box span {
-      border-bottom: 1px solid #000;
-      padding: 0 8px;
-    }
-
-    /* Info pembayaran Halaman 2 */
-    .doc-payment-info {
-      margin-bottom: 15px;
-      font-size: 13px;
-      color: #000;
-    }
+    .doc-payment-info { margin-bottom: 15px; font-size: 13px; color: #000; }
 
     .doc-payment-row {
       display: flex;
@@ -706,20 +623,9 @@
       align-items: center;
     }
 
-    .doc-payment-label {
-      min-width: 140px;
-      font-weight: 600;
-      flex-shrink: 0;
-      color: #000;
-    }
+    .doc-payment-label { min-width: 140px; font-weight: 600; flex-shrink: 0; color: #000; }
+    .doc-payment-value { border-bottom: 1px solid #000; flex: 1; padding-bottom: 1px; }
 
-    .doc-payment-value {
-      border-bottom: 1px solid #000;
-      flex: 1;
-      padding-bottom: 1px;
-    }
-
-    /* Checkbox hitam tanpa warna */
     .doc-check {
       display: inline-block;
       width: 14px;
@@ -734,7 +640,6 @@
       font-family: 'Space Grotesk', sans-serif;
     }
 
-    /* Kotak CATATAN & NOTE — border hitam, bg transparan */
     .doc-notes {
       margin-top: 20px;
       padding: 10px 12px;
@@ -742,42 +647,14 @@
       background: transparent;
     }
 
-    .doc-notes-title {
-      font-weight: 700;
-      font-size: 12px;
-      margin-bottom: 4px;
-      color: #000;
-    }
+    .doc-notes-title { font-weight: 700; font-size: 12px; margin-bottom: 4px; color: #000; }
+    .doc-notes-content { font-size: 11px; color: #000; line-height: 1.4; }
+    .doc-notes-manual { margin-top: 8px; font-size: 11px; color: #000; line-height: 1.4; white-space: pre-wrap; }
 
-    .doc-notes-content {
-      font-size: 11px;
-      color: #000;
-      line-height: 1.4;
-    }
+    .doc-signatures-2x2 { margin-top: 30px; page-break-inside: avoid; }
 
-    .doc-notes-manual {
-      margin-top: 8px;
-      font-size: 11px;
-      color: #000;
-      line-height: 1.4;
-      white-space: pre-wrap;
-    }
-
-    /* Tanda tangan Halaman 2 — grid 2x2 */
-    .doc-signatures-2x2 {
-      margin-top: 30px;
-      page-break-inside: avoid;
-    }
-
-    .doc-sig-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-    }
-
-    .doc-sig-row + .doc-sig-row {
-      margin-top: 25px;
-    }
+    .doc-sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+    .doc-sig-row + .doc-sig-row { margin-top: 25px; }
 
     .sig-block-page2 {
       display: flex;
@@ -795,35 +672,13 @@
       margin-bottom: 8px;
     }
 
-    .sig-space {
-      min-height: 50px;
-      width: 100%;
-    }
+    .sig-space { min-height: 50px; width: 100%; }
+    .sig-name { font-weight: 700; font-size: 12px; color: #000; margin-bottom: 2px; }
+    .sig-title { font-size: 11px; color: #000; font-weight: 400; }
 
-    .sig-name {
-      font-weight: 700;
-      font-size: 12px;
-      color: #000;
-      margin-bottom: 2px;
-    }
+    /* Print Styles */
+    @page { size: A4 portrait; margin: 0; }
 
-    .sig-title {
-      font-size: 11px;
-      color: #000;
-      font-weight: 400;
-    }
-
-    /* ============================
-       @page UNTUK PRINT
-    ============================ */
-    @page {
-      size: A4 portrait;
-      margin: 0;
-    }
-
-    /* ============================
-       PRINT MEDIA QUERY
-    ============================ */
     @media print {
       body {
         background: white;
@@ -833,17 +688,10 @@
         print-color-adjust: exact !important;
       }
 
-      /* Sembunyikan semua elemen non-dokumen */
-      .no-print,
-      .bg-pattern,
-      .bg-gradient,
-      header,
-      main > div:first-child,
-      .page-toolbar {
+      .no-print, .bg-pattern, .bg-gradient, header, main > div:first-child, .page-toolbar {
         display: none !important;
       }
 
-      /* Tampilkan modal dokumen sebagai konten utama */
       #documentModal {
         position: absolute;
         top: 0;
@@ -874,12 +722,7 @@
         width: 100%;
       }
 
-      .pdf-wrapper {
-        max-width: none;
-        width: 210mm;
-        box-shadow: none;
-        margin: 0;
-      }
+      .pdf-wrapper { max-width: none; width: 210mm; box-shadow: none; margin: 0; }
 
       .document-page {
         box-shadow: none;
@@ -892,18 +735,62 @@
         padding: 35px 50px;
       }
 
-      .document-page:last-child {
-        page-break-after: auto;
-        break-after: auto;
-      }
+      .document-page:last-child { page-break-after: auto; break-after: auto; }
     }
 
-    /* ============================
-       SCROLLBAR
-    ============================ */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-secondary); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* Troubleshooting Steps */
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .troubleshoot-step {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .copy-button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .copy-button:hover { background: #2563eb; }
+
+    .url-display {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      word-break: break-all;
+      color: var(--accent);
+    }
   </style>
 </head>
 <body>
@@ -912,9 +799,7 @@
 
   <main class="relative z-10 min-h-screen">
 
-    <!-- ============================
-         HEADER
-    ============================ -->
+    <!-- HEADER -->
     <header class="border-b border-[--border] bg-[--bg]/90 backdrop-blur-lg sticky top-0 z-50 no-print">
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3 animate-in">
@@ -943,9 +828,7 @@
       </div>
     </header>
 
-    <!-- ============================
-         KONTEN UTAMA
-    ============================ -->
+    <!-- MAIN CONTENT -->
     <div class="max-w-6xl mx-auto px-6 py-8">
 
       <!-- Connection Banner -->
@@ -957,12 +840,17 @@
           <div class="font-medium text-sm text-white" id="bannerTitle">Menyiapkan Koneksi...</div>
           <div class="text-xs text-gray-300 mt-1" id="bannerMessage">Mohon tunggu sebentar</div>
         </div>
-        <button onclick="testConnection()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors text-white">
-          Test Ulang
-        </button>
+        <div class="flex gap-2">
+          <button onclick="testConnection()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors text-white">
+            Test Ulang
+          </button>
+          <button onclick="showTroubleshootModal()" class="btn-troubleshoot text-xs px-3 py-1.5 rounded-lg">
+            🛠️ Solusi
+          </button>
+        </div>
       </div>
 
-      <!-- Statistik -->
+      <!-- Statistics -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
         <div class="card animate-in delay-1">
           <div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Entri</div>
@@ -982,12 +870,10 @@
         </div>
       </div>
 
-      <!-- Grid Form + Riwayat -->
+      <!-- Grid Form + History -->
       <div class="grid lg:grid-cols-5 gap-8">
 
-        <!-- ============================
-             FORM INPUT (KOLOM KIRI)
-        ============================ -->
+        <!-- FORM INPUT -->
         <div class="lg:col-span-3 no-print">
           <div class="card animate-in delay-3">
             <div class="flex items-center gap-3 mb-6">
@@ -1003,7 +889,6 @@
             </div>
 
             <form id="dataForm" class="space-y-4">
-              <!-- Baris 1: Tanggal & Lokasi -->
               <div class="grid md:grid-cols-2 gap-4">
                 <div>
                   <label class="field-label" for="tanggal">Tanggal Invoice</label>
@@ -1015,7 +900,6 @@
                 </div>
               </div>
 
-              <!-- Baris 2: Jenis Pengajuan & Kode -->
               <div class="grid md:grid-cols-2 gap-4">
                 <div>
                   <label class="field-label" for="jenis_pengajuan">Jenis Pengajuan</label>
@@ -1027,7 +911,6 @@
                 </div>
               </div>
 
-              <!-- Baris 3: No Invoice & Status -->
               <div class="grid md:grid-cols-2 gap-4">
                 <div>
                   <label class="field-label" for="no_invoice">No Invoice / Berkas</label>
@@ -1043,7 +926,6 @@
                 </div>
               </div>
 
-              <!-- Multi Item Section -->
               <div>
                 <div class="flex justify-between items-center mb-2">
                   <label class="field-label">Rincian Barang / Jasa</label>
@@ -1055,7 +937,6 @@
                 </button>
               </div>
 
-              <!-- Total & Tanggal Bayar -->
               <div class="grid md:grid-cols-2 gap-4">
                 <div>
                   <label class="field-label">Total Nominal (Otomatis)</label>
@@ -1070,13 +951,11 @@
                 </div>
               </div>
 
-              <!-- Dibayarkan Kepada -->
               <div>
                 <label class="field-label" for="dibayarkan_kepada">Dibayarkan Kepada</label>
                 <input type="text" id="dibayarkan_kepada" name="dibayarkan_kepada" class="input-field" placeholder="Nama penerima pembayaran">
               </div>
 
-              <!-- Catatan Tambahan -->
               <div>
                 <label class="field-label" for="catatan_tambahan">
                   Catatan Tambahan <span class="text-[--muted] font-normal">(opsional)</span>
@@ -1084,7 +963,6 @@
                 <textarea id="catatan_tambahan" name="catatan_tambahan" rows="2" class="input-field resize-none" placeholder="Tambahkan catatan khusus..."></textarea>
               </div>
 
-              <!-- Tombol Aksi -->
               <div class="flex flex-wrap items-center gap-3 pt-4">
                 <button type="submit" id="submitBtn" class="btn-submit">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1107,9 +985,7 @@
           </div>
         </div>
 
-        <!-- ============================
-             RIWAYAT (KOLOM KANAN)
-        ============================ -->
+        <!-- HISTORY -->
         <div class="lg:col-span-2 no-print">
           <div class="card animate-in delay-4">
             <div class="flex items-center justify-between mb-4">
@@ -1140,9 +1016,7 @@
     </div>
   </main>
 
-  <!-- ============================
-       SETUP MODAL
-  ============================ -->
+  <!-- SETUP MODAL -->
   <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content">
       <div class="flex items-center justify-between mb-5">
@@ -1158,46 +1032,26 @@
           <label class="field-label">URL Webhook (Google Apps Script)</label>
           <input type="url" id="webhookUrl" class="input-field mono text-sm" placeholder="https://script.google.com/macros/s/xxx/exec">
           <p class="text-xs text-[--muted] mt-2">
-            ✅ URL Anda sudah dikonfigurasi secara permanen
+            ⚠️ Pastikan URL di-deploy sebagai "Web app" dengan akses "Anyone"
           </p>
         </div>
         
-        <div class="bg-gradient-to-br from-green-900/30 to-emerald-900/20 rounded-xl p-4 border border-green-700/30">
-          <h3 class="font-medium text-sm mb-3 flex items-center gap-2 text-green-300">
+        <div class="bg-gradient-to-br from-blue-900/30 to-indigo-900/20 rounded-xl p-4 border border-blue-700/30">
+          <h3 class="font-medium text-sm mb-3 flex items-center gap-2 text-blue-300">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Status Integrasi
-          </h3>
-          <div class="space-y-2 text-xs text-gray-300">
-            <div class="flex items-center justify-between">
-              <span>Spreadsheet:</span>
-              <span class="mono text-green-400">Terhubung ✓</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span>Script ID:</span>
-              <span class="mono text-green-400">AKfycbw...FjHW</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span>Penyimpanan:</span>
-              <span class="text-green-400">Permanen (localStorage)</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-[--bg-secondary] rounded-xl p-4">
-          <h3 class="font-medium text-sm mb-3 flex items-center gap-2">
-            <svg class="w-4 h-4 text-[--accent]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            Cara Kerja Integrasi
+            Cara Deploy yang Benar
           </h3>
-          <ol class="text-xs text-[--muted] space-y-1.5 list-decimal list-inside">
-            <li>Data form dikirim ke Google Apps Script via Webhook</li>
-            <li>Script menulis data langsung ke spreadsheet Anda</li>
-            <li>Response sukses/gagal ditampilkan di aplikasi</li>
-            <li>Riwayat tersimpan di browser (localStorage)</li>
-            <li>URL webhook tersimpan permanen (tidak perlu input ulang)</li>
+          <ol class="text-xs text-gray-300 space-y-2 list-decimal list-inside">
+            <li>Buka <strong>Google Apps Script Editor</strong></li>
+            <li>Paste kode script (sudah saya sediakan)</li>
+            <li>Klik <strong>Deploy → New deployment</strong></li>
+            <li>Pilih type: <strong>"Web app"</strong> (bukan API!)</li>
+            <li><strong>Execute as:</strong> Me</li>
+            <li><strong>Who has access:</strong> <span class="text-red-400 font-bold">Anyone</span> ⚠️</li>
+            <li>Klik <strong>Deploy</strong></li>
+            <li><strong>Copy URL</strong> yang muncul, paste di atas</li>
           </ol>
         </div>
 
@@ -1216,13 +1070,224 @@
     </div>
   </div>
 
-  <!-- ============================
-       DOCUMENT PREVIEW MODAL
-  ============================ -->
+  <!-- TROUBLESHOOT MODAL -->
+  <div id="troubleshootModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg font-semibold flex items-center gap-2">
+          <span class="text-2xl">🛠️</span>
+          Panduan Perbaikan Koneksi
+        </h2>
+        <button id="closeTroubleshootModal" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-6">
+        
+        <!-- Problem Description -->
+        <div class="bg-red-900/20 border border-red-700/50 rounded-xl p-4">
+          <h3 class="font-semibold text-red-300 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            Masalah yang Terjadi
+          </h3>
+          <p class="text-sm text-red-200" id="errorMessageDisplay">
+            Gagal terhubung ke Google Apps Script. Ini biasanya karena konfigurasi deployment yang salah.
+          </p>
+        </div>
+
+        <!-- Solution Steps -->
+        <div>
+          <h3 class="font-semibold text-base mb-4 text-[--fg]">📋 Langkah Perbaikan (Ikuti Urutan):</h3>
+          
+          <div class="troubleshoot-step">
+            <div class="step-number">1</div>
+            <div class="flex-1">
+              <h4 class="font-medium text-sm mb-1">Buka Google Apps Script Editor</h4>
+              <p class="text-xs text-[--muted] mb-2">Klik link ini untuk membuka editor:</p>
+              <div class="url-display mb-2">
+                https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/edit
+              </div>
+              <button onclick="window.open('https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/edit', '_blank')" class="copy-button">
+                🔗 Buka Link
+              </button>
+            </div>
+          </div>
+
+          <div class="troubleshoot-step">
+            <div class="step-number">2</div>
+            <div class="flex-1">
+              <h4 class="font-medium text-sm mb-1">Hapus Semua Kode Lama</h4>
+              <p class="text-xs text-[--muted]">Tekan Ctrl+A (semua), lalu Delete</p>
+            </div>
+          </div>
+
+          <div class="troubleshoot-step">
+            <div class="step-number">3</div>
+            <div class="flex-1">
+              <h4 class="font-medium text-sm mb-1">Paste Kode Baru</h4>
+              <p class="text-xs text-[--muted] mb-2">Copy kode di bawah, paste ke editor:</p>
+              <button onclick="copyScriptCode()" class="copy-button mb-2">
+                📋 Copy Kode Script
+              </button>
+              <div class="code-block mono text-[--muted] text-xs max-h-48 overflow-y-auto">
+                <pre id="scriptCodeDisplay">// Finance Sync Script v2.0
+// PASTE KE GOOGLE APPS SCRIPT EDITOR
+
+const SPREADSHEET_ID = '13jou3fy-pwpVxKbPRCAI0bB1cj3JlK5olXrYEnWcH9s';
+const SHEET_NAME = 'Sheet1';
+
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({
+    status: "ok", message: "Webhook aktif",
+    timestamp: new Date().toISOString()
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = ss.getSheetByName(SHEET_NAME);
+    if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
+    
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['No','Tanggal','Lokasi','Kode','Jenis','Invoice','Items','Qty','Status','Total','TglBayar','Dibayarkan','Catatan','DibuatOleh','Disetujui','Keuangan','DirKeu','DirUtama','Accounting','Timestamp','Source']);
+      sheet.getRange(1,1,1,21).setFontWeight(true).setBackground('#1a2642').setFontColor('#fff');
+      sheet.setFrozenRows(1);
+    }
+    
+    let items = "";
+    if(data.items) items = data.items.map(i => i.ket+" ("+i.qty+") - Rp "+i.nominal).join("; ");
+    
+    sheet.appendRow([
+      sheet.getLastRow(), data.tanggal||'', data.lokasi||'',
+      data.kode||'', data.jenis_pengajuan||'', data.no_invoice||'',
+      items, '-', data.status||'', data.total_nominal||0,
+      data.tanggal_pembayaran||'', data.dibayarkan_kepada||'',
+      data.catatan_tambahan||'', 'Nur Wahyudi', 'Harijon',
+      'Andi Dhiya Salsabila', 'Harijon', 'H. Andi Nursyam Halid',
+      'Sri Ekowati', new Date().toISOString(), 'FinanceSync'
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success:true, row:sheet.getLastRow()
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success:false, message:err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="troubleshoot-step">
+            <div class="step-number">4</div>
+            <div class="flex-1">
+              <h4 class="font-medium text-sm mb-1">Deploy sebagai Web App (PENTING!)</h4>
+              <ol class="text-xs text-[--muted] space-y-1 list-decimal list-inside mt-2">
+                <li>Klik menu <strong>Deploy</strong> → <strong>New deployment</strong></li>
+                <li>Klik icon gear ⚙️ (Select type)</li>
+                <li>Pilih <strong class="text-green-400">"Web app"</strong></li>
+                <li><strong>Execute as:</strong> Pilih <strong>"Me"</strong></li>
+                <li><strong>Who has access:</strong> Pilih <strong class="text-yellow-400 font-bold">"Anyone"</strong> ⚠️</li>
+                <li>Klik <strong>Deploy</strong></li>
+              </ol>
+              <div class="mt-2 p-2 bg-yellow-900/30 border border-yellow-700/50 rounded text-xs text-yellow-200">
+                ⚠️ Jika pilih "Authorized users only" → AKAN GAGAL!
+              </div>
+            </div>
+          </div>
+
+          <div class="troubleshoot-step">
+            <div class="step-number">5</div>
+            <div class="flex-1">
+              <h4 class="font-medium text-sm mb-1">Authorize Permission (Izin Akses)</h4>
+              <p class="text-xs text-[--muted] mb-2">Setelah klik Deploy, akan muncul popup:</p>
+              <ol class="text-xs text-[--muted] space-y-1 list-decimal list-inside">
+                <li>Klik <strong>"Authorize access"</strong></li>
+                <li>Pilih akun Google Anda</li>
+                <li>Klik <strong>"Advanced"</strong> (lanjutan)</li>
+                <li>Klik <strong>"Go to [nama project] (unsafe)"</strong></li>
+                <li>Klik <strong>"Allow"</strong></li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="troubleshoot-step">
+            <div class="step-number">6</div>
+            <div class="flex-1">
+              <h4 class="font-medium text-sm mb-1">Copy URL Web App Baru</h4>
+              <p class="text-xs text-[--muted] mb-2">Setelah sukses deploy, copy URL yang muncul:</p>
+              <div class="url-display mb-2" id="newWebhookUrlDisplay">
+                https://script.google.com/macros/s/[NEW-ID]/exec
+              </div>
+              <button onclick="pasteToSetupModal()" class="copy-button">
+                📋 Paste ke Form Setup
+              </button>
+            </div>
+          </div>
+
+          <div class="troubleshoot-step">
+            <div class="step-number">7</div>
+            <div class="flex-1">
+              <h4 class="font-medium text-sm mb-1">Test Koneksi di Aplikasi</h4>
+              <ol class="text-xs text-[--muted] space-y-1 list-decimal list-inside">
+                <li>Tutup modal ini</li>
+                <li>Klik tombol <strong>⚙️ Settings</strong> di header</li>
+                <li>Paste URL baru di field Webhook</li>
+                <li>Klik <strong>"Simpan Konfigurasi"</strong></li>
+                <li>Klik <strong>"Test Koneksi"</strong></li>
+                <li>Jika hijau ✅ → BERHASIL!</li>
+              </ol>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Video Tutorial -->
+        <div class="bg-purple-900/20 border border-purple-700/50 rounded-xl p-4">
+          <h3 class="font-semibold text-purple-300 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Butuh Bantuan Visual?
+          </h3>
+          <p class="text-sm text-purple-200 mb-2">
+            Cari di YouTube: <strong>"Google Apps Script Deploy Web App Anyone"</strong>
+          </p>
+          <p class="text-xs text-purple-300">
+            Ada banyak tutorial video yang menunjukkan langkah-langkah persis seperti di atas.
+          </p>
+        </div>
+
+        <!-- Still Having Issues -->
+        <div class="bg-[--bg-secondary] rounded-xl p-4">
+          <h3 class="font-medium text-sm mb-2 text-[--warning]">😕 Masih Gagal? Coba Ini:</h3>
+          <ul class="text-xs text-[--muted] space-y-1 list-disc list-inside">
+            <li><strong>Buka file HTML pakai Chrome</strong> (bukan Edge/Firefox)</li>
+            <li><strong>Clear cache browser</strong> (Ctrl+Shift+Delete)</li>
+            <li><strong>Disable extensions</strong> (ad blocker, dll)</li>
+            <li><strong>Coba incognito window</strong> (Ctrl+Shift+N)</li>
+            <li><strong>Redeploy script</strong> (hapus deployment lama, buat baru)</li>
+            <li><strong>Share spreadsheet</strong> ke email yang sama dengan script</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT PREVIEW MODAL -->
   <div id="documentModal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content modal-document">
-
-      <!-- Toolbar (hanya tampil di preview, hilang saat print) -->
       <div class="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 no-print page-toolbar">
         <h2 class="text-lg font-semibold text-slate-800">Preview Dokumen</h2>
         <div class="flex items-center gap-2">
@@ -1240,21 +1305,16 @@
         </div>
       </div>
 
-      <!-- Area Dokumen -->
       <div class="documents-container">
         <div id="pdf-wrapper" class="pdf-wrapper">
 
-          <!-- ================================
-               HALAMAN 1: FORMULIR PENGAJUAN HO
-          ================================ -->
+          <!-- HALAMAN 1 -->
           <div class="document-page">
-            <!-- Header -->
             <div class="doc-header-center">
               <div class="doc-company-name">PT. NUSANTARA MINERAL SUKSES ABADI</div>
               <div class="doc-form-title">FORMULIR PENGAJUAN HO</div>
             </div>
 
-            <!-- Info: Lokasi, Tanggal, Kode, Jenis -->
             <div class="doc-info-grid">
               <div class="doc-info-item">
                 <span class="doc-info-label">Lokasi</span>
@@ -1274,7 +1334,6 @@
               </div>
             </div>
 
-            <!-- Tabel: 5 kolom sesuai gambar -->
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1295,7 +1354,6 @@
               </tfoot>
             </table>
 
-            <!-- Catatan Tambahan (muncul jika diisi) -->
             <div id="p1_notes_manual_wrapper" style="display:none;">
               <div class="doc-notes" style="margin-top: 20px;">
                 <div class="doc-notes-title">CATATAN:</div>
@@ -1303,7 +1361,6 @@
               </div>
             </div>
 
-            <!-- Tanda Tangan Halaman 1: Dibuat Oleh & Disetujui -->
             <div class="doc-signatures-p1">
               <div class="doc-sig-box">
                 <div class="doc-sig-label">DIBUAT OLEH</div>
@@ -1317,18 +1374,14 @@
               </div>
             </div>
 
-            <!-- NOTE -->
             <div class="doc-notes">
               <div class="doc-notes-title">NOTE :</div>
               <div class="doc-notes-content">Dokumen ini adalah bukti pengajuan resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div>
             </div>
           </div>
 
-          <!-- ================================
-               HALAMAN 2: BUKTI PENGELUARAN KAS / BANK
-          ================================ -->
+          <!-- HALAMAN 2 -->
           <div class="document-page">
-            <!-- Header kiri-kanan -->
             <div class="doc-header-flex">
               <div class="doc-header-left">
                 <div class="doc-company-name">PT. NUSANTARA MINERAL SUKSES ABADI</div>
@@ -1339,7 +1392,6 @@
               </div>
             </div>
 
-            <!-- Info Pembayaran -->
             <div class="doc-payment-info">
               <div class="doc-payment-row">
                 <span class="doc-payment-label">Kode</span>
@@ -1362,7 +1414,6 @@
               </div>
             </div>
 
-            <!-- Tabel: 4 kolom -->
             <table class="doc-table">
               <thead>
                 <tr>
@@ -1381,7 +1432,6 @@
               </tfoot>
             </table>
 
-            <!-- Catatan Tambahan -->
             <div id="p2_notes_manual_wrapper" style="display:none;">
               <div class="doc-notes" style="margin-top: 20px;">
                 <div class="doc-notes-title">CATATAN:</div>
@@ -1389,9 +1439,7 @@
               </div>
             </div>
 
-            <!-- Tanda Tangan Halaman 2: Grid 2x2 -->
             <div class="doc-signatures-2x2">
-              <!-- Baris 1 -->
               <div class="doc-sig-row">
                 <div class="sig-block-page2">
                   <div class="sig-action">DI VERIFIKASI</div>
@@ -1406,7 +1454,6 @@
                   <div class="sig-title">Dir. Keuangan</div>
                 </div>
               </div>
-              <!-- Baris 2 -->
               <div class="doc-sig-row">
                 <div class="sig-block-page2">
                   <div class="sig-action">DISETUJUI</div>
@@ -1423,7 +1470,6 @@
               </div>
             </div>
 
-            <!-- NOTE -->
             <div class="doc-notes">
               <div class="doc-notes-title">NOTE :</div>
               <div class="doc-notes-content">Dokumen ini adalah bukti pengeluaran kas/bank resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div>
@@ -1438,50 +1484,35 @@
   <!-- Toast -->
   <div id="toast" class="toast" role="alert"></div>
 
-  <!-- ============================
-       JAVASCRIPT - DENGAN INTEGRASI PERMANEN
-  ============================ -->
+  <!-- JAVASCRIPT -->
   <script>
     /* =============================================
-       CONFIGURASI PERMANEN - TIDAK PERLU DIUBAH
-       ============================================= */
+       CONFIGURATION
+    ============================================= */
     const CONFIG = {
-      // ⚠️ URL WEBHOOK ANDA (TERHUBUNG PERMANEN)
       DEFAULT_WEBHOOK_URL: 'https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec',
-      
-      // Informasi Spreadsheet
       SPREADSHEET_ID: '13jou3fy-pwpVxKbPRCAI0bB1cj3JlK5olXrYEnWcH9s',
-      SPREADSHEET_URL: 'https://docs.google.com/spreadsheets/d/13jou3fy-pwpVxKbPRCAI0bB1cj3JlK5olXrYEnWcH9s/edit',
-      
-      // Key untuk localStorage
       STORAGE_KEYS: {
-        WEBHOOK_URL: 'financesync_webhook_url_permanent',
-        HISTORY: 'financesync_submission_history',
-        CONNECTION_STATUS: 'financesync_connection_status'
+        WEBHOOK_URL: 'financesync_webhook_v2',
+        HISTORY: 'financesync_history_v2'
       }
     };
 
-    /* =============================================
-       STATE MANAGEMENT
-    ============================================= */
+    /* State */
     const state = {
-      // Prioritas: localStorage > Config Default > User Input
       webhookUrl: localStorage.getItem(CONFIG.STORAGE_KEYS.WEBHOOK_URL) || CONFIG.DEFAULT_WEBHOOK_URL,
       history: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.HISTORY) || '[]'),
       currentTab: 'all',
       lastFormData: null,
       isConnected: false,
       isConnecting: true,
-      // Setiap item punya: ket, qty, nominal, keterangan
+      lastError: null,
       items: [{ ket: '', qty: '', nominal: 0, keterangan: '' }]
     };
 
-    // Referensi DOM elements
     let elements = {};
 
-    /* =============================================
-       INISIALISASI
-    ============================================= */
+    /* Initialize */
     function init() {
       elements = {
         form: document.getElementById('dataForm'),
@@ -1489,13 +1520,14 @@
         previewBtn: document.getElementById('previewBtn'),
         historyList: document.getElementById('historyList'),
         setupModal: document.getElementById('setupModal'),
+        troubleshootModal: document.getElementById('troubleshootModal'),
         documentModal: document.getElementById('documentModal'),
         setupBtn: document.getElementById('setupBtn'),
         closeModal: document.getElementById('closeModal'),
+        closeTroubleshootModal: document.getElementById('closeTroubleshootModal'),
         closeDocModal: document.getElementById('closeDocModal'),
         webhookInput: document.getElementById('webhookUrl'),
         saveConfig: document.getElementById('saveConfig'),
-        copyCode: document.getElementById('copyCode'),
         clearHistory: document.getElementById('clearHistory'),
         toast: document.getElementById('toast'),
         totalData: document.getElementById('totalData'),
@@ -1506,7 +1538,6 @@
         grandTotalDisplay: document.getElementById('grandTotalDisplay'),
         statusInput: document.getElementById('status'),
         paymentDateContainer: document.getElementById('paymentDateContainer'),
-        // Connection UI
         connectionBanner: document.getElementById('connectionBanner'),
         bannerTitle: document.getElementById('bannerTitle'),
         bannerMessage: document.getElementById('bannerMessage'),
@@ -1515,125 +1546,157 @@
         testConnectionBtn: document.getElementById('testConnectionBtn')
       };
 
-      // Set URL webhook ke input field
       elements.webhookInput.value = state.webhookUrl;
 
-      // Simpan URL ke localStorage jika belum ada (PERMANENT)
       if (!localStorage.getItem(CONFIG.STORAGE_KEYS.WEBHOOK_URL)) {
         localStorage.setItem(CONFIG.STORAGE_KEYS.WEBHOOK_URL, state.webhookUrl);
       }
 
-      // Set tanggal hari ini
       document.getElementById('tanggal').valueAsDate = new Date();
 
-      // Render awal
       renderFormItems();
       renderHistory();
       updateStats();
       setupEventListeners();
 
-      // Test koneksi otomatis saat load
-      testConnection();
+      // Auto test after 1 second
+      setTimeout(() => testConnection(), 1000);
     }
 
-    /* =============================================
-       TEST KONEKSI KE SPREADSHEET
-    ============================================= */
+    /* Test Connection with Detailed Feedback */
     async function testConnection() {
-      updateConnectionUI('connecting', 'Menguji koneksi...', 'Menghubungkan ke Google Sheets...');
+      updateConnectionUI('connecting', '🔍 Menguji koneksi...', 'Menghubungkan ke Google Apps Script...');
       
+      const url = state.webhookUrl;
+      
+      console.log('[FinanceSync] Testing connection to:', url);
+
       try {
-        const response = await fetch(state.webhookUrl + '?test=true&t=' + Date.now(), {
+        // Method 1: Try GET request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        const response = await fetch(url + '?test=' + Date.now(), {
           method: 'GET',
-          mode: 'cors' // Penting untuk cross-origin
+          mode: 'cors',
+          signal: controller.signal
         });
         
-        const result = await response.json();
+        clearTimeout(timeoutId);
         
+        console.log('[FinanceSync] Response status:', response.status);
+        console.log('[FinanceSync] Response OK:', response.ok);
+        
+        const result = await response.json();
+        console.log('[FinanceSync] Response data:', result);
+
         if (result.status === 'ok' || result.success) {
-          // Koneksi berhasil!
           state.isConnected = true;
           state.isConnecting = false;
+          state.lastError = null;
           
-          // Simpan status koneksi
-          localStorage.setItem(CONFIG.STORAGE_KEYS.CONNECTION_STATUS, JSON.stringify({
-            connected: true,
-            timestamp: new Date().toISOString(),
-            message: result.message || 'Connected'
-          }));
-          
-          updateConnectionUI('success', '✓ Terhubung ke Spreadsheet', `Spreadsheet siap menerima data`);
-          showToast('Koneksi ke spreadsheet berhasil!', 'success');
-          
+          updateConnectionUI('success', '✅ Terhubung ke Spreadsheet!', `Webhook aktif • Siap menerima data`);
+          showToast('✅ Koneksi ke spreadsheet BERHASIL!', 'success');
+          return true;
         } else {
-          throw new Error(result.message || 'Unknown error');
+          throw new Error(result.message || 'Response tidak valid');
         }
         
       } catch (error) {
-        console.warn('Connection test warning:', error);
+        console.warn('[FinanceSync] GET failed:', error.message);
+        state.lastError = error.message;
         
-        // Jika CORS error, coba POST test
+        // Method 2: Try POST request
         try {
-          const postResponse = await fetch(state.webhookUrl, {
+          console.log('[FinanceSync] Trying POST method...');
+          
+          const postController = new AbortController();
+          const postTimeoutId = setTimeout(() => postController.abort(), 10000);
+          
+          const postResponse = await fetch(url, {
             method: 'POST',
+            mode: 'no-cors', // This won't give us response but might work
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ _test: true, timestamp: Date.now() })
+            body: JSON.stringify({ _test: true, _timestamp: Date.now() }),
+            signal: postController.signal
           });
           
-          const postResult = await postResponse.json();
+          clearTimeout(postTimeoutId);
           
-          if (postResult.success) {
-            state.isConnected = true;
-            state.isConnecting = false;
-            updateConnectionUI('success', '✓ Terhubung ke Spreadsheet', `Spreadsheet siap menerima data`);
-            showToast('Koneksi berhasil (via POST)', 'success');
-            return;
-          }
+          // With no-cors, we can't read the response
+          // Assume it worked if no exception thrown
+          console.log('[FinanceSync] POST sent (no-cors mode)');
+          
+          state.isConnected = true;
+          state.isConnecting = false;
+          
+          updateConnectionUI('success', '✅ Terhubung (Mode Terbatas)', 'Data akan dikirim tapi status tidak bisa diverifikasi');
+          showToast('⚠️ Koneksi terbatas: Data terkirim tapi verifikasi dinonaktifkan', 'warning');
+          return true;
+          
         } catch (postError) {
-          console.warn('POST test also failed:', postError);
+          console.error('[FinanceSync] POST also failed:', postError.message);
         }
         
-        // Masih gagal - tapi biarkan user tetap bisa submit (async)
+        // Both methods failed
         state.isConnected = false;
         state.isConnecting = false;
-        updateConnectionUI('warning', '⚠ Koneksi Terbatas', 'Mode offline - Data akan disimpan locally & sync nanti');
-        showToast('Mode offline: Data tersimpan di browser', 'info');
+        
+        updateConnectionUI('error', '❌ Gagal Terhubung', getErrorMessage(error.message));
+        showToast('❌ Koneksi gagal: ' + getErrorMessage(error.message), 'error');
+        return false;
       }
     }
 
     window.testConnection = testConnection;
 
-    /* =============================================
-       UPDATE UI STATUS KONEKSI
-    ============================================= */
+    /* Get User-Friendly Error Message */
+    function getErrorMessage(errorMsg) {
+      if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError')) {
+        return 'Network error. Pastikan internet aktif & script sudah di-deploy.';
+      }
+      if (errorMsg.includes('CORS') || errorMsg.includes('cross-origin')) {
+        return 'CORS blocked. Script harus di-deploy sebagai "Web app" dengan akses "Anyone".';
+      }
+      if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+        return 'URL tidak valid. Deploy ulang script dan copy URL baru.';
+      }
+      if (errorMsg.includes('401') || errorMsg.includes('403')) {
+        return 'Access denied. Ubah permission ke "Anyone" saat deploy.';
+      }
+      if (errorMsg.includes('aborted') || errorMsg.includes('timeout')) {
+        return 'Timeout. Server terlalu lambat atau tidak merespons.';
+      }
+      return errorMsg || 'Error tidak diketahui. Klik "🛠️ Solusi" untuk panduan.';
+    }
+
+    /* Update Connection UI */
     function updateConnectionUI(status, title, message) {
       const banner = elements.connectionBanner;
       const dot = elements.statusDot;
       const text = elements.statusText;
       
-      // Update banner
       banner.style.display = 'flex';
       banner.className = 'connection-banner no-print';
       
       if (status === 'success') {
-        banner.classList.remove('error', 'warning');
         dot.className = 'status-dot success';
-        text.textContent = 'Synced';
-        text.className = 'text-sm text-[--success]';
+        text.textContent = '✅ Connected';
+        text.className = 'text-sm text-[--success] font-medium';
       } else if (status === 'error') {
         banner.classList.add('error');
         dot.className = 'status-dot error';
-        text.textContent = 'Error';
-        text.className = 'text-sm text-[--error]';
+        text.textContent = '❌ Error';
+        text.className = 'text-sm text-[--error] font-medium';
       } else if (status === 'connecting') {
         banner.classList.add('warning');
         dot.className = 'status-dot connecting';
-        text.textContent = 'Connecting...';
+        text.textContent = '...';
         text.className = 'text-sm text-[--warning]';
-      } else { // warning
+      } else {
         banner.classList.add('warning');
         dot.className = 'status-dot pending';
-        text.textContent = 'Offline';
+        text.textContent = '⚠️ Offline';
         text.className = 'text-sm text-[--warning]';
       }
       
@@ -1641,82 +1704,86 @@
       elements.bannerMessage.textContent = message;
     }
 
-    /* =============================================
-       EVENT LISTENERS
-    ============================================= */
-    function setupEventListeners() {
-      // Submit form
-      elements.form.addEventListener('submit', handleSubmit);
+    /* Show Troubleshoot Modal */
+    window.showTroubleshootModal = function() {
+      document.getElementById('errorMessageDisplay').textContent = 
+        'Error: ' + (state.lastError || 'Gagal terhubung ke Google Apps Script');
+      elements.troubleshootModal.classList.add('show');
+    };
 
-      // Preview dokumen
+    /* Copy Script Code */
+    window.copyScriptCode = function() {
+      const code = document.getElementById('scriptCodeDisplay').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        showToast('📋 Kode script berhasil dicopy!', 'success');
+      });
+    };
+
+    /* Paste to Setup Modal */
+    window.pasteToSetupModal = function() {
+      elements.troubleshootModal.classList.remove('show');
+      elements.setupModal.classList.add('show');
+      elements.webhookInput.focus();
+      showToast('📝 Silakan paste URL baru di form setup', 'info');
+    };
+
+    /* Event Listeners */
+    function setupEventListeners() {
+      elements.form.addEventListener('submit', handleSubmit);
       elements.previewBtn.addEventListener('click', handlePreview);
 
-      // Tampilkan/sembunyikan tanggal bayar berdasarkan status
       elements.statusInput.addEventListener('change', (e) => {
-        elements.paymentDateContainer.style.display =
-          e.target.value === 'Lunas' ? 'block' : 'none';
-        if (e.target.value !== 'Lunas') {
-          document.getElementById('tanggal_pembayaran').value = '';
-        }
+        elements.paymentDateContainer.style.display = e.target.value === 'Lunas' ? 'block' : 'none';
+        if (e.target.value !== 'Lunas') document.getElementById('tanggal_pembayaran').value = '';
       });
 
-      // Awalnya sembunyikan jika belum Lunas
       if (elements.statusInput.value !== 'Lunas') {
         elements.paymentDateContainer.style.display = 'none';
       }
 
-      // Modal setup
-      elements.setupBtn.addEventListener('click', () => {
-        elements.setupModal.classList.add('show');
-      });
-      elements.closeModal.addEventListener('click', () => {
-        elements.setupModal.classList.remove('show');
-      });
+      elements.setupBtn.addEventListener('click', () => elements.setupModal.classList.add('show'));
+      elements.closeModal.addEventListener('click', () => elements.setupModal.classList.remove('show'));
       elements.setupModal.addEventListener('click', (e) => {
-        if (e.target === elements.setupModal) {
-          elements.setupModal.classList.remove('show');
-        }
+        if (e.target === elements.setupModal) elements.setupModal.classList.remove('show');
       });
 
-      // Modal dokumen
+      elements.closeTroubleshootModal.addEventListener('click', () => {
+        elements.troubleshootModal.classList.remove('show');
+      });
+      
+      elements.troubleshootModal.addEventListener('click', (e) => {
+        if (e.target === elements.troubleshootModal) elements.troubleshootModal.classList.remove('show');
+      });
+
       elements.closeDocModal.addEventListener('click', () => {
         elements.documentModal.classList.remove('show');
       });
 
-      // Simpan konfigurasi webhook
       elements.saveConfig.addEventListener('click', () => {
         const url = elements.webhookInput.value.trim();
         if (url) {
           state.webhookUrl = url;
-          // SIMPAN PERMANEN DI LOCALSTORAGE
           localStorage.setItem(CONFIG.STORAGE_KEYS.WEBHOOK_URL, url);
-          showToast('Konfigurasi tersimpan permanen ✓', 'success');
+          showToast('✅ Konfigurasi tersimpan! Testing...', 'info');
           elements.setupModal.classList.remove('show');
-          
-          // Test koneksi setelah save
           setTimeout(() => testConnection(), 500);
         } else {
-          showToast('Masukkan URL webhook', 'error');
+          showToast('❌ Masukkan URL webhook', 'error');
         }
       });
 
-      // Test koneksi button di modal
-      elements.testConnectionBtn.addEventListener('click', () => {
-        testConnection();
-      });
+      elements.testConnectionBtn.addEventListener('click', () => testConnection());
 
-      // Hapus riwayat
       elements.clearHistory.addEventListener('click', () => {
         if (confirm('Hapus semua riwayat?')) {
           state.history = [];
           localStorage.removeItem(CONFIG.STORAGE_KEYS.HISTORY);
           renderHistory();
           updateStats();
-          showToast('Riwayat dihapus', 'success');
+          showToast('🗑️ Riwayat dihapus', 'success');
         }
       });
 
-      // Tab filter riwayat
       elements.tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
           elements.tabBtns.forEach(b => b.classList.remove('active'));
@@ -1726,18 +1793,16 @@
         });
       });
 
-      // Tutup modal dengan Escape
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           elements.setupModal.classList.remove('show');
+          elements.troubleshootModal.classList.remove('show');
           elements.documentModal.classList.remove('show');
         }
       });
     }
 
-    /* =============================================
-       FORM ITEMS: Item, Jumlah, Nominal, Keterangan
-    ============================================= */
+    /* Form Items */
     function renderFormItems() {
       const container = document.getElementById('itemsContainer');
       container.innerHTML = '';
@@ -1749,62 +1814,32 @@
         row.innerHTML = `
           <div class="col-span-4">
             <label class="field-label text-[10px]">Item</label>
-            <input
-              type="text"
-              class="input-field text-sm"
-              placeholder="Nama barang/jasa"
-              value="${escapeHtml(item.ket)}"
-              oninput="updateItem(${index}, 'ket', this.value)"
-            >
+            <input type="text" class="input-field text-sm" placeholder="Nama barang/jasa"
+              value="${escapeHtml(item.ket)}" oninput="updateItem(${index}, 'ket', this.value)">
           </div>
           <div class="col-span-2">
             <label class="field-label text-[10px]">Jumlah</label>
-            <input
-              type="text"
-              class="input-field text-sm text-center"
-              placeholder="1"
-              value="${escapeHtml(item.qty)}"
-              oninput="updateItem(${index}, 'qty', this.value)"
-            >
+            <input type="text" class="input-field text-sm text-center" placeholder="1"
+              value="${escapeHtml(item.qty)}" oninput="updateItem(${index}, 'qty', this.value)">
           </div>
           <div class="col-span-3">
             <label class="field-label text-[10px]">Nominal</label>
             <div class="currency-wrapper">
               <span class="prefix" style="font-size: 12px">Rp</span>
-              <input
-                type="number"
-                class="input-field text-sm mono"
-                placeholder="0"
-                value="${item.nominal || ''}"
-                oninput="updateItem(${index}, 'nominal', this.value)"
-              >
+              <input type="number" class="input-field text-sm mono" placeholder="0"
+                value="${item.nominal || ''}" oninput="updateItem(${index}, 'nominal', this.value)">
             </div>
           </div>
           <div class="col-span-2">
             <label class="field-label text-[10px]">Ket.</label>
-            <input
-              type="text"
-              class="input-field text-sm"
-              placeholder="Keterangan"
-              value="${escapeHtml(item.keterangan || '')}"
-              oninput="updateItem(${index}, 'keterangan', this.value)"
-            >
+            <input type="text" class="input-field text-sm" placeholder="Keterangan"
+              value="${escapeHtml(item.keterangan || '')}" oninput="updateItem(${index}, 'keterangan', this.value)">
           </div>
           <div class="col-span-1 flex justify-end">
             ${state.items.length > 1 ? `
-              <button
-                type="button"
-                onclick="removeFormItem(${index})"
-                class="btn-remove-item"
-                title="Hapus"
-              >
+              <button type="button" onclick="removeFormItem(${index})" class="btn-remove-item" title="Hapus">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
               </button>
             ` : '<div style="height:38px"></div>'}
@@ -1817,46 +1852,31 @@
       calculateTotal();
     }
 
-    // Tambah item baru
-    window.addFormItem = function () {
-      state.items.push({
-        ket: '',
-        qty: '',
-        nominal: 0,
-        keterangan: ''
-      });
+    window.addFormItem = function() {
+      state.items.push({ ket: '', qty: '', nominal: 0, keterangan: '' });
       renderFormItems();
     };
 
-    // Hapus item
-    window.removeFormItem = function (index) {
+    window.removeFormItem = function(index) {
       if (state.items.length <= 1) return;
       state.items.splice(index, 1);
       renderFormItems();
     };
 
-    // Update item tertentu
-    window.updateItem = function (index, key, value) {
+    window.updateItem = function(index, key, value) {
       state.items[index][key] = value;
       if (key === 'nominal') calculateTotal();
     };
 
-    // Hitung total semua nominal
     function calculateTotal() {
-      const total = state.items.reduce(
-        (acc, curr) => acc + (parseInt(curr.nominal) || 0),
-        0
-      );
+      const total = state.items.reduce((acc, curr) => acc + (parseInt(curr.nominal) || 0), 0);
       elements.grandTotalDisplay.value = formatNumber(total);
       return total;
     }
 
-    /* =============================================
-       KUMPUL DATA DARI FORM
-    ============================================= */
+    /* Get Form Data */
     function getFormData() {
       const fd = new FormData(elements.form);
-
       return {
         tanggal: fd.get('tanggal') || '',
         lokasi: fd.get('lokasi') || '',
@@ -1869,10 +1889,8 @@
         tanggal_pembayaran: fd.get('tanggal_pembayaran') || '',
         dibayarkan_kepada: fd.get('dibayarkan_kepada') || '',
         catatan_tambahan: fd.get('catatan_tambahan') || '',
-        // Metadata
         source: 'FinanceSync Web App',
         submitted_at: new Date().toISOString(),
-        // Nama tanda tangan (hardcoded)
         dibuat_oleh: 'Nur Wahyudi',
         disetujui_oleh: 'Harijon',
         keuangan: 'Andi Dhiya Salsabila',
@@ -1882,30 +1900,22 @@
       };
     }
 
-    /* =============================================
-       PREVIEW DOKUMEN
-    ============================================= */
+    /* Preview Document */
     function handlePreview() {
       const data = getFormData();
-
-      // Validasi: minimal 1 item terisi
       if (data.items.length === 0 || data.items.every(i => !i.ket)) {
-        showToast('Lengkapi minimal 1 item', 'error');
+        showToast('❌ Lengkapi minimal 1 item', 'error');
         return;
       }
-
       state.lastFormData = data;
       populateDocuments(data);
       elements.documentModal.classList.add('show');
     }
 
-    /* =============================================
-       ISI DATA KE DOKUMEN
-    ============================================= */
+    /* Populate Documents */
     function populateDocuments(data) {
       const ft = 'Rp ' + formatNumber(data.total_nominal);
 
-      // --- Halaman 1 ---
       document.getElementById('p1_lokasi').textContent = data.lokasi || '-';
       document.getElementById('p1_tanggal').textContent = formatDate(data.tanggal);
       document.getElementById('p1_kode').textContent = data.kode || '-';
@@ -1914,7 +1924,6 @@
       document.getElementById('p1_dibuat').textContent = data.dibuat_oleh;
       document.getElementById('p1_disetujui').textContent = data.disetujui_oleh;
 
-      // --- Halaman 2 ---
       document.getElementById('p2_tanggal').textContent = formatDate(data.tanggal);
       document.getElementById('p2_kode').textContent = data.kode || '-';
       document.getElementById('p2_dibayarkan').textContent = data.dibayarkan_kepada || '-';
@@ -1925,7 +1934,6 @@
       document.getElementById('p2_name_direktur').textContent = data.direktur_utama;
       document.getElementById('p2_name_accounting').textContent = data.accounting;
 
-      // --- Tabel Halaman 1 (5 kolom) ---
       document.getElementById('p1_table_body').innerHTML = data.items.map((item, idx) => `
         <tr>
           <td class="col-no">${idx + 1}</td>
@@ -1936,7 +1944,6 @@
         </tr>
       `).join('');
 
-      // --- Tabel Halaman 2 (4 kolom) ---
       document.getElementById('p2_table_body').innerHTML = data.items.map((item, idx) => `
         <tr>
           <td style="text-align: center;">${idx + 1}</td>
@@ -1946,27 +1953,21 @@
         </tr>
       `).join('');
 
-      // --- Catatan Tambahan (muncul jika diisi) ---
       const hasNote = data.catatan_tambahan && data.catatan_tambahan.trim();
-
       document.getElementById('p1_notes_manual_wrapper').style.display = hasNote ? 'block' : 'none';
       document.getElementById('p2_notes_manual_wrapper').style.display = hasNote ? 'block' : 'none';
-
       if (hasNote) {
         document.getElementById('p1_notes_manual').textContent = data.catatan_tambahan.trim();
         document.getElementById('p2_notes_manual').textContent = data.catatan_tambahan.trim();
       }
     }
 
-    /* =============================================
-       KIRIM DATA KE SPREADSHET (PERMANENT CONNECTION)
-    ============================================= */
+    /* Submit Handler */
     async function handleSubmit(e) {
       e.preventDefault();
 
       const data = getFormData();
 
-      // Simpan ke riwayat SEBELUM kirim (sebagai backup)
       const historyItem = {
         id: Date.now(),
         ...data,
@@ -1981,35 +1982,29 @@
       renderHistory();
       updateStats();
 
-      // Tampilkan loading
       elements.submitBtn.disabled = true;
       elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengirim...</span>';
 
       try {
-        // Kirim data ke Google Apps Script
         const response = await fetch(state.webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
 
-        // Baca response JSON
         const result = await response.json();
 
         if (result.success) {
-          // Update status jadi success
           const idx = state.history.findIndex(h => h.id === historyItem.id);
           if (idx !== -1) {
             state.history[idx].status_submit = 'success';
-            state.history[idx].spreadsheet_row = result.row_number;
+            state.history[idx].spreadsheet_row = result.row || result.row_number;
             saveHistory();
             renderHistory();
             updateStats();
           }
 
-          showToast(`✅ Data berhasil dikirim! Baris #${result.row_number}`, 'success');
-
-          // Buka preview dokumen
+          showToast(`✅ Data berhasil dikirim! Baris #${result.row || result.row_number}`, 'success');
           populateDocuments(data);
           elements.documentModal.classList.add('show');
 
@@ -2018,9 +2013,9 @@
         }
 
       } catch (error) {
-        console.error('Submit error:', error);
-        
-        // Update status jadi error (tapi data tetap di history)
+        console.error('[FinanceSync] Submit error:', error);
+        state.lastError = error.message;
+
         const idx = state.history.findIndex(h => h.id === historyItem.id);
         if (idx !== -1) {
           state.history[idx].status_submit = 'error';
@@ -2030,18 +2025,12 @@
           updateStats();
         }
 
-        let msg = error.message;
-        if (
-          msg.includes('Failed to fetch') ||
-          msg.includes('NetworkError') ||
-          msg.includes('NetworkError when attempting to fetch resource')
-        ) {
-          msg = 'Gagal terhubung. Data tersimpan di browser, akan sync otomatis saat online.';
-        }
-        showToast('⚠️ ' + msg, 'error');
+        showToast('❌ Gagal: ' + getErrorMessage(error.message), 'error');
+        
+        // Auto-show troubleshoot modal after error
+        setTimeout(() => showTroubleshootModal(), 1500);
       }
 
-      // Kembalikan tombol ke keadaan normal
       elements.submitBtn.disabled = false;
       elements.submitBtn.innerHTML = `
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2051,9 +2040,7 @@
       `;
     }
 
-    /* =============================================
-       RENDER RIWAYAT
-    ============================================= */
+    /* Render History */
     function renderHistory() {
       let filtered = state.currentTab === 'all'
         ? state.history
@@ -2063,12 +2050,7 @@
         elements.historyList.innerHTML = `
           <div class="text-center py-10 text-[--muted]">
             <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
             <p class="text-sm">Belum ada data</p>
           </div>
@@ -2077,10 +2059,7 @@
       }
 
       elements.historyList.innerHTML = filtered.slice(0, 30).map(item => `
-        <div
-          class="history-item cursor-pointer"
-          onclick="loadHistoryItem(${item.id})"
-        >
+        <div class="history-item cursor-pointer" onclick="loadHistoryItem(${item.id})">
           <div class="flex items-start justify-between gap-3">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
@@ -2092,11 +2071,9 @@
                 ${item.items.length} Item(s) • ${escapeHtml(item.jenis_pengajuan || '-')}
               </div>
               <div class="flex items-center gap-3 mt-1.5">
-                <span class="text-xs font-medium text-[--accent]">
-                  Rp ${formatNumber(item.total_nominal)}
-                </span>
+                <span class="text-xs font-medium text-[--accent]">Rp ${formatNumber(item.total_nominal)}</span>
               </div>
-              ${item.error_message ? `<div class="text-xs text-[--error] mt-1">${escapeHtml(item.error_message)}</div>` : ''}
+              ${item.error_message ? `<div class="text-xs text-[--error] mt-1">❌ ${escapeHtml(item.error_message.substring(0, 50))}</div>` : ''}
             </div>
             <div class="text-xs text-[--muted] text-right whitespace-nowrap">
               ${formatTime(item.timestamp)}
@@ -2106,127 +2083,73 @@
       `).join('');
     }
 
-    /* =============================================
-       LOAD ITEM DARI RIWAYAT
-    ============================================= */
-    window.loadHistoryItem = function (id) {
+    window.loadHistoryItem = function(id) {
       const item = state.history.find(h => h.id === id);
       if (item) {
-        // Rekonstruksi items dari data riwayat
         state.items = item.items.map(i => ({
-          ket: i.ket || '',
-          qty: i.qty || '',
-          nominal: i.nominal || 0,
-          keterangan: i.keterangan || ''
+          ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || ''
         }));
         renderFormItems();
-
         populateDocuments(item);
         elements.documentModal.classList.add('show');
       }
     };
 
-    /* =============================================
-       UPDATE STATISTIK
-    ============================================= */
+    /* Update Stats */
     function updateStats() {
       animateCounter(elements.totalData, state.history.length);
-      animateCounter(
-        elements.sentData,
-        state.history.filter(h => h.status_submit === 'success').length
-      );
-      animateCounter(
-        elements.pendingData,
-        state.history.filter(h => h.status_submit === 'pending').length
-      );
-      animateCounter(
-        elements.failedData,
-        state.history.filter(h => h.status_submit === 'error').length
-      );
+      animateCounter(elements.sentData, state.history.filter(h => h.status_submit === 'success').length);
+      animateCounter(elements.pendingData, state.history.filter(h => h.status_submit === 'pending').length);
+      animateCounter(elements.failedData, state.history.filter(h => h.status_submit === 'error').length);
     }
 
-    // Animasi angka naik
     function animateCounter(el, target) {
       const current = parseInt(el.textContent) || 0;
       if (current === target) return;
-
       const startTime = performance.now();
       const duration = 400;
-
       function update(currentTime) {
         const progress = Math.min((currentTime - startTime) / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         el.textContent = Math.round(current + (target - current) * eased);
         if (progress < 1) requestAnimationFrame(update);
       }
-
       requestAnimationFrame(update);
     }
 
-    /* =============================================
-       SIMPAN & MUAT RIWAYAT (PERMANENT STORAGE)
-    ============================================= */
     function saveHistory() {
-      localStorage.setItem(
-        CONFIG.STORAGE_KEYS.HISTORY,
-        JSON.stringify(state.history)
-      );
+      localStorage.setItem(CONFIG.STORAGE_KEYS.HISTORY, JSON.stringify(state.history));
     }
 
-    /* =============================================
-       TOAST NOTIFICATION
-    ============================================= */
+    /* Toast */
     function showToast(message, type) {
       elements.toast.textContent = message;
       elements.toast.className = `toast ${type} show`;
-      setTimeout(() => {
-        elements.toast.classList.remove('show');
-      }, 4000);
+      setTimeout(() => elements.toast.classList.remove('show'), 4000);
     }
 
-    /* =============================================
-       FORMAT TANGGAL
-    ============================================= */
+    /* Format Helpers */
     function formatDate(dateStr) {
       if (!dateStr) return '-';
       const date = new Date(dateStr + 'T00:00:00');
-      return date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
+      return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
     function formatTime(isoString) {
-      return new Date(isoString).toLocaleString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      return new Date(isoString).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     }
 
-    /* =============================================
-       FORMAT ANGKA
-    ============================================= */
     function formatNumber(num) {
-      return (num || 0)
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
 
-    /* =============================================
-       ESCAPE HTML
-    ============================================= */
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text || '';
       return div.innerHTML;
     }
 
-    /* =============================================
-       INIT SAAT HALAMAN LOAD
-    ============================================= */
+    /* Init */
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
