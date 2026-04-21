@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceSync - Pengajuan HO & Keuangan (Firebase)</title>
+  <title>FinanceSync - Pengajuan HO & Keuangan (Firebase Pro)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <!-- html2pdf.js untuk convert ke PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,33 +74,23 @@
       100% { transform: scale(1.5); opacity: 0; }
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
+    @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes firebase-glow {
       0%, 100% { box-shadow: 0 0 20px rgba(255, 202, 40, 0.3); }
       50% { box-shadow: 0 0 30px rgba(255, 202, 40, 0.6); }
     }
-
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-10px); }
     }
 
-    .animate-in {
-      animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      opacity: 0;
-    }
-
+    .animate-in { animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     .delay-3 { animation-delay: 0.3s; }
     .delay-4 { animation-delay: 0.4s; }
 
-    @media (prefers-reduced-motion: reduce) {
-      .animate-in { animation: none; opacity: 1; }
-    }
+    @media (prefers-reduced-motion: reduce) { .animate-in { animation: none; opacity: 1; } }
 
     .input-field {
       background: var(--bg-secondary);
@@ -119,6 +112,32 @@
 
     .input-field::placeholder { color: var(--muted); }
     .input-field:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    /* Field Required Indicator */
+    .input-field.required-empty {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field-label .required-star {
+      color: var(--error);
+      margin-left: 2px;
+    }
 
     .btn-submit {
       background: linear-gradient(135deg, var(--firebase), var(--firebase-orange));
@@ -176,6 +195,27 @@
 
     .btn-print:hover { background: #475569; transform: translateY(-2px); }
 
+    .btn-pdf {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-pdf:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35);
+    }
+
     .btn-add-item {
       background: rgba(255, 202, 40, 0.15);
       color: var(--firebase);
@@ -205,6 +245,33 @@
     }
 
     .btn-remove-item:hover { background: rgba(239, 68, 68, 0.2); }
+
+    /* Delete Button for History Items */
+    .btn-delete-history {
+      color: var(--error);
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      opacity: 0;
+    }
+
+    .history-item:hover .btn-delete-history {
+      opacity: 1;
+    }
+
+    .btn-delete-history:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: var(--error);
+      transform: scale(1.1);
+    }
 
     .card {
       background: var(--card);
@@ -246,9 +313,13 @@
       border-radius: 10px;
       padding: 14px;
       transition: all 0.2s ease;
+      position: relative;
     }
 
-    .history-item:hover { border-color: var(--firebase); transform: translateX(4px); }
+    .history-item:hover { 
+      border-color: var(--firebase); 
+      transform: translateX(4px);
+    }
 
     .firebase-banner {
       background: linear-gradient(135deg, rgba(255, 202, 40, 0.15), rgba(255, 167, 38, 0.08));
@@ -346,14 +417,6 @@
       animation: spin 0.7s linear infinite;
     }
 
-    .field-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
     .currency-wrapper { position: relative; }
 
     .currency-wrapper .prefix {
@@ -423,18 +486,19 @@
       gap: 10px;
       margin-bottom: 20px;
       padding: 12px 20px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(5px);
       border-radius: 12px;
       border: 1px solid #cbd5e1;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      flex-wrap: wrap;
     }
 
     .btn-print-doc {
       background: #334155;
       color: white;
       font-weight: 600;
-      padding: 10px 24px;
+      padding: 10px 20px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
@@ -443,7 +507,7 @@
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .btn-print-doc:hover { background: #475569; }
@@ -703,7 +767,6 @@
     ::-webkit-scrollbar-track { background: var(--bg-secondary); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* Setup Steps */
     .setup-step {
       background: var(--bg-secondary);
       border-left: 4px solid var(--firebase);
@@ -770,6 +833,41 @@
       height: 48px;
       animation: float 3s ease-in-out infinite;
     }
+
+    /* Validation Error Message */
+    .validation-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .validation-error.show {
+      display: block;
+      animation: slideUp 0.3s ease-out forwards;
+    }
+
+    .validation-error ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .validation-error li {
+      color: #fca5a5;
+      font-size: 13px;
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .validation-error li::before {
+      content: "⚠️";
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -821,9 +919,7 @@
           <div class="font-semibold text-sm text-white" id="bannerTitle">Menyiapkan Firebase...</div>
           <div class="text-xs text-gray-300 mt-1" id="bannerMessage">Mohon tunggu sebentar</div>
         </div>
-        <button onclick="showSetupModal()" class="copy-btn">
-          ⚙️ Setup Firebase
-        </button>
+        <button onclick="showSetupModal()" class="copy-btn">⚙️ Setup Firebase</button>
       </div>
 
       <!-- Statistics -->
@@ -867,34 +963,34 @@
             <form id="dataForm" class="space-y-4">
               <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label class="field-label" for="tanggal">Tanggal Invoice</label>
+                  <label class="field-label" for="tanggal">Tanggal Invoice<span class="required-star">*</span></label>
                   <input type="date" id="tanggal" name="tanggal" class="input-field" required>
                 </div>
                 <div>
-                  <label class="field-label" for="lokasi">Lokasi</label>
-                  <input type="text" id="lokasi" name="lokasi" class="input-field" placeholder="Contoh: Lt.1">
+                  <label class="field-label" for="lokasi">Lokasi<span class="required-star">*</span></label>
+                  <input type="text" id="lokasi" name="lokasi" class="input-field" placeholder="Contoh: Lt.1" required>
                 </div>
               </div>
 
               <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label class="field-label" for="jenis_pengajuan">Jenis Pengajuan</label>
-                  <input type="text" id="jenis_pengajuan" name="jenis_pengajuan" class="input-field" placeholder="Masukkan jenis pengajuan">
+                  <label class="field-label" for="jenis_pengajuan">Jenis Pengajuan<span class="required-star">*</span></label>
+                  <input type="text" id="jenis_pengajuan" name="jenis_pengajuan" class="input-field" placeholder="Masukkan jenis pengajuan" required>
                 </div>
                 <div>
-                  <label class="field-label" for="kode">Kode</label>
-                  <input type="text" id="kode" name="kode" class="input-field mono" placeholder="Masukkan kode">
+                  <label class="field-label" for="kode">Kode<span class="required-star">*</span></label>
+                  <input type="text" id="kode" name="kode" class="input-field mono" placeholder="Masukkan kode" required>
                 </div>
               </div>
 
               <div class="grid md:grid-cols-2 gap-4">
                 <div>
                   <label class="field-label" for="no_invoice">No Invoice / Berkas</label>
-                  <input type="text" id="no_invoice" name="no_invoice" class="input-field mono" placeholder="Nomor invoice">
+                  <input type="text" id="no_invoice" name="no_invoice" class="input-field mono" placeholder="Nomor invoice (opsional)">
                 </div>
                 <div>
-                  <label class="field-label" for="status">Status Pembayaran</label>
-                  <select id="status" name="status" class="input-field">
+                  <label class="field-label" for="status">Status Pembayaran<span class="required-star">*</span></label>
+                  <select id="status" name="status" class="input-field" required>
                     <option value="">Pilih status</option>
                     <option value="Lunas">Lunas</option>
                     <option value="Belum Lunas">Belum Lunas</option>
@@ -904,13 +1000,11 @@
 
               <div>
                 <div class="flex justify-between items-center mb-2">
-                  <label class="field-label">Rincian Barang / Jasa</label>
-                  <span class="text-xs text-[--muted]">Isi nominal per item</span>
+                  <label class="field-label">Rincian Barang / Jasa<span class="required-star">*</span></label>
+                  <span class="text-xs text-[--muted]">Minimal 1 item wajib diisi</span>
                 </div>
                 <div id="itemsContainer" class="space-y-2"></div>
-                <button type="button" onclick="addFormItem()" class="btn-add-item mt-3">
-                  + Tambah Item Baru
-                </button>
+                <button type="button" onclick="addFormItem()" class="btn-add-item mt-3">+ Tambah Item Baru</button>
               </div>
 
               <div class="grid md:grid-cols-2 gap-4">
@@ -928,15 +1022,19 @@
               </div>
 
               <div>
-                <label class="field-label" for="dibayarkan_kepada">Dibayarkan Kepada</label>
-                <input type="text" id="dibayarkan_kepada" name="dibayarkan_kepada" class="input-field" placeholder="Nama penerima pembayaran">
+                <label class="field-label" for="dibayarkan_kepada">Dibayarkan Kepada<span class="required-star">*</span></label>
+                <input type="text" id="dibayarkan_kepada" name="dibayarkan_kepada" class="input-field" placeholder="Nama penerima pembayaran" required>
               </div>
 
               <div>
-                <label class="field-label" for="catatan_tambahan">
-                  Catatan Tambahan <span class="text-[--muted] font-normal">(opsional)</span>
-                </label>
+                <label class="field-label" for="catatan_tambahan">Catatan Tambahan <span class="text-[--muted] font-normal">(opsional)</span></label>
                 <textarea id="catatan_tambahan" name="catatan_tambahan" rows="2" class="input-field resize-none" placeholder="Tambahkan catatan khusus..."></textarea>
+              </div>
+
+              <!-- Validation Error Box -->
+              <div id="validationError" class="validation-error">
+                <strong style="color: #fca5a5; font-size: 14px; margin-bottom: 8px; display: block;">⚠️ Mohon lengkapi field berikut:</strong>
+                <ul id="validationErrorList"></ul>
               </div>
 
               <div class="flex flex-wrap items-center gap-3 pt-4">
@@ -953,9 +1051,7 @@
                   </svg>
                   <span>Preview & Print</span>
                 </button>
-                <button type="reset" class="text-[--muted] hover:text-[--fg] transition-colors text-sm">
-                  Reset
-                </button>
+                <button type="reset" class="text-[--muted] hover:text-[--fg] transition-colors text-sm">Reset</button>
               </div>
             </form>
           </div>
@@ -966,9 +1062,7 @@
           <div class="card animate-in delay-4">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold">Riwayat (Real-time)</h2>
-              <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">
-                Hapus
-              </button>
+              <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
             </div>
 
             <div class="flex gap-1 mb-4 p-1 bg-[--bg-secondary] rounded-lg">
@@ -997,19 +1091,13 @@
   <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content">
       <div class="flex items-center justify-between mb-5">
-        <h2 class="text-lg font-semibold flex items-center gap-2">
-          <span class="text-2xl">🔥</span> Setup Firebase Project
-        </h2>
+        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">🔥</span> Setup Firebase Project</h2>
         <button id="closeModal" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
-
       <div class="space-y-6">
         
-        <!-- Step 1 -->
         <div class="setup-step">
           <div class="flex items-start gap-3">
             <div class="step-number">1</div>
@@ -1021,14 +1109,11 @@
                 <li>Nama: <code class="mono text-xs bg-[--bg] px-2 py-1 rounded">financesync-nmsa</code></li>
                 <li>Klik <strong>"Create project"</strong></li>
               </ol>
-              <button onclick="window.open('https://console.firebase.google.com/', '_blank')" class="copy-btn mt-3">
-                🔗 Buka Firebase Console
-              </button>
+              <button onclick="window.open('https://console.firebase.google.com/', '_blank')" class="copy-btn mt-3">🔗 Buka Firebase Console</button>
             </div>
           </div>
         </div>
 
-        <!-- Step 2 -->
         <div class="setup-step">
           <div class="flex items-start gap-3">
             <div class="step-number">2</div>
@@ -1045,91 +1130,32 @@
           </div>
         </div>
 
-        <!-- Step 3 - DENGAN CONTOH VISUAL! -->
         <div class="setup-step">
           <div class="flex items-start gap-3">
             <div class="step-number">3</div>
             <div class="flex-1">
-              <h3 class="font-semibold text-base mb-2">Dapatkan & Paste Config (PERHATIKAN!)</h3>
+              <h3 class="font-semibold text-base mb-2">Dapatkan & Paste Config</h3>
               
-              <p class="text-sm text-[--muted] mb-3">
-                Setelah register Web App, Firebase akan menampilkan kode. <strong class="text-red-400">COPY HANYA BAGIAN DALAM { ... }!</strong>
-              </p>
-
-              <!-- CONTOH SALAH ❌ -->
               <div class="example-config-box wrong-example">
-                <div class="flex items-center gap-2 mb-2">
-                  <span class="text-lg">❌</span>
-                  <strong class="text-red-400 text-sm">SALAH - Jangan copy ini:</strong>
-                </div>
-                <div class="config-box text-red-300" style="color: #fca5a5;">
-// Import the functions you need from the SDKs you need<br>
-import { initializeApp } from "firebase/app";<br><br>
-const firebaseConfig = {<br>
-&nbsp;&nbsp;apiKey: "AIzaSy...",<br>
-&nbsp;&nbsp;authDomain: "...",<br>
-&nbsp;&nbsp;...<br>
-};<br><br>
-const app = initializeApp(firebaseConfig);
-                </div>
+                <div class="flex items-center gap-2 mb-2"><span class="text-lg">❌</span><strong class="text-red-400 text-sm">SALAH:</strong></div>
+                <div class="config-box text-red-300" style="color:#fca5a5;">// Import...<br>const firebaseConfig = {<br>&nbsp;&nbsp;apiKey: "...",<br>&nbsp;&nbsp;...<br>};<br>const app = initializeApp(...);</div>
               </div>
 
-              <!-- CONTOH BENAR ✅ -->
               <div class="example-config-box">
-                <div class="flex items-center gap-2 mb-2">
-                  <span class="text-lg">✅</span>
-                  <strong class="text-green-400 text-sm">BENAR - Copy HANYA ini:</strong>
-                </div>
-                <div class="config-box">
-{
-  "apiKey": "AIzaSy...",
-  "authDomain": "your-project.firebaseapp.com",
-  "projectId": "your-project-id",
-  "storageBucket": "your-project.appspot.com",
-  "messagingSenderId": "123456789012",
-  "appId": "1:123456789012:web:abc123"
-}
-                </div>
-                <p class="text-xs text-gray-400 mt-2 italic">
-                  💡 Tips: Mulai dari { dan akhiri dengan }, tanpa kata lain!
-                </p>
+                <div class="flex items-center gap-2 mb-2"><span class="text-lg">✅</span><strong class="text-green-400 text-sm">BENAR:</strong></div>
+                <div class="config-box">{<br>&nbsp;&nbsp;"apiKey": "...",<br>&nbsp;&nbsp;"authDomain": "...",<br>&nbsp;&nbsp;"projectId": "...",<br>&nbsp;&nbsp;...<br>}</div>
               </div>
 
               <div class="mt-3">
-                <label class="field-label">Paste Firebase Config di sini:</label>
-                <textarea id="firebaseConfigInput" class="input-field resize-none" rows="5" placeholder='{
-  "apiKey": "...",
-  "authDomain": "...",
-  "projectId": "...",
-  ...
-}' style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></textarea>
-                
+                <label class="field-label">Paste Firebase Config:</label>
+                <textarea id="firebaseConfigInput" class="input-field resize-none" rows="5" placeholder='{"apiKey": "...", ...}' style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></textarea>
                 <div id="configError" class="text-xs text-red-400 mt-2 hidden"></div>
               </div>
               
-              <button onclick="saveFirebaseConfig()" class="copy-btn mt-3 w-full justify-center">
-                💾 Simpan & Connect ke Firebase
-              </button>
+              <button onclick="saveFirebaseConfig()" class="copy-btn mt-3 w-full justify-center">💾 Simpan & Connect</button>
             </div>
           </div>
         </div>
-
-        <!-- Info Box -->
-        <div class="bg-gradient-to-br from-green-900/30 to-emerald-900/20 rounded-xl p-4 border border-green-700/30">
-          <h3 class="font-medium text-sm mb-2 flex items-center gap-2 text-green-300">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Keuntungan Firebase
-          </h3>
-          <ul class="text-xs text-gray-300 space-y-1">
-            <li>✅ <strong>Tidak ada CORS error</strong> - 100% reliable</li>
-            <li>✅ <strong>Real-time sync</strong> - Data muncul instan</li>
-            <li>✅ <strong>Offline support</strong> - Tetap bisa input tanpa internet</li>
-            <li>✅ <strong>Free tier generous</strong> - 1GB storage, 50k reads/day</li>
-          </ul>
-        </div>
-
       </div>
     </div>
   </div>
@@ -1139,17 +1165,17 @@ const app = initializeApp(firebaseConfig);
     <div class="modal-content modal-document">
       <div class="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 no-print page-toolbar">
         <h2 class="text-lg font-semibold text-slate-800">Preview Dokumen</h2>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="btn-pdf" onclick="downloadAsPDF()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Download PDF
+          </button>
           <button class="btn-print-doc" onclick="window.print()">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-            </svg>
-            Print Dokumen
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Print
           </button>
           <button id="closeDocModal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
       </div>
@@ -1158,83 +1184,41 @@ const app = initializeApp(firebaseConfig);
         <div id="pdf-wrapper" class="pdf-wrapper">
 
           <!-- HALAMAN 1 -->
-          <div class="document-page">
+          <div class="document-page" id="documentPage1">
             <div class="doc-header-center">
               <div class="doc-company-name">PT. NUSANTARA MINERAL SUKSES ABADI</div>
               <div class="doc-form-title">FORMULIR PENGAJUAN HO</div>
             </div>
 
             <div class="doc-info-grid">
-              <div class="doc-info-item">
-                <span class="doc-info-label">Lokasi</span>
-                <span class="doc-info-value" id="p1_lokasi"></span>
-              </div>
-              <div class="doc-info-item">
-                <span class="doc-info-label">Tanggal</span>
-                <span class="doc-info-value" id="p1_tanggal"></span>
-              </div>
-              <div class="doc-info-item">
-                <span class="doc-info-label">Kode</span>
-                <span class="doc-info-value" id="p1_kode"></span>
-              </div>
-              <div class="doc-info-item">
-                <span class="doc-info-label">Jenis</span>
-                <span class="doc-info-value" id="p1_jenis"></span>
-              </div>
+              <div class="doc-info-item"><span class="doc-info-label">Lokasi</span><span class="doc-info-value" id="p1_lokasi"></span></div>
+              <div class="doc-info-item"><span class="doc-info-label">Tanggal</span><span class="doc-info-value" id="p1_tanggal"></span></div>
+              <div class="doc-info-item"><span class="doc-info-label">Kode</span><span class="doc-info-value" id="p1_kode"></span></div>
+              <div class="doc-info-item"><span class="doc-info-label">Jenis</span><span class="doc-info-value" id="p1_jenis"></span></div>
             </div>
 
             <table class="doc-table">
-              <thead>
-                <tr>
-                  <th class="col-no">NO</th>
-                  <th class="col-item">ITEM</th>
-                  <th class="col-vol">JUMLAH / VOLUME</th>
-                  <th class="col-nominal">Total (Rp)</th>
-                  <th class="col-ket">KETERANGAN</th>
-                </tr>
-              </thead>
+              <thead><tr><th class="col-no">NO</th><th class="col-item">ITEM</th><th class="col-vol">JUMLAH / VOLUME</th><th class="col-nominal">Total (Rp)</th><th class="col-ket">KETERANGAN</th></tr></thead>
               <tbody id="p1_table_body"></tbody>
-              <tfoot>
-                <tr class="doc-total-row">
-                  <td colspan="3" style="text-align: right; font-weight: 700;">TOTAL</td>
-                  <td class="col-nominal" id="p1_total"></td>
-                  <td></td>
-                </tr>
-              </tfoot>
+              <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right;font-weight:700">TOTAL</td><td class="col-nominal" id="p1_total"></td><td></td></tr></tfoot>
             </table>
 
             <div id="p1_notes_manual_wrapper" style="display:none;">
-              <div class="doc-notes" style="margin-top: 20px;">
-                <div class="doc-notes-title">CATATAN:</div>
-                <div class="doc-notes-manual" id="p1_notes_manual"></div>
-              </div>
+              <div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN:</div><div class="doc-notes-manual" id="p1_notes_manual"></div></div>
             </div>
 
             <div class="doc-signatures-p1">
-              <div class="doc-sig-box">
-                <div class="doc-sig-label">DIBUAT OLEH</div>
-                <div class="doc-sig-space"></div>
-                <div class="doc-sig-name" id="p1_dibuat"></div>
-              </div>
-              <div class="doc-sig-box">
-                <div class="doc-sig-label">DISETUJUI</div>
-                <div class="doc-sig-space"></div>
-                <div class="doc-sig-name" id="p1_disetujui"></div>
-              </div>
+              <div class="doc-sig-box"><div class="doc-sig-label">DIBUAT OLEH</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_dibuat"></div></div>
+              <div class="doc-sig-box"><div class="doc-sig-label">DISETUJUI</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_disetujui"></div></div>
             </div>
 
-            <div class="doc-notes">
-              <div class="doc-notes-title">NOTE :</div>
-              <div class="doc-notes-content">Dokumen ini adalah bukti pengajuan resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div>
-            </div>
+            <div class="doc-notes"><div class="doc-notes-title">NOTE :</div><div class="doc-notes-content">Dokumen ini adalah bukti pengajuan resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div></div>
           </div>
 
           <!-- HALAMAN 2 -->
-          <div class="document-page">
+          <div class="document-page" id="documentPage2">
             <div class="doc-header-flex">
-              <div class="doc-header-left">
-                <div class="doc-company-name">PT. NUSANTARA MINERAL SUKSES ABADI</div>
-              </div>
+              <div class="doc-header-left"><div class="doc-company-name">PT. NUSANTARA MINERAL SUKSES ABADI</div></div>
               <div class="doc-header-right">
                 <div class="doc-form-title-right">BUKTI PENGELUARAN KAS / BANK</div>
                 <div class="doc-tanggal-box">Tanggal : <span id="p2_tanggal"></span></div>
@@ -1242,89 +1226,53 @@ const app = initializeApp(firebaseConfig);
             </div>
 
             <div class="doc-payment-info">
-              <div class="doc-payment-row">
-                <span class="doc-payment-label">Kode</span>
-                <span class="doc-payment-value" id="p2_kode"></span>
-              </div>
-              <div class="doc-payment-row">
-                <span class="doc-payment-label">Dibayarkan kepada</span>
-                <span class="doc-payment-value" id="p2_dibayarkan"></span>
-              </div>
-              <div class="doc-payment-row">
-                <span class="doc-payment-label">Jenis Pengajuan</span>
-                <span class="doc-payment-value" id="p2_jenis"></span>
-              </div>
-              <div class="doc-payment-row">
-                <span class="doc-payment-label">Dibayarkan dengan</span>
-                <span class="doc-payment-value">
-                  <span class="doc-check">&nbsp;</span> Cek
-                  <span style="margin-left: 16px;"><span class="doc-check">X</span> Transfer</span>
-                </span>
-              </div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Kode</span><span class="doc-payment-value" id="p2_kode"></span></div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Dibayarkan kepada</span><span class="doc-payment-value" id="p2_dibayarkan"></span></div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Jenis Pengajuan</span><span class="doc-payment-value" id="p2_jenis"></span></div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Dibayarkan dengan</span><span class="doc-payment-value"><span class="doc-check">&nbsp;</span> Cek <span style="margin-left:16px;"><span class="doc-check">X</span> Transfer</span></div>
             </div>
 
             <table class="doc-table">
-              <thead>
-                <tr>
-                  <th style="width: 40px; text-align: center;">NO</th>
-                  <th>URAIAN BARANG / JASA</th>
-                  <th style="width: 70px; text-align: center;">QTY</th>
-                  <th style="width: 120px; text-align: right;">JUMLAH (Rp)</th>
-                </tr>
-              </thead>
+              <thead><tr><th style="width:40px;text-align:center">NO</th><th>URAIAN BARANG / JASA</th><th style="width:70px;text-align:center">QTY</th><th style="width:120px;text-align:right">JUMLAH (Rp)</th></tr></thead>
               <tbody id="p2_table_body"></tbody>
-              <tfoot>
-                <tr class="doc-total-row">
-                  <td colspan="3" style="text-align: right;">TOTAL</td>
-                  <td style="text-align: right;" id="p2_total"></td>
-                </tr>
-              </tfoot>
+              <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right" id="p2_total"></td></tr></tfoot>
             </table>
 
             <div id="p2_notes_manual_wrapper" style="display:none;">
-              <div class="doc-notes" style="margin-top: 20px;">
-                <div class="doc-notes-title">CATATAN:</div>
-                <div class="doc-notes-manual" id="p2_notes_manual"></div>
-              </div>
+              <div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN:</div><div class="doc-notes-manual" id="p2_notes_manual"></div></div>
             </div>
 
             <div class="doc-signatures-2x2">
               <div class="doc-sig-row">
-                <div class="sig-block-page2">
-                  <div class="sig-action">DI VERIFIKASI</div>
-                  <div class="sig-space"></div>
-                  <div class="sig-name" id="p2_name_keuangan"></div>
-                  <div class="sig-title">Keuangan</div>
-                </div>
-                <div class="sig-block-page2">
-                  <div class="sig-action">DISETUJUI</div>
-                  <div class="sig-space"></div>
-                  <div class="sig-name" id="p2_name_dirkeuangan"></div>
-                  <div class="sig-title">Dir. Keuangan</div>
-                </div>
+                <div class="sig-block-page2"><div class="sig-action">DI VERIFIKASI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_keuangan"></div><div class="sig-title">Keuangan</div></div>
+                <div class="sig-block-page2"><div class="sig-action">DISETUJUI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_dirkeuangan"></div><div class="sig-title">Dir. Keuangan</div></div>
               </div>
               <div class="doc-sig-row">
-                <div class="sig-block-page2">
-                  <div class="sig-action">DISETUJUI</div>
-                  <div class="sig-space"></div>
-                  <div class="sig-name" id="p2_name_direktur"></div>
-                  <div class="sig-title">Direktur Utama</div>
-                </div>
-                <div class="sig-block-page2">
-                  <div class="sig-action">DIBUKUKAN</div>
-                  <div class="sig-space"></div>
-                  <div class="sig-name" id="p2_name_accounting"></div>
-                  <div class="sig-title">Accounting</div>
-                </div>
+                <div class="sig-block-page2"><div class="sig-action">DISETUJUI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_direktur"></div><div class="sig-title">Direktur Utama</div></div>
+                <div class="sig-block-page2"><div class="sig-action">DIBUKUKAN</div><div class="sig-space"></div><div class="sig-name" id="p2_name_accounting"></div><div class="sig-title">Accounting</div></div>
               </div>
             </div>
 
-            <div class="doc-notes">
-              <div class="doc-notes-title">NOTE :</div>
-              <div class="doc-notes-content">Dokumen ini adalah bukti pengeluaran kas/bank resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div>
-            </div>
+            <div class="doc-notes"><div class="doc-notes-title">NOTE :</div><div class="doc-notes-content">Dokumen ini adalah bukti pengeluaran kas/bank resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div></div>
           </div>
 
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div id="deleteConfirmModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-900/30 flex items-center justify-center">
+          <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-2">Hapus Data Ini?</h3>
+        <p class="text-sm text-gray-300 mb-6" id="deleteItemInfo">Invoice: INV-001 • Rp 1.500.000</p>
+        <div class="flex gap-3 justify-center">
+          <button onclick="closeDeleteModal()" class="btn-secondary px-8">Batal</button>
+          <button onclick="confirmDelete()" class="px-8 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors">Ya, Hapus</button>
         </div>
       </div>
     </div>
@@ -1333,11 +1281,11 @@ const app = initializeApp(firebaseConfig);
   <!-- Toast -->
   <div id="toast" class="toast" role="alert"></div>
 
-  <!-- JAVASCRIPT - FIREBASE WITH SMART PARSING -->
+  <!-- JAVASCRIPT -->
   <script>
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v3',
-      HISTORY_LOCAL: 'financesync_local_history_v3'
+      FIREBASE_CONFIG: 'financesync_firebase_config_v4',
+      HISTORY_LOCAL: 'financesync_local_history_v4'
     };
 
     let db = null;
@@ -1348,7 +1296,8 @@ const app = initializeApp(firebaseConfig);
       currentTab: 'all',
       lastFormData: null,
       items: [{ ket: '', qty: '', nominal: 0, keterangan: '' }],
-      unsubscribeListener: null
+      unsubscribeListener: null,
+      pendingDeleteId: null
     };
 
     let elements = {};
@@ -1361,6 +1310,7 @@ const app = initializeApp(firebaseConfig);
         historyList: document.getElementById('historyList'),
         setupModal: document.getElementById('setupModal'),
         documentModal: document.getElementById('documentModal'),
+        deleteConfirmModal: document.getElementById('deleteConfirmModal'),
         setupBtn: document.getElementById('setupBtn'),
         closeModal: document.getElementById('closeModal'),
         closeDocModal: document.getElementById('closeDocModal'),
@@ -1380,7 +1330,9 @@ const app = initializeApp(firebaseConfig);
         statusDot: document.getElementById('statusDot'),
         statusText: document.getElementById('statusText'),
         firebaseConfigInput: document.getElementById('firebaseConfigInput'),
-        configError: document.getElementById('configError')
+        configError: document.getElementById('configError'),
+        validationError: document.getElementById('validationError'),
+        validationErrorList: document.getElementById('validationErrorList')
       };
 
       document.getElementById('tanggal').valueAsDate = new Date();
@@ -1389,83 +1341,46 @@ const app = initializeApp(firebaseConfig);
       setupEventListeners();
     }
 
-    /* SMART CONFIG PARSER - Auto-fix common mistakes */
+    /* Smart Config Parser */
     function smartParseConfig(inputStr) {
       let str = inputStr.trim();
       
-      console.log('[SmartParser] Input length:', str.length);
-      
-      // Try 1: Direct JSON parse
       try {
         const config = JSON.parse(str);
-        if (config.apiKey && config.projectId) {
-          console.log('[SmartParser] ✅ Valid JSON detected');
-          return { success: true, config };
-        }
-      } catch (e) {
-        console.log('[SmartParser] Not direct JSON, trying extraction...');
-      }
+        if (config.apiKey && config.projectId) return { success: true, config };
+      } catch (e) {}
       
-      // Try 2: Extract JSON from JavaScript code
-      // Pattern: find { ... } that contains "apiKey"
       const jsonPattern = /\{[^{}]*"apiKey"\s*:\s*"[^"]*"[^{}]*\}/g;
       const matches = str.match(jsonPattern);
       
       if (matches && matches.length > 0) {
-        console.log('[SmartParser] Found potential config object');
-        
         for (let match of matches) {
           try {
             const config = JSON.parse(match);
-            if (config.apiKey && config.projectId) {
-              console.log('[SmartParser] ✅ Extracted valid config from JS code');
-              return { success: true, config, extracted: true };
-            }
-          } catch (e) {
-            continue;
-          }
+            if (config.apiKey && config.projectId) return { success: true, config, extracted: true };
+          } catch (e) { continue; }
         }
       }
       
-      // Try 3: More aggressive extraction - find first { to last }
       const firstBrace = str.indexOf('{');
       const lastBrace = str.lastIndexOf('}');
-      
       if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        const extracted = str.substring(firstBrace, lastBrace + 1);
-        
         try {
-          const config = JSON.parse(extracted);
-          if (config.apiKey || config.authDomain || config.projectId) {
-            console.log('[SmartParser] ✅ Extracted from brace positions');
-            return { success: true, config, extracted: true };
-          }
-        } catch (e) {
-          console.log('[SmartParser] Brace extraction failed:', e.message);
-        }
+          const config = JSON.parse(str.substring(firstBrace, lastBrace + 1));
+          if (config.apiKey || config.projectId) return { success: true, config, extracted: true };
+        } catch (e) {}
       }
       
-      // Try 4: Remove comments and try again
-      let cleaned = str
-        .replace(/\/\/.*$/gm, '') // Remove single line comments
-        .replace(/\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
-        .replace(/const\s+\w+\s*=\s*/g, '') // Remove variable assignment
-        .trim();
-      
-      // Find JSON in cleaned string
+      let cleaned = str.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/const\s+\w+\s*=\s*/g, '').trim();
       const cleanMatch = cleaned.match(/\{[^}]*"apiKey"[^}]*\}/);
       if (cleanMatch) {
         try {
           const config = JSON.parse(cleanMatch[0]);
-          if (config.apiKey) {
-            console.log('[SmartParser] ✅ Extracted after cleaning comments');
-            return { success: true, config, extracted: true };
-          }
+          if (config.apiKey) return { success: true, config, extracted: true };
         } catch (e) {}
       }
       
-      // All attempts failed
-      return { success: false, error: 'Could not find valid Firebase config in input' };
+      return { success: false, error: 'Could not find valid Firebase config' };
     }
 
     async function initFirebase() {
@@ -1474,94 +1389,50 @@ const app = initializeApp(firebaseConfig);
       if (savedConfig) {
         try {
           const config = JSON.parse(savedConfig);
-          
-          if (!firebase.apps.length) {
-            firebase.initializeApp(config);
-          }
-          
+          if (!firebase.apps.length) firebase.initializeApp(config);
           db = firebase.firestore();
-          
           await db.collection('submissions').limit(1).get();
           
           state.isConnected = true;
           state.isConnecting = false;
-          
-          updateConnectionUI('connected', '🔥 Terhubung ke Firebase!', `Cloud Firestore aktif • Real-time sync enabled`);
+          updateConnectionUI('connected', '🔥 Terhubung ke Firebase!', `Cloud Firestore aktif`);
           showToast('✅ Firebase berhasil terhubung!', 'firebase');
-          
           startRealtimeListener();
           
         } catch (error) {
           console.error('[Firebase] Init error:', error);
           state.isConnected = false;
           state.isConnecting = false;
-          
           updateConnectionUI('error', '❌ Gagal Terhubung', error.message);
           setTimeout(() => showSetupModal(), 1500);
         }
       } else {
         state.isConnected = false;
         state.isConnecting = false;
-        updateConnectionUI('warning', '⚠️ Firebase Belum Dikonfigurasi', 'Klik "Setup Firebase" untuk memulai');
+        updateConnectionUI('warning', '⚠️ Firebase Belum Dikonfigurasi', 'Klik "Setup Firebase"');
         setTimeout(() => showSetupModal(), 1000);
       }
     }
 
-    window.showSetupModal = function() {
-      elements.setupModal.classList.add('show');
-    };
+    window.showSetupModal = function() { elements.setupModal.classList.add('show'); };
 
     window.saveFirebaseConfig = function() {
       const inputStr = elements.firebaseConfigInput.value.trim();
       const errorEl = elements.configError;
-      
       errorEl.classList.add('hidden');
       errorEl.textContent = '';
       
-      if (!inputStr) {
-        showError('❌ Paste Firebase config terlebih dahulu!');
-        return;
-      }
+      if (!inputStr) { showError('❌ Paste Firebase config!'); return; }
       
-      // Use smart parser
       const result = smartParseConfig(inputStr);
-      
-      if (!result.success) {
-        showError('❌ ' + (result.error || 'Format tidak valid. Pastikan Anda copy HANYA bagian { ... }'));
-        
-        // Show detailed help
-        errorEl.innerHTML = `
-          <div class="mt-2 p-2 bg-red-900/30 rounded text-xs">
-            <strong>Tips:</strong><br>
-            • Cari teks <code>const firebaseConfig = {</code><br>
-            • Copy SEMUA isi di dalam kurung kurawal { sampai }<br>
-            • Jangan include: <code>const</code>, <code>//</code>, <code>import</code>, dll
-          </div>
-        `;
-        errorEl.classList.remove('hidden');
-        return;
-      }
+      if (!result.success) { showError('❌ ' + (result.error || 'Format tidak valid')); return; }
       
       const config = result.config;
+      if (!config.apiKey || !config.projectId) { showError('❌ Config tidak lengkap'); return; }
       
-      // Validate required fields
-      if (!config.apiKey || !config.projectId) {
-        showError('❌ Config tidak lengkap. Pastikan ada "apiKey" dan "projectId"');
-        return;
-      }
-      
-      // Save to localStorage
       localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
-      
-      if (result.extracted) {
-        showToast('✅ Config berhasil diekstraksi & disimpan! Menghubungkan...', 'info');
-      } else {
-        showToast('💾 Config tersimpan! Menghubungkan...', 'info');
-      }
-      
+      showToast(result.extracted ? '✅ Config diekstraksi & disimpan!' : '💾 Config tersimpan!', 'info');
       elements.setupModal.classList.remove('show');
-      
-      // Re-initialize Firebase
       initFirebase();
     };
 
@@ -1569,66 +1440,30 @@ const app = initializeApp(firebaseConfig);
       elements.configError.textContent = msg;
       elements.configError.classList.remove('hidden');
       showToast(msg, 'error');
-      elements.configError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function startRealtimeListener() {
-      if (state.unsubscribeListener) {
-        state.unsubscribeListener();
-      }
+      if (state.unsubscribeListener) state.unsubscribeListener();
       
-      state.unsubscribeListener = db
-        .collection('submissions')
-        .orderBy('timestamp', 'desc')
-        .limit(50)
-        .onSnapshot(
-          (snapshot) => {
-            console.log('[Firebase] Real-time update:', snapshot.size, 'documents');
-            
-            state.history = snapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-              synced: true
-            }));
-            
-            renderHistory();
-            updateStats();
-          },
-          (error) => {
-            console.error('[Firebase] Listener error:', error);
-            showToast('⚠️ Real-time listener error: ' + error.message, 'error');
-          }
-        );
+      state.unsubscribeListener = db.collection('submissions').orderBy('timestamp', 'desc').limit(50).onSnapshot(
+        (snapshot) => {
+          state.history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), synced: true }));
+          renderHistory();
+          updateStats();
+        },
+        (error) => { console.error('[Firebase] Listener error:', error); showToast('⚠️ Listener error: ' + error.message, 'error'); }
+      );
     }
 
     function updateConnectionUI(status, title, message) {
       const banner = elements.connectionBanner;
       const dot = elements.statusDot;
       const text = elements.statusText;
-      
       banner.style.display = 'flex';
       banner.className = 'firebase-banner no-print';
-      
-      if (status === 'connected') {
-        banner.classList.add('connected');
-        dot.className = 'status-dot success';
-        text.textContent = '🔥 Live';
-        text.className = 'text-sm text-[--success] font-medium';
-      } else if (status === 'error') {
-        banner.classList.add('error');
-        dot.className = 'status-dot error';
-        text.textContent = '❌ Error';
-        text.className = 'text-sm text-[--error]';
-      } else if (status === 'connecting') {
-        dot.className = 'status-dot connecting';
-        text.textContent = '...';
-        text.className = 'text-sm text-[--firebase]';
-      } else {
-        dot.className = 'status-dot pending';
-        text.textContent = '⚠️ Setup';
-        text.className = 'text-sm text-[--warning]';
-      }
-      
+      if (status === 'connected') { banner.classList.add('connected'); dot.className = 'status-dot success'; text.textContent = '🔥 Live'; text.className = 'text-sm text-[--success] font-medium'; }
+      else if (status === 'error') { banner.classList.add('error'); dot.className = 'status-dot error'; text.textContent = '❌ Error'; text.className = 'text-sm text-[--error]'; }
+      else { dot.className = status === 'connecting' ? 'status-dot connecting' : 'status-dot pending'; text.textContent = status === 'connecting' ? '...' : '⚠️ Setup'; text.className = 'text-sm text-[--' + (status === 'connecting' ? 'firebase' : 'warning') + ']'; }
       elements.bannerTitle.textContent = title;
       elements.bannerMessage.textContent = message;
     }
@@ -1641,36 +1476,22 @@ const app = initializeApp(firebaseConfig);
         elements.paymentDateContainer.style.display = e.target.value === 'Lunas' ? 'block' : 'none';
         if (e.target.value !== 'Lunas') document.getElementById('tanggal_pembayaran').value = '';
       });
-
-      if (elements.statusInput.value !== 'Lunas') {
-        elements.paymentDateContainer.style.display = 'none';
-      }
+      if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
 
       elements.setupBtn.addEventListener('click', () => showSetupModal());
       elements.closeModal.addEventListener('click', () => elements.setupModal.classList.remove('show'));
-      elements.setupModal.addEventListener('click', (e) => {
-        if (e.target === elements.setupModal) elements.setupModal.classList.remove('show');
-      });
-
+      elements.setupModal.addEventListener('click', (e) => { if (e.target === elements.setupModal) elements.setupModal.classList.remove('show'); });
       elements.closeDocModal.addEventListener('click', () => elements.documentModal.classList.remove('show'));
 
+      // Clear all history
       elements.clearHistory.addEventListener('click', () => {
-        if (confirm('Hapus semua riwayat dari Firebase?')) {
-          if (db && confirm('PERINGATAN: Ini akan menghapus SEMUA data dari cloud! Lanjutkan?')) {
+        if (confirm('Hapus SEMUA data dari Firebase?')) {
+          if (db && confirm('PERINGATAN: Tidak bisa dikembalikan! Lanjutkan?')) {
             db.collection('submissions').get().then(snapshot => {
               const batch = db.batch();
               snapshot.docs.forEach(doc => batch.delete(doc.ref));
               return batch.commit();
-            }).then(() => {
-              showToast('🗑️ Semua data dihapus dari Firebase', 'success');
-            }).catch(err => {
-              showToast('Error menghapus: ' + err.message, 'error');
-            });
-          } else {
-            state.history = [];
-            renderHistory();
-            updateStats();
-            showToast('🗑️ Riwayat local dihapus', 'info');
+            }).then(() => showToast('🗑️ Semua data dihapus', 'success')).catch(err => showToast('Error: ' + err.message, 'error'));
           }
         }
       });
@@ -1688,10 +1509,14 @@ const app = initializeApp(firebaseConfig);
         if (e.key === 'Escape') {
           elements.setupModal.classList.remove('show');
           elements.documentModal.classList.remove('show');
+          elements.deleteConfirmModal.classList.remove('show');
         }
       });
     }
 
+    /* ============================
+       FORM ITEMS MANAGEMENT
+    ============================ */
     function renderFormItems() {
       const container = document.getElementById('itemsContainer');
       container.innerHTML = '';
@@ -1699,63 +1524,39 @@ const app = initializeApp(firebaseConfig);
       state.items.forEach((item, index) => {
         const row = document.createElement('div');
         row.className = 'grid grid-cols-12 gap-2 items-start';
-
         row.innerHTML = `
           <div class="col-span-4">
-            <label class="field-label text-[10px]">Item</label>
-            <input type="text" class="input-field text-sm" placeholder="Nama barang/jasa"
-              value="${escapeHtml(item.ket)}" oninput="updateItem(${index}, 'ket', this.value)">
+            <label class="field-label text-[10px]">Item<span class="required-star">*</span></label>
+            <input type="text" class="input-field text-sm" placeholder="Nama barang/jasa" value="${escapeHtml(item.ket)}" oninput="updateItem(${index}, 'ket', this.value)">
           </div>
           <div class="col-span-2">
-            <label class="field-label text-[10px]">Jumlah</label>
-            <input type="text" class="input-field text-sm text-center" placeholder="1"
-              value="${escapeHtml(item.qty)}" oninput="updateItem(${index}, 'qty', this.value)">
+            <label class="field-label text-[10px]">Jumlah<span class="required-star">*</span></label>
+            <input type="text" class="input-field text-sm text-center" placeholder="1" value="${escapeHtml(item.qty)}" oninput="updateItem(${index}, 'qty', this.value)">
           </div>
           <div class="col-span-3">
-            <label class="field-label text-[10px]">Nominal</label>
+            <label class="field-label text-[10px]">Nominal<span class="required-star">*</span></label>
             <div class="currency-wrapper">
-              <span class="prefix" style="font-size: 12px">Rp</span>
-              <input type="number" class="input-field text-sm mono" placeholder="0"
-                value="${item.nominal || ''}" oninput="updateItem(${index}, 'nominal', this.value)">
+              <span class="prefix" style="font-size:12px">Rp</span>
+              <input type="number" class="input-field text-sm mono" placeholder="0" value="${item.nominal || ''}" oninput="updateItem(${index}, 'nominal', this.value)">
             </div>
           </div>
           <div class="col-span-2">
             <label class="field-label text-[10px]">Ket.</label>
-            <input type="text" class="input-field text-sm" placeholder="Keterangan"
-              value="${escapeHtml(item.keterangan || '')}" oninput="updateItem(${index}, 'keterangan', this.value)">
+            <input type="text" class="input-field text-sm" placeholder="Keterangan" value="${escapeHtml(item.keterangan || '')}" oninput="updateItem(${index}, 'keterangan', this.value)">
           </div>
           <div class="col-span-1 flex justify-end">
-            ${state.items.length > 1 ? `
-              <button type="button" onclick="removeFormItem(${index})" class="btn-remove-item" title="Hapus">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
-            ` : '<div style="height:38px"></div>'}
+            ${state.items.length > 1 ? `<button type="button" onclick="removeFormItem(${index})" class="btn-remove-item" title="Hapus"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : '<div style="height:38px"></div>'}
           </div>
         `;
-
         container.appendChild(row);
       });
 
       calculateTotal();
     }
 
-    window.addFormItem = function() {
-      state.items.push({ ket: '', qty: '', nominal: 0, keterangan: '' });
-      renderFormItems();
-    };
-
-    window.removeFormItem = function(index) {
-      if (state.items.length <= 1) return;
-      state.items.splice(index, 1);
-      renderFormItems();
-    };
-
-    window.updateItem = function(index, key, value) {
-      state.items[index][key] = value;
-      if (key === 'nominal') calculateTotal();
-    };
+    window.addFormItem = function() { state.items.push({ ket: '', qty: '', nominal: 0, keterangan: '' }); renderFormItems(); };
+    window.removeFormItem = function(index) { if (state.items.length <= 1) return; state.items.splice(index, 1); renderFormItems(); };
+    window.updateItem = function(index, key, value) { state.items[index][key] = value; if (key === 'nominal') calculateTotal(); };
 
     function calculateTotal() {
       const total = state.items.reduce((acc, curr) => acc + (parseInt(curr.nominal) || 0), 0);
@@ -1763,6 +1564,53 @@ const app = initializeApp(firebaseConfig);
       return total;
     }
 
+    /* ============================
+       FORM VALIDATION (STRICT MODE)
+    ============================ */
+    function validateForm() {
+      const errors = [];
+      const fd = new FormData(elements.form);
+
+      // Check required fields
+      if (!fd.get('tanggal')) errors.push('Tanggal Invoice wajib diisi');
+      if (!fd.get('lokasi')) errors.push('Lokasi wajib diisi');
+      if (!fd.get('jenis_pengajuan')) errors.push('Jenis Pengajuan wajib diisi');
+      if (!fd.get('kode')) errors.push('Kode wajib diisi');
+      if (!fd.get('status')) errors.push('Status Pembayaran wajib dipilih');
+      if (!fd.get('dibayarkan_kepada')) errors.push('Dibayarkan Kepada wajib diisi');
+
+      // Check items
+      if (state.items.length === 0 || state.items.every(i => !i.ket.trim())) {
+        errors.push('Minimal 1 item barang/jasa harus diisi');
+      } else {
+        state.items.forEach((item, idx) => {
+          if (!item.ket.trim()) errors.push(`Item #${idx + 1}: Nama barang/jasa kosong`);
+          if (!item.qty.toString().trim()) errors.push(`Item #${idx + 1}: Jumlah kosong`);
+          if (!item.nominal || parseInt(item.nominal) <= 0) errors.push(`Item #${idx + 1}: Nominal harus > 0`);
+        });
+      }
+
+      // Show/hide error box
+      if (errors.length > 0) {
+        elements.validationErrorList.innerHTML = errors.map(e => `<li>${escapeHtml(e)}</li>`).join('');
+        elements.validationError.classList.add('show');
+        
+        // Highlight empty fields
+        document.querySelectorAll('.input-field[required]').forEach(field => {
+          if (!field.value) field.classList.add('required-empty');
+          setTimeout(() => field.classList.remove('required-empty'), 1500);
+        });
+
+        return false;
+      }
+
+      elements.validationError.classList.remove('show');
+      return true;
+    }
+
+    /* ============================
+       GET FORM DATA
+    ============================ */
     function getFormData() {
       const fd = new FormData(elements.form);
       return {
@@ -1788,12 +1636,18 @@ const app = initializeApp(firebaseConfig);
       };
     }
 
+    /* ============================
+       PREVIEW DOCUMENT
+    ============================ */
     function handlePreview() {
       const data = getFormData();
+      
+      // Quick validation before preview
       if (data.items.length === 0 || data.items.every(i => !i.ket)) {
         showToast('❌ Lengkapi minimal 1 item', 'error');
         return;
       }
+
       state.lastFormData = data;
       populateDocuments(data);
       elements.documentModal.classList.add('show');
@@ -1821,22 +1675,11 @@ const app = initializeApp(firebaseConfig);
       document.getElementById('p2_name_accounting').textContent = data.accounting;
 
       document.getElementById('p1_table_body').innerHTML = data.items.map((item, idx) => `
-        <tr>
-          <td class="col-no">${idx + 1}</td>
-          <td class="col-item">${escapeHtml(item.ket)}</td>
-          <td class="col-vol">${escapeHtml(item.qty)}</td>
-          <td class="col-nominal">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td>
-          <td class="col-ket">${escapeHtml(item.keterangan || '-')}</td>
-        </tr>
+        <tr><td class="col-no">${idx + 1}</td><td class="col-item">${escapeHtml(item.ket)}</td><td class="col-vol">${escapeHtml(item.qty)}</td><td class="col-nominal">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td><td class="col-ket">${escapeHtml(item.keterangan || '-')}</td></tr>
       `).join('');
 
       document.getElementById('p2_table_body').innerHTML = data.items.map((item, idx) => `
-        <tr>
-          <td style="text-align: center;">${idx + 1}</td>
-          <td>${escapeHtml(item.ket)}</td>
-          <td style="text-align: center;">${escapeHtml(item.qty)}</td>
-          <td style="text-align: right;">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td>
-        </tr>
+        <tr><td style="text-align:center">${idx + 1}</td><td>${escapeHtml(item.ket)}</td><td style="text-align:center">${escapeHtml(item.qty)}</td><td style="text-align:right">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td></tr>
       `).join('');
 
       const hasNote = data.catatan_tambahan && data.catatan_tambahan.trim();
@@ -1848,12 +1691,48 @@ const app = initializeApp(firebaseConfig);
       }
     }
 
+    /* ============================
+       DOWNLOAD AS PDF
+    ============================ */
+    async function downloadAsPDF() {
+      const element = document.getElementById('pdf-wrapper');
+      const opt = {
+        margin: 0,
+        filename: `Invoice_${state.lastFormData?.kode || 'FinanceSync'}_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      showToast('📥 Membuat PDF...', 'info');
+      
+      try {
+        await html2pdf().set(opt).from(element).save();
+        showToast('✅ PDF berhasil didownload!', 'success');
+      } catch (error) {
+        console.error('[PDF] Error:', error);
+        showToast('❌ Gagal membuat PDF: ' + error.message, 'error');
+      }
+    }
+
+    window.downloadAsPDF = downloadAsPDF;
+
+    /* ============================
+       SUBMIT TO FIREBASE (WITH VALIDATION)
+    ============================ */
     async function handleSubmit(e) {
       e.preventDefault();
 
       if (!db) {
-        showToast('❌ Firebase belum terhubung. Klik "Setup Firebase" dulu.', 'error');
+        showToast('❌ Firebase belum terhubung. Setup dulu.', 'error');
         showSetupModal();
+        return;
+      }
+
+      // VALIDATE FIRST!
+      if (!validateForm()) {
+        showToast('❌ Mohon lengkapi semua field yang ditandai *', 'error');
+        elements.validationError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         return;
       }
 
@@ -1869,10 +1748,10 @@ const app = initializeApp(firebaseConfig);
           synced: true
         });
 
-        console.log('[Firebase] Document written with ID:', docRef.id);
-
+        console.log('[Firebase] Written ID:', docRef.id);
         showToast(`✅ Data berhasil disimpan! ID: ${docRef.id.substring(0, 8)}...`, 'firebase');
 
+        // Reset form
         elements.form.reset();
         state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
         renderFormItems();
@@ -1887,59 +1766,50 @@ const app = initializeApp(firebaseConfig);
       }
 
       elements.submitBtn.disabled = false;
-      elements.submitBtn.innerHTML = `
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-        </svg>
-        <span>Simpan ke Cloud Firebase</span>
-      `;
+      elements.submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Cloud Firebase</span>`;
     }
 
+    /* ============================
+       RENDER HISTORY (WITH DELETE BUTTON)
+    ============================ */
     function renderHistory() {
-      let filtered = state.currentTab === 'all'
-        ? state.history
-        : state.history.filter(h => {
-            if (state.currentTab === 'synced') return h.synced === true;
-            if (state.currentTab === 'local') return h.synced !== true;
-            return true;
-          });
+      let filtered = state.currentTab === 'all' ? state.history : state.history.filter(h => {
+        if (state.currentTab === 'synced') return h.synced === true;
+        if (state.currentTab === 'local') return h.synced !== true;
+        return true;
+      });
 
       if (filtered.length === 0) {
         elements.historyList.innerHTML = `
           <div class="text-center py-10 text-[--muted]">
-            <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
+            <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <p class="text-sm">Belum ada data</p>
             <p class="text-xs mt-2 text-[--firebase]">🔥 Data akan muncul otomatis dari Firebase</p>
-          </div>
-        `;
+          </div>`;
         return;
       }
 
       elements.historyList.innerHTML = filtered.slice(0, 30).map(item => {
-        const timestamp = item.timestamp?.seconds 
-          ? new Date(item.timestamp.seconds * 1000).toLocaleString('id-ID')
-          : item.created_at || '-';
-        
+        const timestamp = item.timestamp?.seconds ? new Date(item.timestamp.seconds * 1000).toLocaleString('id-ID') : item.created_at || '-';
         return `
           <div class="history-item cursor-pointer" onclick="loadHistoryItem('${item.id}')">
             <div class="flex items-start justify-between gap-3">
-              <div class="flex-1 min-w-0">
+              <div class="flex-1 min-w-0 pr-8">
                 <div class="flex items-center gap-2">
-                  <span class="font-medium text-sm mono">${escapeHtml(item.no_invoice || '-')}</span>
+                  <span class="font-medium text-sm mono">${escapeHtml(item.no_invoice || item.kode || '-')}</span>
                   <span class="status-dot ${item.synced ? 'success' : 'pending'}"></span>
                   ${item.id ? `<span class="text-xs text-[--firebase]">#${item.id.substring(0, 6)}</span>` : ''}
                 </div>
-                <div class="text-xs text-[--muted] truncate mt-0.5">
-                  ${item.items?.length || 0} Item(s) • ${escapeHtml(item.jenis_pengajuan || '-')}
-                </div>
+                <div class="text-xs text-[--muted] truncate mt-0.5">${item.items?.length || 0} Item(s) • ${escapeHtml(item.jenis_pengajuan || '-')}</div>
                 <div class="flex items-center gap-3 mt-1.5">
                   <span class="text-xs font-medium text-[--accent]">Rp ${formatNumber(item.total_nominal || 0)}</span>
                 </div>
               </div>
-              <div class="text-xs text-[--muted] text-right whitespace-nowrap">
-                ${timestamp}
+              <div class="flex items-center gap-2">
+                <div class="text-xs text-[--muted] text-right whitespace-nowrap">${timestamp}</div>
+                <button onclick="event.stopPropagation(); showDeleteModal('${item.id}', '${escapeHtml(item.no_invoice || item.kode || '-')}', ${item.total_nominal || 0})" class="btn-delete-history" title="Hapus data ini">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -1947,18 +1817,47 @@ const app = initializeApp(firebaseConfig);
       }).join('');
     }
 
+    /* ============================
+       DELETE FUNCTIONALITY
+    ============================ */
+    window.showDeleteModal = function(id, label, amount) {
+      state.pendingDeleteId = id;
+      document.getElementById('deleteItemInfo').textContent = `${label} • Rp ${formatNumber(amount)}`;
+      elements.deleteConfirmModal.classList.add('show');
+    };
+
+    window.closeDeleteModal = function() {
+      elements.deleteConfirmModal.classList.remove('show');
+      state.pendingDeleteId = null;
+    };
+
+    window.confirmDelete = async function() {
+      if (!state.pendingDeleteId || !db) return;
+
+      try {
+        await db.collection('submissions').doc(state.pendingDeleteId).delete();
+        showToast('🗑️ Data berhasil dihapus dari Firebase', 'success');
+        closeDeleteModal();
+      } catch (error) {
+        console.error('[Delete] Error:', error);
+        showToast('❌ Gagal menghapus: ' + error.message, 'error');
+        closeDeleteModal();
+      }
+    };
+
     window.loadHistoryItem = function(id) {
       const item = state.history.find(h => h.id === id);
       if (item) {
-        state.items = (item.items || []).map(i => ({
-          ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || ''
-        }));
+        state.items = (item.items || []).map(i => ({ ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' }));
         renderFormItems();
         populateDocuments(item);
         elements.documentModal.classList.add('show');
       }
     };
 
+    /* ============================
+       UPDATE STATS
+    ============================ */
     function updateStats() {
       animateCounter(elements.totalData, state.history.length);
       animateCounter(elements.sentData, state.history.filter(h => h.synced).length);
@@ -1980,6 +1879,9 @@ const app = initializeApp(firebaseConfig);
       requestAnimationFrame(update);
     }
 
+    /* ============================
+       UTILITIES
+    ============================ */
     function showToast(message, type) {
       elements.toast.textContent = message;
       elements.toast.className = `toast ${type} show`;
@@ -1992,15 +1894,8 @@ const app = initializeApp(firebaseConfig);
       return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
-    function formatNumber(num) {
-      return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text || '';
-      return div.innerHTML;
-    }
+    function formatNumber(num) { return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
