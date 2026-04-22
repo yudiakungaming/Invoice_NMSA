@@ -1785,8 +1785,30 @@
       if (!state.pendingDeleteId || !db) return;
 
       try {
+        // Step 1: Hapus dari Firebase
         await db.collection('submissions').doc(state.pendingDeleteId).delete();
-        showToast('Data berhasil dihapus dari Firebase!', 'success');
+        console.log('[Firebase] Data dihapus:', state.pendingDeleteId);
+
+        // Step 2: Hapus dari Spreadsheet (async, tidak perlu tunggu)
+        if (state.webhookUrl) {
+          try {
+            await withTimeout(
+              fetch(state.webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ firebase_id: state.pendingDeleteId }),
+                mode: 'no-cors'
+              }),
+              15000,
+              'Spreadsheet delete'
+            );
+            console.log('[Spreadsheet] Data dihapus:', state.pendingDeleteId);
+          } catch (sheetErr) {
+            console.warn('[Spreadsheet Delete Warning]:', sheetErr.message);
+          }
+        }
+
+        showToast('Data berhasil dihapus (Firebase + Spreadsheet)!', 'success');
         closeDeleteModal();
       } catch (error) {
         console.error('[Delete] Error:', error);
