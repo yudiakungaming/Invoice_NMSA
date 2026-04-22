@@ -967,7 +967,8 @@
       pendingDeleteId: null,
       webhookUrl: DEFAULT_WEBHOOK_URL,
       filterDateFrom: '',
-      filterDateTo: ''
+      filterDateTo: '',
+      editingDocId: null // null = mode simpan baru, string = mode edit
     };
 
     let elements = {};
@@ -1017,12 +1018,34 @@
       // Set tanggal hari ini
       document.getElementById('tanggal').valueAsDate = new Date();
 
+      // Set default filter: bulan sekarang (1 - akhir bulan)
+      var now = new Date();
+      var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      var fromStr = firstDay.getFullYear() + '-' + String(firstDay.getMonth() + 1).padStart(2, '0') + '-' + String(firstDay.getDate()).padStart(2, '0');
+      var toStr = lastDay.getFullYear() + '-' + String(lastDay.getMonth() + 1).padStart(2, '0') + '-' + String(lastDay.getDate()).padStart(2, '0');
+      state.filterDateFrom = fromStr;
+      state.filterDateTo = toStr;
+      document.getElementById('filterDateFrom').value = fromStr;
+      document.getElementById('filterDateTo').value = toStr;
+
       // Initialize
       renderFormItems();
       setupEventListeners();
       
       // Try connect
       initDualConnection();
+
+      // Auto-generate invoice number after Firebase connects
+      setTimeout(function() {
+        if (db) {
+          autoGenerateInvoice().then(function(inv) {
+            if (inv && !document.getElementById('no_invoice').value) {
+              document.getElementById('no_invoice').value = inv;
+            }
+          });
+        }
+      }, 3000);
     }
 
     // =============================================
@@ -1115,9 +1138,9 @@
       // Update UI based on connection status
       updateConnectionUI();
       
-      // Start listening if Firebase connected
+      // Start listening if Firebase connected (gunakan filter default bulan ini)
       if (state.isConnected) {
-        startRealtimeListener();
+        applyDateFilter();
       }
     }
 
@@ -1550,6 +1573,106 @@
     window.downloadAsPDF = downloadAsPDF;
 
     // =============================================
+    // HELPER: Roman Numeral
+    // =============================================
+    function toRoman(num) {
+      var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+      var syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+      var result = '';
+      for (var i = 0; i < vals.length; i++) {
+        while (num >= vals[i]) { result += syms[i]; num -= vals[i]; }
+      }
+      return result;
+    }
+
+    // =============================================
+    // HELPER: Auto-generate No Invoice
+    // =============================================
+    async function autoGenerateInvoice() {
+      if (!db) return;
+      try {
+        var now = new Date();
+        var month = now.getMonth(); // 0-11
+        var year = now.getFullYear();
+        var startDate = year + '-' + String(month + 1).padStart(2, '0') + '-01';
+        var endDate = year + '-' + String(month + 1).padStart(2, '0') + '-31';
+
+        var snapshot = await db.collection('submissions')
+          .where('tanggal', '>=', startDate)
+          .where('tanggal', '<=', endDate)
+          .orderBy('tanggal', 'desc')
+          .get();
+
+        var maxNum = 0;
+        snapshot.forEach(function(doc) {
+          var noInv = doc.data().no_invoice || '';
+          var match = noInv.match(/(\d+)$/);
+          if (match) {
+            var n = parseInt(match[1]);
+            if (n > maxNum) maxNum = n;
+          }
+        });
+
+        var nextNum = maxNum + 1;
+        var romanMonth = toRoman(month + 1);
+        return 'BKK-NMSA/' + romanMonth + '/' + String(nextNum).padStart(4, '0');
+
+      } catch (error) {
+        console.warn('[Auto Invoice Error]:', error.message);
+        return 'BKK-NMSA/' + toRoman(new Date().getMonth() + 1) + '/0001';
+      }
+    }
+
+    // =============================================
+    // HELPER: Check Duplicate Transaction
+    // =============================================
+    async function checkDuplicate(data) {
+      if (!db) return false;
+      try {
+        var snapshot = await db.collection('submissions')
+          .where('tanggal', '==', data.tanggal)
+          .where('total_nominal', '==', data.total_nominal)
+          .where('dibayarkan_kepada', '==', data.dibayarkan_kepada)
+          .get();
+
+        var duplicate = false;
+        snapshot.forEach(function(doc) {
+          var existing = doc.data();
+          // Compare key fields
+          if (existing.lokasi === data.lokasi &&
+              existing.kode === data.kode &&
+              existing.jenis_pengajuan === data.jenis_pengajuan &&
+              existing.status === data.status &&
+              JSON.stringify(existing.items || []) === JSON.stringify(data.items)) {
+            duplicate = true;
+          }
+        });
+        return duplicate;
+      } catch (error) {
+        console.warn('[Duplicate Check Error]:', error.message);
+        return false;
+      }
+    }
+
+    // =============================================
+    // HELPER: Cancel Edit Mode
+    // =============================================
+    window.cancelEdit = function() {
+      state.editingDocId = null;
+      elements.form.reset();
+      state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+      renderFormItems();
+      document.getElementById('tanggal').valueAsDate = new Date();
+      if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
+      // Reset button text
+      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+      // Remove edit banner
+      var editBanner = document.getElementById('editModeBanner');
+      if (editBanner) editBanner.remove();
+      showToast('Mode edit dibatalkan', 'info');
+    };
+
+    // =============================================
     // HELPER: Promise with timeout (mencegah hang forever)
     // =============================================
     function withTimeout(promise, ms, label) {
@@ -1580,6 +1703,29 @@
       }
 
       var data = getFormData();
+      var isEditMode = !!state.editingDocId;
+
+      // ========== DUPLICATE CHECK (hanya mode simpan baru) ==========
+      if (!isEditMode) {
+        elements.submitBtn.disabled = true;
+        elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengecek duplikat...</span>';
+
+        var isDuplicate = await checkDuplicate(data);
+        if (isDuplicate) {
+          showToast('Transaksi duplikat! Data dengan detail sama sudah pernah diinput.', 'error');
+          elements.submitBtn.disabled = false;
+          elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+          return;
+        }
+
+        // Auto-generate invoice jika field kosong
+        if (!data.no_invoice.trim()) {
+          elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Generate No Invoice...</span>';
+          data.no_invoice = await autoGenerateInvoice();
+          document.getElementById('no_invoice').value = data.no_invoice;
+        }
+      }
+
       var docRef = null;
 
       // Show loading
@@ -1591,10 +1737,9 @@
       var firebaseError = '';
       var sheetsError = '';
 
-      // ========== STEP 1: SAVE TO FIREBASE (PRIMARY) ==========
+      // ========== STEP 1: SAVE / UPDATE FIREBASE ==========
       try {
-        console.log('[Firebase] Menyimpan data...');
-        var firebasePromise = db.collection('submissions').add({
+        var firebaseData = {
           tanggal: data.tanggal,
           lokasi: data.lokasi,
           kode: data.kode,
@@ -1613,27 +1758,35 @@
           dir_keuangan: data.dir_keuangan,
           direktur_utama: data.direktur_utama,
           accounting: data.accounting,
-          created_at: new Date().toISOString(),
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           synced: true,
           sheets_synced: false,
           sheets_synced_at: null,
           sheets_error: null
-        });
+        };
+
+        var firebasePromise;
+        if (isEditMode) {
+          // UPDATE existing document
+          firebasePromise = db.collection('submissions').doc(state.editingDocId).update(firebaseData);
+        } else {
+          // CREATE new document
+          firebaseData.created_at = new Date().toISOString();
+          firebaseData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+          firebasePromise = db.collection('submissions').add(firebaseData);
+        }
 
         docRef = await withTimeout(firebasePromise, 15000, 'Firebase write');
 
-        console.log('[Firebase] Saved! ID:', docRef.id);
+        console.log('[Firebase] ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', isEditMode ? state.editingDocId : docRef.id);
         firebaseSuccess = true;
-        state.lastFormData = Object.assign({}, data, { id: docRef.id });
+        state.lastFormData = Object.assign({}, data, { id: isEditMode ? state.editingDocId : docRef.id });
 
       } catch (error) {
         console.error('[Firebase Save Error]:', error);
         firebaseError = error.message || 'Unknown error';
 
-        // Detect common Firebase errors for user-friendly message
         if (firebaseError.indexOf('PERMISSION_DENIED') > -1 || firebaseError.indexOf('Missing or insufficient permissions') > -1) {
-          firebaseError = 'Permission denied! Ubah Security Rules Firebase Anda (lihat panduan di Setup).';
+          firebaseError = 'Permission denied! Ubah Security Rules Firebase Anda.';
         } else if (firebaseError.indexOf('timeout') > -1) {
           firebaseError = 'Firebase tidak merespon. Cek koneksi internet atau coba lagi.';
         }
@@ -1689,13 +1842,13 @@
       elements.submitBtn.disabled = false;
 
       if (firebaseSuccess && sheetsSuccess) {
-        showToast('Dual Sync Berhasil! (Firebase + Spreadsheet)', 'firebase');
+        showToast((isEditMode ? 'Berhasil diupdate' : 'Dual Sync Berhasil') + '! (Firebase + Spreadsheet)', 'firebase');
         updateConnectionUI();
         populateDocuments(data);
         elements.documentModal.classList.add('show');
 
       } else if (firebaseSuccess) {
-        showToast('Firebase OK! Spreadsheet gagal: ' + sheetsError, 'info');
+        showToast('Firebase OK! ' + (isEditMode ? 'Updated' : 'Saved') + '. Spreadsheet: ' + (sheetsError || 'gagal'), 'info');
         updateConnectionUI();
         populateDocuments(data);
         elements.documentModal.classList.add('show');
@@ -1705,7 +1858,6 @@
         updateConnectionUI();
 
       } else {
-        // Both failed - show detailed error
         var fullError = '';
         if (firebaseError) fullError += 'Firebase: ' + firebaseError;
         if (sheetsError) fullError += (fullError ? ' | ' : '') + 'Spreadsheet: ' + sheetsError;
@@ -1715,14 +1867,24 @@
 
       // Reset form after successful submission
       if (firebaseSuccess || sheetsSuccess) {
+        state.editingDocId = null;
         elements.form.reset();
         state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
         renderFormItems();
         document.getElementById('tanggal').valueAsDate = new Date();
         if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
+        // Remove edit banner
+        var editBanner = document.getElementById('editModeBanner');
+        if (editBanner) editBanner.remove();
+        // Reset button
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+        // Auto-generate next invoice for new form
+        autoGenerateInvoice().then(function(inv) {
+          document.getElementById('no_invoice').value = inv;
+        });
+      } else {
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>' + (isEditMode ? 'Update Transaksi' : 'Simpan ke Firebase + Spreadsheet') + '</span>';
       }
-
-      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
     }
 
     // =============================================
@@ -1868,6 +2030,9 @@
           '</div></div>' +
           '<div class="flex items-center gap-2">' +
           '<div class="text-xs color-muted text-right whitespace-nowrap">' + timestamp + '</div>' +
+          '<button onclick="event.stopPropagation();editHistoryItem(\'' + safeId + '\')" class="btn-delete-history" title="Edit data ini" style="color:var(--firebase);background:rgba(255,202,40,0.1);border-color:rgba(255,202,40,0.3);opacity:0;">' +
+          '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+          '</button>' +
           '<button onclick="event.stopPropagation();showDeleteModal(\'' + safeId + '\', \'' + escapeHtml(item.no_invoice || item.kode || '-') + '\', ' + (item.total_nominal || 0) + ')" class="btn-delete-history" title="Hapus data ini">' +
           '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
           '</button></div></div></div>';
@@ -1923,6 +2088,59 @@
         showToast('Gagal menghapus: ' + error.message, 'error');
         closeDeleteModal();
       }
+    };
+
+    // =============================================
+    // EDIT TRANSACTION
+    // =============================================
+    window.editHistoryItem = function(id) {
+      var item = state.history.find(function(h) { return h.id === id; });
+      if (!item) return;
+
+      // Set edit mode
+      state.editingDocId = id;
+
+      // Populate form with existing data
+      document.getElementById('tanggal').value = item.tanggal || '';
+      document.getElementById('lokasi').value = item.lokasi || '';
+      document.getElementById('jenis_pengajuan').value = item.jenis_pengajuan || '';
+      document.getElementById('kode').value = item.kode || '';
+      document.getElementById('no_invoice').value = item.no_invoice || '';
+      document.getElementById('status').value = item.status || '';
+      document.getElementById('dibayarkan_kepada').value = item.dibayarkan_kepada || '';
+      document.getElementById('catatan_tambahan').value = item.catatan_tambahan || '';
+      document.getElementById('tanggal_pembayaran').value = item.tanggal_pembayaran || '';
+
+      // Show/hide payment date
+      if (item.status === 'Lunas') {
+        elements.paymentDateContainer.style.display = 'block';
+      } else {
+        elements.paymentDateContainer.style.display = 'none';
+      }
+
+      // Populate items
+      state.items = (item.items || []).map(function(i) {
+        return { ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' };
+      });
+      renderFormItems();
+
+      // Change submit button
+      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
+
+      // Show edit mode banner
+      var editBanner = document.getElementById('editModeBanner');
+      if (!editBanner) {
+        editBanner = document.createElement('div');
+        editBanner.id = 'editModeBanner';
+        editBanner.style.cssText = 'background:rgba(255,202,40,0.15);border:1px solid rgba(255,202,40,0.4);border-radius:10px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+        var formCard = document.querySelector('#dataForm').parentElement;
+        formCard.insertBefore(editBanner, formCard.firstChild);
+      }
+      editBanner.innerHTML = '<div style="display:flex;align-items:center;gap:8px;"><svg style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span style="font-size:13px;color:#fbbf24;font-weight:600;">MODE EDIT — Mengubah transaksi #' + id.substring(0, 6) + '</span></div><button onclick="cancelEdit()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fbbf24;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Space Grotesk,sans-serif;">Batal</button>';
+
+      // Scroll to form
+      document.getElementById('dataForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Mode edit aktif. Ubah data lalu klik "Update Transaksi".', 'firebase');
     };
 
     window.loadHistoryItem = function(id) {
