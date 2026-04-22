@@ -451,7 +451,7 @@
     /* Document Content Styles */
     .doc-header-center { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
     .doc-company-name { font-size: 18px; font-weight: 700; color: #000; letter-spacing: 0.5px; line-height: 1.3; }
-    .doc-company-logo { height: 70px; width: auto; object-fit: contain; margin-bottom: 4px; }
+    .doc-company-logo { height: 91px; width: auto; object-fit: contain; margin-bottom: 4px; }
     .doc-form-title { font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 3px; color: #000; }
 
     .doc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 30px; margin-bottom: 20px; }
@@ -477,7 +477,7 @@
 
     .doc-header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
     .doc-header-left .doc-company-name { text-align: left; font-size: 16px; }
-    .doc-header-left .doc-company-logo { height: 55px; }
+    .doc-header-left .doc-company-logo { height: 72px; }
     .doc-form-title-right { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px; color: #000; }
     .doc-tanggal-box { font-size: 12px; color: #000; }
     .doc-tanggal-box span { border-bottom: 1px solid #000; padding: 0 8px; }
@@ -718,9 +718,28 @@
               <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
             </div>
 
-            <div class="flex gap-1 mb-4 p-1 bg-[--bg-secondary] rounded-lg">
+            <div class="flex gap-1 mb-3 p-1 bg-[--bg-secondary] rounded-lg">
               <button class="tab-btn active flex-1" data-tab="all">Semua</button>
               <button class="tab-btn flex-1" data-tab="synced">Synced</button>
+            </div>
+
+            <!-- Date Filter -->
+            <div class="mb-3 p-3 bg-[--bg-secondary] rounded-lg" id="dateFilterSection">
+              <div class="flex items-center gap-2 mb-2">
+                <svg class="w-4 h-4 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="text-xs font-medium text-[--muted]">FILTER TANGGAL</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[10px] text-[--muted] block mb-1">Dari</label>
+                  <input type="date" id="filterDateFrom" class="input-field text-xs" style="padding:8px 10px;">
+                </div>
+                <div>
+                  <label class="text-[10px] text-[--muted] block mb-1">Sampai</label>
+                  <input type="date" id="filterDateTo" class="input-field text-xs" style="padding:8px 10px;">
+                </div>
+              </div>
+              <button onclick="clearDateFilter()" class="text-[10px] text-[--firebase] hover:underline mt-2 block">Reset Filter</button>
             </div>
 
             <div id="historyList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
@@ -946,7 +965,9 @@
       items: [{ ket: '', qty: '', nominal: 0, keterangan: '' }],
       unsubscribeListener: null,
       pendingDeleteId: null,
-      webhookUrl: DEFAULT_WEBHOOK_URL
+      webhookUrl: DEFAULT_WEBHOOK_URL,
+      filterDateFrom: '',
+      filterDateTo: ''
     };
 
     let elements = {};
@@ -1323,6 +1344,18 @@
         });
       });
 
+      // Date filter event listeners
+      var filterFrom = document.getElementById('filterDateFrom');
+      var filterTo = document.getElementById('filterDateTo');
+      filterFrom.addEventListener('change', function() {
+        state.filterDateFrom = this.value;
+        applyDateFilter();
+      });
+      filterTo.addEventListener('change', function() {
+        state.filterDateTo = this.value;
+        applyDateFilter();
+      });
+
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
           elements.setupModal.classList.remove('show');
@@ -1694,11 +1727,76 @@
     }
 
     // =============================================
+    // DATE FILTER FUNCTIONS
+    // =============================================
+    function applyDateFilter() {
+      if (!db) return;
+
+      var from = state.filterDateFrom;
+      var to = state.filterDateTo;
+
+      // If no filter, restart normal listener
+      if (!from && !to) {
+        startRealtimeListener();
+        return;
+      }
+
+      // Build Firestore query with date range
+      var query = db.collection('submissions').orderBy('tanggal', 'desc');
+
+      if (from) {
+        query = query.where('tanggal', '>=', from);
+      }
+      if (to) {
+        query = query.where('tanggal', '<=', to);
+      }
+
+      // Unsubscribe old listener
+      if (state.unsubscribeListener) state.unsubscribeListener();
+
+      // Show filter active indicator
+      var filterSection = document.getElementById('dateFilterSection');
+      if (filterSection) filterSection.style.borderColor = 'var(--firebase)';
+
+      state.unsubscribeListener = query.limit(100).onSnapshot(
+        function(snapshot) {
+          state.history = snapshot.docs.map(function(doc) {
+            return Object.assign({ id: doc.id }, doc.data(), { synced: true });
+          });
+          renderHistory();
+          updateStats();
+          showToast('Filter aktif: ' + (from || '...') + ' s/d ' + (to || '...') + ' (' + state.history.length + ' data)', 'info');
+        },
+        function(error) {
+          console.error('[Filter Listener] Error:', error);
+          showToast('Filter error: ' + error.message, 'error');
+        }
+      );
+    }
+
+    window.clearDateFilter = function() {
+      state.filterDateFrom = '';
+      state.filterDateTo = '';
+      document.getElementById('filterDateFrom').value = '';
+      document.getElementById('filterDateTo').value = '';
+
+      var filterSection = document.getElementById('dateFilterSection');
+      if (filterSection) filterSection.style.borderColor = 'var(--border)';
+
+      startRealtimeListener();
+      showToast('Filter tanggal direset', 'info');
+    };
+
+    // =============================================
     // REALTIME LISTENER
     // =============================================
     function startRealtimeListener() {
       if (state.unsubscribeListener) state.unsubscribeListener();
-      
+
+      // Reset filter border when back to normal listener
+      var filterSection = document.getElementById('dateFilterSection');
+      if (filterSection) filterSection.style.borderColor = 'var(--border)';
+
       state.unsubscribeListener = db
         .collection('submissions')
         .orderBy('timestamp', 'desc')
@@ -1711,6 +1809,14 @@
           },
           function(error) {
             console.error('[Listener] Error:', error);
+            // Auto-detect: jika butuh composite index, tampilkan link
+            if (error.message && error.message.indexOf('FAILED_PRECONDITION') > -1 && error.message.indexOf('index') > -1) {
+              var linkMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s"']+/);
+              if (linkMatch) {
+                showToast('Perlu buat index di Firebase. Klik error di Console (F12) untuk link-nya.', 'error');
+                console.log('[INDEX NEEDED] Buka link ini untuk buat index:', linkMatch[0]);
+              }
+            }
             showToast('Realtime listener error', 'error');
           }
         );
