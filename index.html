@@ -1791,11 +1791,12 @@
         await db.collection('submissions').doc(state.pendingDeleteId).delete();
         console.log('[Firebase] Data dihapus:', state.pendingDeleteId);
 
-        // Step 2: Hapus dari Spreadsheet (async, tidak perlu tunggu)
+        // Step 2: Hapus dari Spreadsheet (fire-and-forget)
         if (state.webhookUrl) {
           try {
+            var deleteUrl = state.webhookUrl + '?action=delete&id=' + encodeURIComponent(state.pendingDeleteId);
             await withTimeout(
-              fetch(state.webhookUrl, {
+              fetch(deleteUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ firebase_id: state.pendingDeleteId }),
@@ -1804,7 +1805,7 @@
               15000,
               'Spreadsheet delete'
             );
-            console.log('[Spreadsheet] Data dihapus:', state.pendingDeleteId);
+            console.log('[Spreadsheet] Hapus request terkirim:', state.pendingDeleteId);
           } catch (sheetErr) {
             console.warn('[Spreadsheet Delete Warning]:', sheetErr.message);
           }
