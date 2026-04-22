@@ -451,6 +451,7 @@
     /* Document Content Styles */
     .doc-header-center { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
     .doc-company-name { font-size: 18px; font-weight: 700; color: #000; letter-spacing: 0.5px; line-height: 1.3; }
+    .doc-company-logo { height: 70px; width: auto; object-fit: contain; margin-bottom: 4px; }
     .doc-form-title { font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 3px; color: #000; }
 
     .doc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 30px; margin-bottom: 20px; }
@@ -476,6 +477,7 @@
 
     .doc-header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
     .doc-header-left .doc-company-name { text-align: left; font-size: 16px; }
+    .doc-header-left .doc-company-logo { height: 55px; }
     .doc-form-title-right { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px; color: #000; }
     .doc-tanggal-box { font-size: 12px; color: #000; }
     .doc-tanggal-box span { border-bottom: 1px solid #000; padding: 0 8px; }
@@ -840,7 +842,7 @@
           <!-- HALAMAN 1 -->
           <div class="document-page" id="documentPage1">
             <div class="doc-header-center">
-              <div class="doc-company-name">PT. NUSANTARA MINERAL SUKSES ABADI</div>
+              <img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo Nusantara Mineral Sukses Abadi" class="doc-company-logo" onerror="this.style.display='none'">
               <div class="doc-form-title">FORMULIR PENGAJUAN HO</div>
             </div>
             <div class="doc-info-grid">
@@ -865,7 +867,7 @@
           <!-- HALAMAN 2 -->
           <div class="document-page" id="documentPage2">
             <div class="doc-header-flex">
-              <div class="doc-header-left"><div class="doc-company-name">PT. NUSANTARA MINERAL SUKSES ABADI</div></div>
+              <div class="doc-header-left"><img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo Nusantara Mineral Sukses Abadi" class="doc-company-logo" onerror="this.style.display='none'"></div>
               <div class="doc-header-right">
                 <div class="doc-form-title-right">BUKTI PENGELUARAN KAS / BANK</div>
                 <div class="doc-tanggal-box">Tanggal : <span id="p2_tanggal"></span></div>
