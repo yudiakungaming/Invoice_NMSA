@@ -1379,7 +1379,7 @@
           '<input type="text" class="input-field text-sm" placeholder="Nama barang/jasa" value="' + escapeHtml(item.ket) + '" oninput="updateItem(' + index + ', \'ket\', this.value)">' +
           '</div>' +
           '<div class="col-span-2">' +
-          '<label class="field-label text-[10px]">Jumlah<span class="required-star">*</span></label>' +
+          '<label class="field-label text-[10px]">Jumlah</label>' +
           '<input type="text" class="input-field text-sm text-center" placeholder="1" value="' + escapeHtml(item.qty) + '" oninput="updateItem(' + index + ', \'qty\', this.value)">' +
           '</div>' +
           '<div class="col-span-3">' +
@@ -1430,7 +1430,6 @@
       else {
         state.items.forEach(function(item, idx) {
           if (!item.ket.trim()) errors.push('Item #' + (idx + 1) + ': Nama kosong');
-          if (!item.qty.toString().trim()) errors.push('Item #' + (idx + 1) + ': Jumlah kosong');
           if (!item.nominal || parseInt(item.nominal) <= 0) errors.push('Item #' + (idx + 1) + ': Nominal harus > 0');
         });
       }
