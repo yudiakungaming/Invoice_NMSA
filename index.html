@@ -1516,7 +1516,19 @@
     window.downloadAsPDF = downloadAsPDF;
 
     // =============================================
-    // SUBMIT HANDLER - DUAL WRITE
+    // HELPER: Promise with timeout (mencegah hang forever)
+    // =============================================
+    function withTimeout(promise, ms, label) {
+      return Promise.race([
+        promise,
+        new Promise(function(_, reject) {
+          setTimeout(function() { reject(new Error(label + ' timeout (' + ms / 1000 + 's)')); }, ms);
+        })
+      ]);
+    }
+
+    // =============================================
+    // SUBMIT HANDLER - DUAL WRITE (FIXED: timeout + no-cors + robust error)
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
@@ -1538,15 +1550,17 @@
 
       // Show loading
       elements.submitBtn.disabled = true;
-      elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Dual Sync...</span>';
+      elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan ke Firebase...</span>';
 
       var firebaseSuccess = false;
       var sheetsSuccess = false;
-      var errorMessage = '';
+      var firebaseError = '';
+      var sheetsError = '';
 
       // ========== STEP 1: SAVE TO FIREBASE (PRIMARY) ==========
       try {
-        docRef = await db.collection('submissions').add({
+        console.log('[Firebase] Menyimpan data...');
+        var firebasePromise = db.collection('submissions').add({
           tanggal: data.tanggal,
           lokasi: data.lokasi,
           kode: data.kode,
@@ -1573,17 +1587,27 @@
           sheets_error: null
         });
 
+        docRef = await withTimeout(firebasePromise, 15000, 'Firebase write');
+
         console.log('[Firebase] Saved! ID:', docRef.id);
         firebaseSuccess = true;
         state.lastFormData = Object.assign({}, data, { id: docRef.id });
 
       } catch (error) {
         console.error('[Firebase Save Error]:', error);
-        errorMessage = 'Firebase: ' + error.message;
+        firebaseError = error.message || 'Unknown error';
+
+        // Detect common Firebase errors for user-friendly message
+        if (firebaseError.indexOf('PERMISSION_DENIED') > -1 || firebaseError.indexOf('Missing or insufficient permissions') > -1) {
+          firebaseError = 'Permission denied! Ubah Security Rules Firebase Anda (lihat panduan di Setup).';
+        } else if (firebaseError.indexOf('timeout') > -1) {
+          firebaseError = 'Firebase tidak merespon. Cek koneksi internet atau coba lagi.';
+        }
       }
 
       // ========== STEP 2: SEND TO SPREADSHEET (SECONDARY) ==========
       if (state.webhookUrl) {
+        elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengirim ke Spreadsheet...</span>';
         try {
           var payload = Object.assign({}, data, {
             _source: 'FinanceSync Pro',
@@ -1591,56 +1615,67 @@
             _firebase_id: docRef ? docRef.id : 'pending'
           });
 
-          var response = await fetch(state.webhookUrl, {
+          var sheetsPromise = fetch(state.webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
+            mode: 'no-cors',  // FIX: Gunakan no-cors agar tidak hang karena CORS
             redirect: 'follow'
           });
 
-          // Google Apps Script may return opaque or JSON response
+          await withTimeout(sheetsPromise, 20000, 'Spreadsheet fetch');
+
+          // mode: 'no-cors' mengembalikan opaque response, tapi berarti request terkirim
           sheetsSuccess = true;
-          console.log('[Spreadsheet] Sent!');
+          console.log('[Spreadsheet] Terkirim!');
 
           // Update Firebase doc with sync info
           if (docRef) {
             try {
-              await docRef.update({
-                sheets_synced: true,
-                sheets_synced_at: new Date().toISOString()
-              });
+              await withTimeout(
+                docRef.update({
+                  sheets_synced: true,
+                  sheets_synced_at: new Date().toISOString()
+                }),
+                10000,
+                'Firebase update'
+              );
             } catch (updateErr) {
               console.warn('[Firebase Update Warning]:', updateErr.message);
             }
           }
 
         } catch (error) {
-          console.warn('[Spreadsheet Warning]:', error.message);
-          errorMessage += (errorMessage ? ' | ' : '') + 'Spreadsheet: ' + error.message;
+          console.warn('[Spreadsheet Error]:', error);
+          sheetsError = error.message || 'Unknown error';
         }
       }
 
       // ========== UPDATE UI ==========
       elements.submitBtn.disabled = false;
-      
+
       if (firebaseSuccess && sheetsSuccess) {
         showToast('Dual Sync Berhasil! (Firebase + Spreadsheet)', 'firebase');
         updateConnectionUI();
         populateDocuments(data);
         elements.documentModal.classList.add('show');
-        
+
       } else if (firebaseSuccess) {
-        showToast('Disimpan di Firebase. Spreadsheet gagal: ' + errorMessage, 'info');
+        showToast('Firebase OK! Spreadsheet gagal: ' + sheetsError, 'info');
         updateConnectionUI();
         populateDocuments(data);
         elements.documentModal.classList.add('show');
-        
+
       } else if (sheetsSuccess) {
-        showToast('Disimpan di Spreadsheet. Firebase gagal: ' + errorMessage, 'error');
+        showToast('Spreadsheet OK! Firebase gagal: ' + firebaseError, 'error');
         updateConnectionUI();
-        
+
       } else {
-        showToast('Gagal menyimpan: ' + errorMessage, 'error');
+        // Both failed - show detailed error
+        var fullError = '';
+        if (firebaseError) fullError += 'Firebase: ' + firebaseError;
+        if (sheetsError) fullError += (fullError ? ' | ' : '') + 'Spreadsheet: ' + sheetsError;
+        showToast('Gagal menyimpan: ' + fullError, 'error');
         updateConnectionUI();
       }
 
