@@ -204,10 +204,11 @@
 
     .btn-remove-item:hover { background: rgba(239, 68, 68, 0.2); }
 
-    .btn-delete-history {
-      color: var(--error);
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+    /* Single Action Button with Dropdown */
+    .btn-action-menu {
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
       width: 28px;
       height: 28px;
       display: flex;
@@ -218,10 +219,49 @@
       flex-shrink: 0;
       transition: all 0.2s;
       opacity: 0;
+      position: relative;
+      padding: 0;
     }
 
-    .history-item:hover .btn-delete-history { opacity: 1; }
-    .btn-delete-history:hover { background: rgba(239, 68, 68, 0.25); border-color: var(--error); transform: scale(1.1); }
+    .history-item:hover .btn-action-menu { opacity: 1; }
+    .btn-action-menu:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--fg); }
+
+    .action-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      z-index: 60;
+      min-width: 130px;
+      overflow: hidden;
+      animation: slideUp 0.15s ease-out;
+    }
+
+    .action-dropdown button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      color: var(--fg);
+      font-size: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .action-dropdown button:hover { background: rgba(255, 255, 255, 0.08); }
+    .action-dropdown button.action-edit { color: var(--firebase); }
+    .action-dropdown button.action-edit:hover { background: rgba(255, 202, 40, 0.1); }
+    .action-dropdown button.action-delete { color: var(--error); }
+    .action-dropdown button.action-delete:hover { background: rgba(239, 68, 68, 0.1); }
+    .action-dropdown .dropdown-divider { height: 1px; background: var(--border); margin: 2px 0; }
 
     /* Cards */
     .card {
@@ -873,7 +913,7 @@
             <table class="doc-table">
               <thead><tr><th class="col-no">NO</th><th class="col-item">ITEM</th><th class="col-vol">JUMLAH / VOLUME</th><th class="col-nominal">Total (Rp)</th><th class="col-ket">KETERANGAN</th></tr></thead>
               <tbody id="p1_table_body"></tbody>
-              <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right;font-weight:700">TOTAL</td><td class="col-nominal" id="p1_total"></td><td></td></tr></tfoot>
+              <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right" id="p1_total"></td><td></td></tr></tfoot>
             </table>
             <div id="p1_notes_manual_wrapper" style="display:none;"><div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN:</div><div class="doc-notes-manual" id="p1_notes_manual"></div></div></div>
             <div class="doc-signatures-p1">
@@ -1606,7 +1646,10 @@
         var maxNum = 0;
         snapshot.forEach(function(doc) {
           var noInv = doc.data().no_invoice || '';
-          var match = noInv.match(/(\d+)$/);
+          // Match last number after last slash: BKK-NMSA/IV/2026/0003
+          var parts = noInv.split('/');
+          var lastPart = parts[parts.length - 1];
+          var match = lastPart.match(/^(\d+)$/);
           if (match) {
             var n = parseInt(match[1]);
             if (n > maxNum) maxNum = n;
@@ -1615,11 +1658,11 @@
 
         var nextNum = maxNum + 1;
         var romanMonth = toRoman(month + 1);
-        return 'BKK-NMSA/' + romanMonth + '/' + String(nextNum).padStart(4, '0');
+        return 'BKK-NMSA/' + romanMonth + '/' + year + '/' + String(nextNum).padStart(4, '0');
 
       } catch (error) {
         console.warn('[Auto Invoice Error]:', error.message);
-        return 'BKK-NMSA/' + toRoman(new Date().getMonth() + 1) + '/0001';
+        return 'BKK-NMSA/' + toRoman(new Date().getMonth() + 1) + '/' + new Date().getFullYear() + '/0001';
       }
     }
 
@@ -2030,14 +2073,48 @@
           '</div></div>' +
           '<div class="flex items-center gap-2">' +
           '<div class="text-xs color-muted text-right whitespace-nowrap">' + timestamp + '</div>' +
-          '<button onclick="event.stopPropagation();editHistoryItem(\'' + safeId + '\')" class="btn-delete-history" title="Edit data ini" style="color:var(--firebase);background:rgba(255,202,40,0.1);border-color:rgba(255,202,40,0.3);opacity:0;">' +
-          '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
-          '</button>' +
-          '<button onclick="event.stopPropagation();showDeleteModal(\'' + safeId + '\', \'' + escapeHtml(item.no_invoice || item.kode || '-') + '\', ' + (item.total_nominal || 0) + ')" class="btn-delete-history" title="Hapus data ini">' +
-          '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+          '<button onclick="event.stopPropagation();toggleActionMenu(event, \'' + safeId + '\', \'' + escapeHtml(item.no_invoice || item.kode || '-') + '\', ' + (item.total_nominal || 0) + ')" class="btn-action-menu" title="Aksi">' +
+          '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>' +
           '</button></div></div></div>';
       }).join('');
     }
+
+    // =============================================
+    // ACTION MENU (Single Button → Dropdown)
+    // =============================================
+    var activeActionMenu = null;
+
+    window.toggleActionMenu = function(e, id, label, amount) {
+      e.stopPropagation();
+      // Close any existing open menu
+      closeAllActionMenus();
+
+      var btn = e.currentTarget;
+      var dropdown = document.createElement('div');
+      dropdown.className = 'action-dropdown';
+      dropdown.innerHTML =
+        '<button class="action-edit" onclick="event.stopPropagation();closeAllActionMenus();editHistoryItem(\'' + id + '\')">' +
+        '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+        'Edit</button>' +
+        '<div class="dropdown-divider"></div>' +
+        '<button class="action-delete" onclick="event.stopPropagation();closeAllActionMenus();showDeleteModal(\'' + id + '\', \'' + label.replace(/'/g, "\\'") + '\', ' + amount + ')">' +
+        '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+        'Hapus</button>';
+
+      btn.appendChild(dropdown);
+      activeActionMenu = dropdown;
+    };
+
+    function closeAllActionMenus() {
+      var menus = document.querySelectorAll('.action-dropdown');
+      menus.forEach(function(m) { m.remove(); });
+      activeActionMenu = null;
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function() {
+      closeAllActionMenus();
+    });
 
     // =============================================
     // DELETE FUNCTIONALITY
