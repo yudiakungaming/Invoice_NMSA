@@ -1206,7 +1206,7 @@
         
         // Also save webhook URL if user changed it
         // BUG FIX: was "currentWebhookUrl" (undefined) -> now "currentWebhook"
-        const currentWebhook = elements.webhookUrl.value.trim();
+        const currentWebhook = elements.webhookUrlInput.value.trim();
         if (currentWebhook && currentWebhook !== DEFAULT_WEBHOOK_URL) {
           state.webhookUrl = currentWebhook;
           localStorage.setItem(CONFIG_KEYS.WEBHOOK_URL, currentWebhook);
