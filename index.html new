@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinanceSync Pro - Dual Sync (Firebase + Spreadsheet)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <!-- html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0c1222;
+      --bg-secondary: #141d2f;
+      --fg: #f1f5f9;
+      --muted: #64748b;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.25);
+      --card: #1a2642;
+      --border: #2a3a5c;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --firebase: #ffca28;
+      --firebase-orange: #ffa726;
+      --sheets: #10b981;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    .bg-pattern {
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(16, 185, 129, 0.1), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 202, 40, 0.08), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes firebase-glow { 0%, 100% { box-shadow: 0 0 20px rgba(255, 202, 40, 0.3); } 50% { box-shadow: 0 0 30px rgba(255, 202, 40, 0.6); } }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+    @keyframes sheets-glow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); } }
+
+    .animate-in { animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+
+    @media (prefers-reduced-motion: reduce) { .animate-in { animation: none; opacity: 1; } }
+
+    .input-field {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--fg);
+      font-size: 14px;
+      width: 100%;
+      transition: all 0.2s ease;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .input-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .input-field::placeholder { color: var(--muted); }
+    .input-field:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    .input-field.required-empty { border-color: var(--error); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); animation: shake 0.5s ease-in-out; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+    .field-label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+    .field-label .required-star { color: var(--error); margin-left: 2px; }
+
+    /* Buttons */
+    .btn-submit {
+      background: linear-gradient(135deg, var(--firebase), var(--firebase-orange));
+      color: #000;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      animation: firebase-glow 2s ease-in-out infinite;
+    }
+
+    .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 202, 40, 0.45); }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; animation: none; }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover { border-color: var(--firebase); color: var(--firebase); }
+
+    .btn-print {
+      background: #334155;
+      color: white;
+      font-weight: 600;
+      padding: 14px 28px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-print:hover { background: #475569; transform: translateY(-2px); }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35); }
+
+    .btn-add-item {
+      background: rgba(255, 202, 40, 0.15);
+      color: var(--firebase);
+      border: 1px dashed var(--firebase);
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: 0.2s;
+    }
+
+    .btn-add-item:hover { background: rgba(255, 202, 40, 0.25); }
+
+    .btn-remove-item {
+      color: var(--error);
+      background: rgba(239, 68, 68, 0.1);
+      border: none;
+      width: 32px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 24px;
+    }
+
+    .btn-remove-item:hover { background: rgba(239, 68, 68, 0.2); }
+
+    /* Single Action Button with Dropdown */
+    .btn-action-menu {
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      opacity: 0;
+      position: relative;
+      padding: 0;
+    }
+
+    .history-item:hover .btn-action-menu { opacity: 1; }
+    .btn-action-menu:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--fg); }
+
+    .action-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      z-index: 60;
+      min-width: 130px;
+      overflow: hidden;
+      animation: slideUp 0.15s ease-out;
+    }
+
+    .action-dropdown button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      color: var(--fg);
+      font-size: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .action-dropdown button:hover { background: rgba(255, 255, 255, 0.08); }
+    .action-dropdown button.action-edit { color: var(--firebase); }
+    .action-dropdown button.action-edit:hover { background: rgba(255, 202, 40, 0.1); }
+    .action-dropdown button.action-delete { color: var(--error); }
+    .action-dropdown button.action-delete:hover { background: rgba(239, 68, 68, 0.1); }
+    .action-dropdown .dropdown-divider { height: 1px; background: var(--border); margin: 2px 0; }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    /* Status Dots */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .status-dot.success { background: var(--success); animation: pulse-ring 2s ease-out infinite; }
+    .status-dot.success::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--success); animation: pulse-ring 2s ease-out infinite; }
+    .status-dot.pending { background: var(--warning); }
+    .status-dot.error { background: var(--error); }
+    .status-dot.connecting { background: var(--firebase); animation: pulse-ring 1s ease-out infinite; }
+
+    .history-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .history-item:hover { border-color: var(--firebase); transform: translateX(4px); }
+
+    /* Banners */
+    .connection-banner {
+      background: linear-gradient(135deg, rgba(255, 202, 40, 0.15), rgba(255, 167, 38, 0.08));
+      border: 1px solid rgba(255, 202, 40, 0.3);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .connection-banner.connected {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .connection-banner.dual-connected {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(16, 185, 129, 0.08));
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .connection-banner.error {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.show { opacity: 1; visibility: visible; }
+
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .modal-content { transform: scale(1); }
+
+    .modal-document {
+      max-width: 100%;
+      width: 100%;
+      max-height: 95vh;
+      background: #e2e8f0;
+      padding: 0;
+      overflow: hidden;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 14px;
+      z-index: 200;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 450px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: var(--success); color: white; }
+    .toast.error { background: var(--error); color: white; }
+    .toast.info { background: var(--accent); color: white; }
+    .toast.firebase { background: linear-gradient(135deg, var(--firebase), var(--firebase-orange)); color: #000; }
+    .toast.sheets { background: linear-gradient(135deg, var(--sheets), #059669); color: white; }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .currency-wrapper { position: relative; }
+    .currency-wrapper .prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; }
+    .currency-wrapper input { padding-left: 36px; }
+
+    .tab-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover { color: var(--fg); background: rgba(255, 255, 255, 0.05); }
+    .tab-btn.active { color: var(--firebase); background: rgba(255, 202, 40, 0.15); }
+
+    /* Document Styles */
+    .documents-container {
+      background: #e2e8f0;
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .pdf-wrapper { background: white; width: 210mm; }
+
+    .document-page {
+      background: white;
+      color: #000;
+      padding: 35px 50px;
+      font-family: 'Space Grotesk', sans-serif;
+      width: 100%;
+      min-height: 297mm;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .document-page:last-child { page-break-after: auto; break-after: auto; }
+
+    .page-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(5px);
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      flex-wrap: wrap;
+    }
+
+    .btn-print-doc {
+      background: #334155;
+      color: white;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-print-doc:hover { background: #475569; }
+
+    /* Document Content Styles */
+    .doc-header-center { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
+    .doc-company-name { font-size: 18px; font-weight: 700; color: #000; letter-spacing: 0.5px; line-height: 1.3; }
+    .doc-company-logo { height: 91px; width: auto; object-fit: contain; margin-bottom: 4px; }
+    .doc-form-title { font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 3px; color: #000; }
+
+    .doc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 30px; margin-bottom: 20px; }
+    .doc-info-item { display: flex; gap: 8px; font-size: 13px; color: #000; }
+    .doc-info-label { font-weight: 600; min-width: 80px; color: #000; }
+    .doc-info-value { border-bottom: 1px solid #000; flex: 1; padding-bottom: 1px; min-height: 18px; }
+
+    .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px; color: #000; }
+    .doc-table th { background: transparent; color: #000; padding: 6px 8px; text-align: center; font-weight: 600; font-size: 11px; border: 1px solid #000; }
+    .doc-table td { border: 1px solid #000; padding: 6px 8px; vertical-align: top; color: #000; }
+    .col-no { width: 35px; text-align: center; }
+    .col-item { min-width: 140px; }
+    .col-vol { width: 90px; text-align: center; }
+    .col-nominal { width: 110px; text-align: right; }
+    .col-ket { min-width: 100px; }
+    .doc-total-row td { background: transparent; font-weight: 700; font-size: 13px; border: 1px solid #000; }
+
+    .doc-signatures-p1 { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 20px; text-align: center; page-break-inside: avoid; }
+    .doc-sig-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 130px; }
+    .doc-sig-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #000; margin-bottom: 5px; letter-spacing: 2px; }
+    .doc-sig-space { flex-grow: 1; width: 100%; }
+    .doc-sig-name { width: 80%; font-weight: 700; font-size: 12px; color: #000; padding-bottom: 3px; border-bottom: 1px solid #000; }
+
+    .doc-header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
+    .doc-header-left .doc-company-name { text-align: left; font-size: 16px; }
+    .doc-header-left .doc-company-logo { height: 72px; }
+    .doc-form-title-right { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px; color: #000; }
+    .doc-tanggal-box { font-size: 12px; color: #000; }
+    .doc-tanggal-box span { border-bottom: 1px solid #000; padding: 0 8px; }
+
+    .doc-payment-info { margin-bottom: 15px; font-size: 13px; color: #000; }
+    .doc-payment-row { display: flex; gap: 10px; margin-bottom: 6px; align-items: center; }
+    .doc-payment-label { min-width: 140px; font-weight: 600; flex-shrink: 0; color: #000; }
+    .doc-payment-value { border-bottom: 1px solid #000; flex: 1; padding-bottom: 1px; }
+    .doc-check { display: inline-block; width: 14px; height: 14px; border: 1.5px solid #000; text-align: center; line-height: 11px; font-size: 9px; font-weight: 800; margin-right: 4px; vertical-align: middle; font-family: 'Space Grotesk', sans-serif; }
+
+    .doc-notes { margin-top: 20px; padding: 10px 12px; border: 1px solid #000; background: transparent; }
+    .doc-notes-title { font-weight: 700; font-size: 12px; margin-bottom: 4px; color: #000; }
+    .doc-notes-content { font-size: 11px; color: #000; line-height: 1.4; }
+    .doc-notes-manual { margin-top: 8px; font-size: 11px; color: #000; line-height: 1.4; white-space: pre-wrap; }
+
+    .doc-signatures-2x2 { margin-top: 30px; page-break-inside: avoid; }
+    .doc-sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+    .doc-sig-row + .doc-sig-row { margin-top: 25px; }
+    .sig-block-page2 { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .sig-action { font-size: 10px; text-transform: uppercase; font-weight: 600; letter-spacing: 2px; color: #000; margin-bottom: 8px; }
+    .sig-space { min-height: 50px; width: 100%; }
+    .sig-name { font-weight: 700; font-size: 12px; color: #000; margin-bottom: 2px; }
+    .sig-title { font-size: 11px; color: #000; font-weight: 400; }
+
+    @page { size: A4 portrait; margin: 0; }
+
+    @media print {
+      body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .no-print, .bg-pattern, .bg-gradient, header, main > div:first-child, .page-toolbar { display: none !important; }
+      #documentModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: block !important; opacity: 1 !important; visibility: visible !important; overflow: visible !important; }
+      .modal-document { max-height: none; overflow: visible; border-radius: 0; display: block; background: white; }
+      .documents-container { background: white; padding: 0; overflow: visible; display: block; width: 100%; }
+      .pdf-wrapper { max-width: none; width: 210mm; box-shadow: none; margin: 0; }
+      .document-page { box-shadow: none; margin: 0; width: 210mm; height: 297mm; overflow: hidden; page-break-after: always; break-after: page; padding: 35px 50px; }
+      .document-page:last-child { page-break-after: auto; break-after: auto; }
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* Setup Steps */
+    .setup-step { background: var(--bg-secondary); border-left: 4px solid var(--firebase); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .step-number { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--firebase), var(--firebase-orange)); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
+    .config-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; color: var(--firebase); }
+    .copy-btn { background: var(--firebase); color: #000; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Space Grotesk', sans-serif; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+    .copy-btn:hover { background: var(--firebase-orange); transform: scale(1.05); }
+
+    .example-config-box { background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); border: 2px dashed var(--success); border-radius: 10px; padding: 16px; margin: 12px 0; }
+    .wrong-example { background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)); border-color: var(--error); }
+    .firebase-logo { width: 48px; height: 48px; animation: float 3s ease-in-out infinite; }
+
+    .validation-error { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: none; }
+    .validation-error.show { display: block; animation: slideUp 0.3s ease-out forwards; }
+    .validation-error ul { list-style: none; padding: 0; margin: 0; }
+    .validation-error li { color: #fca5a5; font-size: 13px; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+    .validation-error li::before { content: "\26A0"; flex-shrink: 0; }
+
+    /* Sync Status Indicators */
+    .sync-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .sync-status-badge.firebase {
+      background: rgba(255, 202, 40, 0.2);
+      color: #000;
+      border: 1px solid rgba(255, 202, 40, 0.4);
+    }
+
+    .sync-status-badge.sheets {
+      background: rgba(16, 185, 129, 0.2);
+      color: #fff;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      animation: sheets-glow 2s ease-in-out infinite;
+    }
+
+    .sync-status-badge.both {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(16, 185, 129, 0.2));
+      color: #fff;
+      border: 1px solid rgba(139, 92, 246, 0.5);
+    }
+
+    /* FIX: Utility classes untuk dynamic class switching (menghindari Tailwind CDN MutationObserver bug) */
+    .status-text { font-size: 14px; }
+    .status-text-success { color: var(--success); font-weight: 600; }
+    .status-text-default-success { color: var(--success); }
+    .status-text-error { color: var(--error); }
+    .status-text-warning { color: var(--warning); }
+    .status-text-muted { color: var(--muted); }
+    .status-text-firebase { color: var(--firebase); }
+    .status-text-sheets { color: var(--sheets); }
+    .status-text-accent { color: var(--accent); }
+    /* FIX: Color utility classes untuk dynamic innerHTML (renderHistory dll) */
+    .color-muted { color: var(--muted); }
+    .color-firebase { color: var(--firebase); }
+    .color-sheets { color: var(--sheets); }
+    .color-accent { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  <div class="bg-gradient"></div>
+
+  <main class="relative z-10 min-h-screen">
+
+    <!-- HEADER -->
+    <header class="border-b border-[--border] bg-[--bg]/90 backdrop-blur-lg sticky top-0 z-50 no-print">
+      <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3 animate-in">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--firebase] to-[--firebase-orange] flex items-center justify-center">
+            <svg class="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 19h20L12 2zm0 3.84L18.92 17H5.08L12 5.84z"/><circle cx="12" cy="14" r="2"/></svg>
+          </div>
+          <div>
+            <h1 class="text-lg font-semibold">FinanceSync Pro</h1>
+            <p class="text-xs text-[--muted]">Dual Sync: Firebase + Spreadsheet</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 animate-in delay-1">
+          <div id="connectionStatus" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[--bg-secondary]">
+            <div class="status-dot connecting" id="statusDot"></div>
+            <span class="status-text status-text-muted" id="statusText">Menghubungkan...</span>
+          </div>
+          <button id="setupBtn" class="btn-secondary" aria-label="Pengaturan">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 00-1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572 1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="max-w-6xl mx-auto px-6 py-8">
+
+      <!-- Connection Banner -->
+      <div id="connectionBanner" class="connection-banner no-print" style="display: none;">
+        <svg class="w-6 h-6 text-yellow-400 flex-shrink-0 firebase-logo" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 19h20L12 2zm0 3.84L18.92 17H5.08L12 5.84z"/><circle cx="12" cy="14" r="2"/></svg>
+        <div class="flex-1">
+          <div class="font-semibold text-sm text-white" id="bannerTitle">Menyiapkan...</div>
+          <div class="flex items-center gap-3 mt-2" id="syncBadges">
+            <span id="badgeFirebase" class="sync-status-badge firebase hidden">Firebase</span>
+            <span id="badgeSheets" class="sync-status-badge sheets hidden">Spreadsheet</span>
+          </div>
+          <div class="text-xs text-gray-300" id="bannerMessage">Mohon tunggu sebentar</div>
+        </div>
+        <button onclick="showSetupModal()" class="copy-btn">Setup</button>
+      </div>
+
+      <!-- Statistics -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
+        <div class="card animate-in delay-1"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Entri</div><div class="text-2xl font-bold" id="totalData">0</div></div>
+        <div class="card animate-in delay-2"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
+        <div class="card animate-in delay-3"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Spreadsheet</div><div class="text-2xl font-bold text-[--sheets]" id="sheetsData">0</div></div>
+        <div class="card animate-in delay-4"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Pending</div><div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div></div>
+      </div>
+
+      <!-- Grid Form + History -->
+      <div class="grid lg:grid-cols-5 gap-8">
+
+        <!-- FORM INPUT -->
+        <div class="lg:col-span-3 no-print">
+          <div class="card animate-in delay-3">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--firebase]/20 to-[--firebase-orange]/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-[--firebase]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold">Form Pengajuan</h2>
+                <p class="text-sm text-[--muted]">Dual Sync: Firebase + Spreadsheet</p>
+              </div>
+            </div>
+
+            <form id="dataForm" class="space-y-4">
+              <div class="grid md:grid-cols-2 gap-4">
+                <div><label class="field-label" for="tanggal">Tanggal Invoice<span class="required-star">*</span></label><input type="date" id="tanggal" name="tanggal" class="input-field" required></div>
+                <div><label class="field-label" for="lokasi">Lokasi<span class="required-star">*</span></label><input type="text" id="lokasi" name="lokasi" class="input-field" placeholder="Contoh: Lt.1" required></div>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div><label class="field-label" for="jenis_pengajuan">Jenis Pengajuan<span class="required-star">*</span></label><input type="text" id="jenis_pengajuan" name="jenis_pengajuan" class="input-field" placeholder="Masukkan jenis pengajuan" required></div>
+                <div><label class="field-label" for="kode">Kode<span class="required-star">*</span></label><input type="text" id="kode" name="kode" class="input-field mono" placeholder="Masukkan kode" required></div>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div><label class="field-label" for="no_invoice">No Invoice / Berkas</label><input type="text" id="no_invoice" name="no_invoice" class="input-field mono" placeholder="(opsional)"></div>
+                <div><label class="field-label" for="status">Status Pembayaran<span class="required-star">*</span></label><select id="status" name="status" class="input-field" required><option value="">Pilih status</option><option value="Lunas">Lunas</option><option value="Belum Lunas">Belum Lunas</option></select></div>
+              </div>
+
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="field-label">Rincian Barang / Jasa<span class="required-star">*</span></label>
+                  <span class="text-xs text-[--muted]">Minimal 1 item wajib diisi</span>
+                </div>
+                <div id="itemsContainer" class="space-y-2"></div>
+                <button type="button" onclick="addFormItem()" class="btn-add-item mt-3">+ Tambah Item Baru</button>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div><label class="field-label">Total Nominal (Otomatis)</label><div class="currency-wrapper"><span class="prefix">Rp</span><input type="text" id="grandTotalDisplay" class="input-field mono" readonly placeholder="0" style="background: rgba(255,255,255,0.05);"></div></div>
+                <div id="paymentDateContainer"><label class="field-label" for="tanggal_pembayaran">Tanggal Pembayaran</label><input type="date" id="tanggal_pembayaran" name="tanggal_pembayaran" class="input-field"></div>
+              </div>
+
+              <div><label class="field-label" for="dibayarkan_kepada">Dibayarkan Kepada<span class="required-star">*</span></label><input type="text" id="dibayarkan_kepada" name="dibayarkan_kepada" class="input-field" placeholder="Nama penerima pembayaran" required></div>
+
+              <div><label class="field-label" for="catatan_tambahan">Catatan Tambahan <span class="text-[--muted] font-normal">(opsional)</span></label><textarea id="catatan_tambahan" name="catatan_tambahan" rows="2" class="input-field resize-none" placeholder="Tambahkan catatan khusus..."></textarea></div>
+
+              <!-- Validation Error Box -->
+              <div id="validationError" class="validation-error">
+                <strong style="color:#fca5a5;font-size:14px;margin-bottom:8px;display:block;">Mohon lengkapi field berikut:</strong>
+                <ul id="validationErrorList"></ul>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3 pt-4">
+                <button type="submit" id="submitBtn" class="btn-submit">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                  <span>Simpan ke Firebase + Spreadsheet</span>
+                </button>
+                <button type="button" id="previewBtn" class="btn-print">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  <span>Preview & PDF</span>
+                </button>
+                <button type="reset" class="text-[--muted] hover:text-[--fg] transition-colors text-sm">Reset</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="lg:col-span-2 no-print">
+          <div class="card animate-in delay-4">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold">Riwayat (Dual Sync)</h2>
+              <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
+            </div>
+
+            <div class="flex gap-1 mb-3 p-1 bg-[--bg-secondary] rounded-lg">
+              <button class="tab-btn active flex-1" data-tab="all">Semua</button>
+              <button class="tab-btn flex-1" data-tab="synced">Synced</button>
+            </div>
+
+            <!-- Date Filter -->
+            <div class="mb-3 p-3 bg-[--bg-secondary] rounded-lg" id="dateFilterSection">
+              <div class="flex items-center gap-2 mb-2">
+                <svg class="w-4 h-4 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="text-xs font-medium text-[--muted]">FILTER TANGGAL</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[10px] text-[--muted] block mb-1">Dari</label>
+                  <input type="date" id="filterDateFrom" class="input-field text-xs" style="padding:8px 10px;">
+                </div>
+                <div>
+                  <label class="text-[10px] text-[--muted] block mb-1">Sampai</label>
+                  <input type="date" id="filterDateTo" class="input-field text-xs" style="padding:8px 10px;">
+                </div>
+              </div>
+              <button onclick="clearDateFilter()" class="text-[10px] text-[--firebase] hover:underline mt-2 block">Reset Filter</button>
+            </div>
+
+            <div id="historyList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+              <div class="text-center py-10 text-[--muted]">
+                <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <p class="text-sm">Belum ada data</p>
+                <p class="text-xs mt-2 text-[--firebase]">Data akan sync ke Firebase + Spreadsheet</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- SETUP MODAL -->
+  <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">⚙️</span> Konfigurasi Dual Sync</h2>
+        <button id="closeModal" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+
+      <div class="space-y-6">
+        
+        <!-- Step 1: Firebase Config -->
+        <div class="setup-step">
+          <div class="flex items-start gap-3">
+            <div class="step-number">1</div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-base mb-2">🔥 Firebase Configuration</h3>
+              <p class="text-sm text-[--muted] mb-3">Input sekali, tersimpan permanen di browser ini.</p>
+              
+              <div class="example-config-box wrong-example">
+                <div class="flex items-center gap-2 mb-2"><span class="text-lg">❌</span><strong class="text-red-400 text-sm">Jangan copy ini:</strong></div>
+                <div class="config-box text-red-300" style="color:#fca5a5;">// Import...<br>const firebaseConfig = {<br>&nbsp;&nbsp;apiKey: "...",<br>&nbsp;&nbsp;...<br>};<br>const app = initializeApp(...);</div>
+              </div>
+
+              <div class="example-config-box">
+                <div class="flex items-center gap-2 mb-2"><span class="text-lg">✅</span><strong class="text-green-400 text-sm">Copy HANYA ini:</strong></div>
+                <div class="config-box">{<br>&nbsp;&nbsp;"apiKey": "AIzaSy...",<br>&nbsp;&nbsp;"authDomain": "...",<br>&nbsp;&nbsp;"projectId": "...",<br>&nbsp;&nbsp;...<br>}</div>
+              </div>
+
+              <div class="mt-3">
+                <label class="field-label">Paste Firebase Config:</label>
+                <textarea id="firebaseConfigInput" class="input-field resize-none" rows="4" placeholder='{"apiKey": "...", ...}' style="font-family:'JetBrains Mono',monospace;font-size:11px;"></textarea>
+                <div id="configError" class="text-xs text-red-400 mt-2 hidden"></div>
+              </div>
+              
+              <button onclick="saveFirebaseConfig()" class="copy-btn mt-3 w-full">💾 Simpan & Connect</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Spreadsheet Webhook -->
+        <div class="setup-step">
+          <div class="flex items-start gap-3">
+            <div class="step-number">2</div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-base mb-2">📊 Spreadsheet Webhook (Google Apps Script)</h3>
+              <p class="text-sm text-[--muted] mb-3">URL untuk mengirim data ke Google Sheets Anda.</p>
+              
+              <div class="bg-green-900/30 rounded-xl p-4 border border-green-700/30">
+                <p class="text-sm text-green-300 mb-2 flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 4m-2 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Info: Anda sudah punya script!
+                </p>
+                <code class="block text-xs bg-[--bg] p-2 rounded text-green-400 mono truncate mt-2">
+                  https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec
+                </code>
+              </div>
+
+              <label class="field-label mt-3">Webhook URL (Auto-filled):</label>
+              <input type="url" id="webhookUrl" class="input-field mono text-sm" placeholder="https://script.google.com/macros/s/..." value="https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec">
+              <p class="text-xs text-[--muted] mt-2">✅ Sudah terisi otomatis dari info yang Anda berikan.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30">
+          <h3 class="font-medium text-sm mb-2 text-blue-300 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Cara Kerja Dual Sync
+          </h3>
+          <ul class="text-xs text-gray-300 space-y-1.5 list-decimal list-inside">
+            <li>User isi form → klik "Simpan"</li>
+            <li>Data tersimpan ke <strong class="text-yellow-300">Firebase</strong> (real-time)</li>
+            <li>Otomatis dikirim ke <strong class="text-green-300">Spreadsheet</strong> (backup)</li>
+            <li>Kedua-duanya berhasil = ✅ Data aman!</li>
+          </ul>
+        </div>
+
+        <button onclick="closeSetupModal()" class="copy-btn mt-4 w-full">Tutup & Mulai Pakai</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT PREVIEW MODAL -->
+  <div id="documentModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content modal-document">
+      <div class="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 no-print page-toolbar">
+        <h2 class="text-lg font-semibold text-slate-800">Preview Dokumen</h2>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="btn-pdf" onclick="downloadAsPDF()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3m3 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Download PDF
+          </button>
+          <button class="btn-print-doc" onclick="window.print()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Print
+          </button>
+          <button id="closeDocModal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="documents-container">
+        <div id="pdf-wrapper" class="pdf-wrapper">
+          <!-- HALAMAN 1 -->
+          <div class="document-page" id="documentPage1">
+            <div class="doc-header-center">
+              <img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo Nusantara Mineral Sukses Abadi" class="doc-company-logo" onerror="this.style.display='none'">
+              <div class="doc-form-title">FORMULIR PENGAJUAN HO</div>
+            </div>
+            <div class="doc-info-grid">
+              <div class="doc-info-item"><span class="doc-info-label">Lokasi</span><span class="doc-info-value" id="p1_lokasi"></span></div>
+              <div class="doc-info-item"><span class="doc-info-label">Tanggal</span><span class="doc-info-value" id="p1_tanggal"></span></div>
+              <div class="doc-info-item"><span class="doc-info-label">Kode</span><span class="doc-info-value" id="p1_kode"></span></div>
+              <div class="doc-info-item"><span class="doc-info-label">Jenis</span><span class="doc-info-value" id="p1_jenis"></span></div>
+            </div>
+            <table class="doc-table">
+              <thead><tr><th class="col-no">NO</th><th class="col-item">ITEM</th><th class="col-vol">JUMLAH / VOLUME</th><th class="col-nominal">Total (Rp)</th><th class="col-ket">KETERANGAN</th></tr></thead>
+              <tbody id="p1_table_body"></tbody>
+              <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right" id="p1_total"></td><td></td></tr></tfoot>
+            </table>
+            <div id="p1_notes_manual_wrapper" style="display:none;"><div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN:</div><div class="doc-notes-manual" id="p1_notes_manual"></div></div></div>
+            <div class="doc-signatures-p1">
+              <div class="doc-sig-box"><div class="doc-sig-label">DIBUAT OLEH</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_dibuat"></div></div>
+              <div class="doc-sig-box"><div class="doc-sig-label">DISETUJUI</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_disetujui"></div></div>
+            </div>
+            <div class="doc-notes"><div class="doc-notes-title">NOTE :</div><div class="doc-notes-content">Dokumen ini adalah bukti pengajuan resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div></div>
+          </div>
+
+          <!-- HALAMAN 2 -->
+          <div class="document-page" id="documentPage2">
+            <div class="doc-header-flex">
+              <div class="doc-header-left"><img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo Nusantara Mineral Sukses Abadi" class="doc-company-logo" onerror="this.style.display='none'"></div>
+              <div class="doc-header-right">
+                <div class="doc-form-title-right">BUKTI PENGELUARAN KAS / BANK</div>
+                <div class="doc-tanggal-box">Tanggal : <span id="p2_tanggal"></span></div>
+              </div>
+            </div>
+            <div class="doc-payment-info">
+              <div class="doc-payment-row"><span class="doc-payment-label">Kode</span><span class="doc-payment-value" id="p2_kode"></span></div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Dibayarkan kepada</span><span class="doc-payment-value" id="p2_dibayarkan"></span></div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Jenis Pengajuan</span><span class="doc-payment-value" id="p2_jenis"></span></div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Dibayarkan dengan</span><span class="doc-payment-value"><span class="doc-check">&nbsp;</span> Cek <span style="margin-left:16px;"><span class="doc-check">X</span> Transfer</span></span></div>
+            </div>
+            <table class="doc-table">
+              <thead><tr><th style="width:40px;text-align:center">NO</th><th>URAIAN BARANG / JASA</th><th style="width:70px;text-align:center">QTY</th><th style="width:120px;text-align:right">JUMLAH (Rp)</th></tr></thead>
+              <tbody id="p2_table_body"></tbody>
+              <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right" id="p2_total"></td></tr></tfoot>
+            </table>
+            <div id="p2_notes_manual_wrapper" style="display:none;"><div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN:</div><div class="doc-notes-manual" id="p2_notes_manual"></div></div></div>
+            <div class="doc-signatures-2x2">
+              <div class="doc-sig-row">
+                <div class="sig-block-page2"><div class="sig-action">DI VERIFIKASI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_keuangan"></div><div class="sig-title">Keuangan</div></div>
+                <div class="sig-block-page2"><div class="sig-action">DISETUJUI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_dirkeuangan"></div><div class="sig-title">Dir. Keuangan</div></div>
+              </div>
+              <div class="doc-sig-row">
+                <div class="sig-block-page2"><div class="sig-action">DISETUJUI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_direktur"></div><div class="sig-title">Direktur Utama</div></div>
+                <div class="sig-block-page2"><div class="sig-action">DIBUKUKAN</div><div class="sig-space"></div><div class="sig-name" id="p2_name_accounting"></div><div class="sig-title">Accounting</div></div>
+              </div>
+            </div>
+            <div class="doc-notes"><div class="doc-notes-title">NOTE :</div><div class="doc-notes-content">Dokumen ini adalah bukti pengeluaran kas/bank resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div id="deleteConfirmModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width:420px">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-900/30 flex items-center justify-center">
+          <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-2">Hapus Data Ini?</h3>
+        <p class="text-sm text-gray-300 mb-6" id="deleteItemInfo">Kode: INV-001 • Rp 1.500.000</p>
+        <div class="flex gap-3 justify-center">
+          <button onclick="closeDeleteModal()" class="btn-secondary px-8">Batal</button>
+          <button onclick="confirmDelete()" class="px-8 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" role="alert"></div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    // =============================================
+       // CONFIGURATION
+    // =============================================
+    const CONFIG_KEYS = {
+      FIREBASE_CONFIG: 'financesync_firebase_config_v5',
+      WEBHOOK_URL: 'financesync_webhook_url_v5'
+    };
+
+    // Default Webhook URL (user's existing script)
+    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec';
+
+    let db = null;
+    let state = {
+      isConnected: false,
+      isConnecting: true,
+      isSheetsConnected: false,
+      history: [],
+      currentTab: 'all',
+      lastFormData: null,
+      items: [{ ket: '', qty: '', nominal: 0, keterangan: '' }],
+      unsubscribeListener: null,
+      pendingDeleteId: null,
+      pendingDeleteKode: null, // FIX: Tambahkan ini untuk menyimpan kode saat hapus
+      webhookUrl: DEFAULT_WEBHOOK_URL,
+      filterDateFrom: '',
+      filterDateTo: '',
+      editingDocId: null // null = mode simpan baru, string = mode edit
+    };
+
+    let elements = {};
+
+    // =============================================
+    // INITIALIZATION
+    // =============================================
+    function init() {
+      elements = {
+        form: document.getElementById('dataForm'),
+        submitBtn: document.getElementById('submitBtn'),
+        previewBtn: document.getElementById('previewBtn'),
+        historyList: document.getElementById('historyList'),
+        setupModal: document.getElementById('setupModal'),
+        documentModal: document.getElementById('documentModal'),
+        deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+        setupBtn: document.getElementById('setupBtn'),
+        closeModal: document.getElementById('closeModal'),
+        closeDocModal: document.getElementById('closeDocModal'),
+        clearHistory: document.getElementById('clearHistory'),
+        toast: document.getElementById('toast'),
+        totalData: document.getElementById('totalData'),
+        sentData: document.getElementById('sentData'),
+        sheetsData: document.getElementById('sheetsData'),
+        pendingData: document.getElementById('pendingData'),
+        tabBtns: document.querySelectorAll('.tab-btn'),
+        grandTotalDisplay: document.getElementById('grandTotalDisplay'),
+        statusInput: document.getElementById('status'),
+        paymentDateContainer: document.getElementById('paymentDateContainer'),
+        connectionBanner: document.getElementById('connectionBanner'),
+        bannerTitle: document.getElementById('bannerTitle'),
+        bannerMessage: document.getElementById('bannerMessage'),
+        statusDot: document.getElementById('statusDot'),
+        statusText: document.getElementById('statusText'),
+        badgeFirebase: document.getElementById('badgeFirebase'),
+        badgeSheets: document.getElementById('badgeSheets'),
+        firebaseConfigInput: document.getElementById('firebaseConfigInput'),
+        webhookUrlInput: document.getElementById('webhookUrl'),
+        configError: document.getElementById('configError'),
+        validationError: document.getElementById('validationError'),
+        validationErrorList: document.getElementById('validationErrorList')
+      };
+
+      // Load saved configurations
+      loadSavedConfigs();
+
+      // Set tanggal hari ini
+      document.getElementById('tanggal').valueAsDate = new Date();
+
+      // Set default filter: bulan sekarang (1 - akhir bulan)
+      var now = new Date();
+      var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      var fromStr = firstDay.getFullYear() + '-' + String(firstDay.getMonth() + 1).padStart(2, '0') + '-' + String(firstDay.getDate()).padStart(2, '0');
+      var toStr = lastDay.getFullYear() + '-' + String(lastDay.getMonth() + 1).padStart(2, '0') + '-' + String(lastDay.getDate()).padStart(2, '0');
+      state.filterDateFrom = fromStr;
+      state.filterDateTo = toStr;
+      document.getElementById('filterDateFrom').value = fromStr;
+      document.getElementById('filterDateTo').value = toStr;
+
+      // Initialize
+      renderFormItems();
+      setupEventListeners();
+      
+      // Try connect
+      initDualConnection();
+
+      // Auto-generate invoice number after Firebase connects
+      setTimeout(function() {
+        if (db) {
+          autoGenerateInvoice().then(function(inv) {
+            if (inv && !document.getElementById('no_invoice').value) {
+              document.getElementById('no_invoice').value = inv;
+            }
+          });
+        }
+      }, 3000);
+    }
+
+    // =============================================
+    // LOAD SAVED CONFIGURATIONS
+    // =============================================
+    function loadSavedConfigs() {
+      // Load Firebase Config
+      const savedFirebaseConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
+      if (savedFirebaseConfig) {
+        elements.firebaseConfigInput.value = savedFirebaseConfig;
+      }
+
+      // Load Webhook URL
+      const savedWebhookUrl = localStorage.getItem(CONFIG_KEYS.WEBHOOK_URL);
+      if (savedWebhookUrl) {
+        state.webhookUrl = savedWebhookUrl;
+        elements.webhookUrlInput.value = savedWebhookUrl;
+      }
+    }
+
+    // =============================================
+    // showBanner function
+    // =============================================
+    function showBanner(type, title, message) {
+      const banner = elements.connectionBanner;
+      if (!banner) return;
+      
+      banner.style.display = 'flex';
+      banner.className = 'connection-banner no-print ' + type;
+      
+      if (elements.bannerTitle) elements.bannerTitle.textContent = title;
+      if (elements.bannerMessage) elements.bannerMessage.textContent = message;
+    }
+
+    // =============================================
+    // DUAL CONNECTION INITIALIZER
+    // =============================================
+    async function initDualConnection() {
+      showBanner('connecting', 'Menyiapkan Dual Sync...', 'Menghubungkan Firebase & Spreadsheet...');
+      
+      const hasFirebaseConfig = !!localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
+      const hasWebhookUrl = !!state.webhookUrl;
+
+      if (!hasFirebaseConfig) {
+        // Show setup modal first
+        setTimeout(function() { showSetupModal(); }, 1000);
+        return;
+      }
+
+      // Step 1: Connect to Firebase
+      try {
+        const config = JSON.parse(localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG));
+        
+        if (!firebase.apps.length) {
+          firebase.initializeApp(config);
+        }
+        
+        db = firebase.firestore();
+        
+        // Test connection
+        await db.collection('submissions').limit(1).get();
+        
+        state.isConnected = true;
+        console.log('[Firebase] Connected!');
+        
+      } catch (error) {
+        console.error('[Firebase Error]:', error);
+        state.isConnected = false;
+        showToast('Firebase error: ' + error.message, 'error');
+      }
+
+      // Step 2: Test Webhook (Spreadsheet)
+      if (hasWebhookUrl) {
+        try {
+          const response = await fetch(state.webhookUrl + '?test=' + Date.now(), {
+            method: 'GET',
+            mode: 'no-cors'
+          });
+          
+          // mode: 'no-cors' returns opaque response, treat it as success
+          state.isSheetsConnected = true;
+          console.log('[Spreadsheet] Connected!');
+          
+        } catch (error) {
+          state.isSheetsConnected = false;
+          console.warn('[Spreadsheet] Warning:', error.message);
+        }
+      }
+
+      // Update UI based on connection status
+      updateConnectionUI();
+      
+      // Start listening if Firebase connected (gunakan filter default bulan ini)
+      if (state.isConnected) {
+        applyDateFilter();
+      }
+    }
+
+    // =============================================
+    // UPDATE CONNECTION UI
+    // =============================================
+    function updateConnectionUI() {
+      const banner = elements.connectionBanner;
+      const dot = elements.statusDot;
+      const text = elements.statusText;
+      
+      banner.style.display = 'flex';
+      banner.className = 'connection-banner no-print';
+      
+      // Reset badges
+      elements.badgeFirebase.classList.add('hidden');
+      elements.badgeSheets.classList.add('hidden');
+      
+      if (state.isConnected && state.isSheetsConnected) {
+        // BOTH connected!
+        banner.classList.add('dual-connected');
+        dot.className = 'status-dot success';
+        text.textContent = 'Dual Sync Active';
+        text.className = 'status-text status-text-success';
+        
+        elements.badgeFirebase.textContent = 'Firebase';
+        elements.badgeFirebase.classList.remove('hidden');
+        elements.badgeFirebase.className = 'sync-status-badge firebase';
+        
+        elements.badgeSheets.textContent = 'Spreadsheet';
+        elements.badgeSheets.classList.remove('hidden');
+        elements.badgeSheets.className = 'sync-status-badge sheets';
+        
+        elements.bannerTitle.textContent = 'Dual Sync Aktif!';
+        elements.bannerMessage.textContent = 'Firebase & Spreadsheet terhubung. Data akan tersinkronisasi ke kedua-duanya.';
+        
+      } else if (state.isConnected) {
+        // Only Firebase
+        banner.classList.add('connected');
+        dot.className = 'status-dot success';
+        text.textContent = 'Firebase Active';
+        text.className = 'status-text status-text-default-success';
+        
+        elements.badgeFirebase.textContent = 'Firebase';
+        elements.badgeFirebase.classList.remove('hidden');
+        elements.badgeFirebase.className = 'sync-status-badge firebase';
+        
+        elements.bannerTitle.textContent = 'Hanya Firebase';
+        elements.bannerMessage.textContent = 'Spreadsheet belum terhubung. Data tetap tersimpan di Firebase.';
+        
+      } else if (state.isSheetsConnected) {
+        // Only Spreadsheet (rare case)
+        banner.classList.remove('connected', 'dual-connected');
+        banner.classList.add('error');
+        dot.className = 'status-dot error';
+        text.textContent = 'Hanya Spreadsheet';
+        text.className = 'status-text status-text-error';
+        
+        elements.badgeSheets.textContent = 'Spreadsheet';
+        elements.badgeSheets.classList.remove('hidden');
+        elements.badgeSheets.className = 'sync-status-badge sheets';
+        
+        elements.bannerTitle.textContent = 'Firebase belum terhubung';
+        elements.bannerMessage.textContent = 'Setup Firebase terlebih dahulu untuk dual sync.';
+        
+      } else {
+        // Nothing connected
+        banner.classList.remove('connected', 'dual-connected');
+        banner.classList.add('error');
+        dot.className = 'status-dot connecting';
+        text.textContent = 'Belum ada koneksi';
+        text.className = 'status-text status-text-warning';
+        
+        elements.bannerTitle.textContent = 'Belum Terkonfigurasi';
+        elements.bannerMessage.textContent = 'Klik "Setup" untuk konfigurasi Firebase + Spreadsheet.';
+      }
+    }
+
+    // =============================================
+    // SETUP MODAL FUNCTIONS
+    // =============================================
+    window.showSetupModal = function() { elements.setupModal.classList.add('show'); };
+    
+    window.closeSetupModal = function() { elements.setupModal.classList.remove('show'); };
+
+    window.saveFirebaseConfig = async function() {
+      try {
+        const inputStr = elements.firebaseConfigInput.value.trim();
+        const errorEl = elements.configError;
+        errorEl.classList.add('hidden');
+        errorEl.textContent = '';
+        
+        if (!inputStr) { showError('Paste Firebase config!'); return; }
+        
+        // Smart parse
+        const result = smartParseConfig(inputStr);
+        if (!result.success) { showError(result.error || 'Format tidak valid'); return; }
+        
+        const config = result.config;
+        if (!config.apiKey || !config.projectId) { showError('Config tidak lengkap (apiKey & projectId wajib)'); return; }
+        
+        // Save Firebase config
+        localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
+        console.log('[Firebase Config] Saved to localStorage');
+        
+        // Also save webhook URL if user changed it
+        const currentWebhook = elements.webhookUrlInput.value.trim();
+        if (currentWebhook && currentWebhook !== DEFAULT_WEBHOOK_URL) {
+          state.webhookUrl = currentWebhook;
+          localStorage.setItem(CONFIG_KEYS.WEBHOOK_URL, currentWebhook);
+        } else {
+          // Use default if empty
+          state.webhookUrl = DEFAULT_WEBHOOK_URL;
+          localStorage.setItem(CONFIG_KEYS.WEBHOOK_URL, DEFAULT_WEBHOOK_URL);
+        }
+        
+        showToast('Config tersimpan! Menghubungkan...', 'info');
+        closeSetupModal();
+        
+        // Re-initialize connection
+        await initDualConnection();
+        
+      } catch (error) {
+        console.error('[Save Config Error]:', error);
+        showError('Gagal menyimpan config: ' + error.message);
+      }
+    };
+
+    function showError(msg) {
+      elements.configError.textContent = msg;
+      elements.configError.classList.remove('hidden');
+      showToast(msg, 'error');
+    }
+
+    // Smart Config Parser
+    function smartParseConfig(inputStr) {
+      let str = inputStr.trim();
+      
+      // Try direct JSON parse
+      try {
+        const config = JSON.parse(str);
+        if (config.apiKey && config.projectId) return { success: true, config };
+      } catch (e) {}
+      
+      // Try finding JSON object pattern
+      const jsonPattern = /\{[^{}]*"apiKey"\s*:\s*"[^"}]*\}/g;
+      const matches = str.match(jsonPattern);
+      if (matches && matches.length > 0) {
+        for (let match of matches) {
+          try {
+            const config = JSON.parse(match);
+            if (config.apiKey && config.projectId) return { success: true, config, extracted: true };
+          } catch (e) { continue; }
+        }
+      }
+      
+      // Try first { to last }
+      const firstBrace = str.indexOf('{');
+      const lastBrace = str.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        try {
+          const config = JSON.parse(str.substring(firstBrace, lastBrace + 1));
+          if (config.apiKey || config.projectId) return { success: true, config, extracted: true };
+        } catch (e) {}
+      }
+      
+      // Clean code-like input
+      let cleaned = str.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/const\s+\w+\s*=\s*/g, '').trim();
+      const cleanMatch = cleaned.match(/\{[^}]*"apiKey"[^}]*\}/);
+      if (cleanMatch) {
+        try {
+          const config = JSON.parse(cleanMatch[0]);
+          if (config.apiKey) return { success: true, config, extracted: true };
+        } catch (e) {}
+      }
+      
+      return { success: false, error: 'Tidak dapat menemukan config Firebase yang valid. Pastikan mempaste HANYA objek JSON: { "apiKey": "...", ... }' };
+    }
+
+    // =============================================
+    // EVENT LISTENERS
+    // =============================================
+    function setupEventListeners() {
+      elements.form.addEventListener('submit', handleSubmit);
+      elements.previewBtn.addEventListener('click', handlePreview);
+      
+      elements.statusInput.addEventListener('change', function(e) {
+        elements.paymentDateContainer.style.display = e.target.value === 'Lunas' ? 'block' : 'none';
+        if (e.target.value !== 'Lunas') document.getElementById('tanggal_pembayaran').value = '';
+      });
+      if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
+
+      elements.setupBtn.addEventListener('click', function() { showSetupModal(); });
+      elements.closeModal.addEventListener('click', function() { elements.setupModal.classList.remove('show'); });
+      elements.setupModal.addEventListener('click', function(e) { if (e.target === elements.setupModal) elements.setupModal.classList.remove('show'); });
+      elements.closeDocModal.addEventListener('click', function() { elements.documentModal.classList.remove('show'); });
+      elements.clearHistory.addEventListener('click', function() {
+        if (confirm('Hapus SEMUA data dari Firebase & Spreadsheet?')) {
+          if (db) {
+            db.collection('submissions').get().then(function(snapshot) {
+              var batch = db.batch();
+              snapshot.docs.forEach(function(doc) { batch.delete(doc.ref); });
+              return batch.commit();
+            }).then(function() {
+              showToast('Semua data dihapus', 'success');
+            }).catch(function(err) { showToast('Error: ' + err.message, 'error'); });
+          } else {
+            showToast('Tidak ada koneksi ke database', 'error');
+          }
+        }
+      });
+
+      elements.tabBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          elements.tabBtns.forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          state.currentTab = btn.dataset.tab;
+          renderHistory();
+        });
+      });
+
+      // Date filter event listeners
+      var filterFrom = document.getElementById('filterDateFrom');
+      var filterTo = document.getElementById('filterDateTo');
+      filterFrom.addEventListener('change', function() {
+        state.filterDateFrom = this.value;
+        applyDateFilter();
+      });
+      filterTo.addEventListener('change', function() {
+        state.filterDateTo = this.value;
+        applyDateFilter();
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          elements.setupModal.classList.remove('show');
+          elements.documentModal.classList.remove('show');
+          elements.deleteConfirmModal.classList.remove('show');
+        }
+      });
+    }
+
+    // =============================================
+    // FORM ITEMS
+    // =============================================
+    function renderFormItems() {
+      var container = document.getElementById('itemsContainer');
+      container.innerHTML = '';
+      state.items.forEach(function(item, index) {
+        var row = document.createElement('div');
+        row.className = 'grid grid-cols-12 gap-2 items-start';
+        row.innerHTML = '<div class="col-span-4">' +
+          '<label class="field-label text-[10px]">Item<span class="required-star">*</span></label>' +
+          '<input type="text" class="input-field text-sm" placeholder="Nama barang/jasa" value="' + escapeHtml(item.ket) + '" oninput="updateItem(' + index + ', \'ket\', this.value)">' +
+          '</div>' +
+          '<div class="col-span-2">' +
+          '<label class="field-label text-[10px]">Jumlah</label>' +
+          '<input type="text" class="input-field text-sm text-center" placeholder="1" value="' + escapeHtml(item.qty) + '" oninput="updateItem(' + index + ', \'qty\', this.value)">' +
+          '</div>' +
+          '<div class="col-span-3">' +
+          '<label class="field-label text-[10px]">Nominal<span class="required-star">*</span></label>' +
+          '<div class="currency-wrapper">' +
+          '<span class="prefix" style="font-size:12px">Rp</span>' +
+          '<input type="number" class="input-field text-sm mono" placeholder="0" value="' + (item.nominal || '') + '" oninput="updateItem(' + index + ', \'nominal\', this.value)">' +
+          '</div></div>' +
+          '<div class="col-span-2">' +
+          '<label class="field-label text-[10px]">Ket.</label>' +
+          '<input type="text" class="input-field text-sm" placeholder="Keterangan" value="' + escapeHtml(item.keterangan || '') + '" oninput="updateItem(' + index + ', \'keterangan\', this.value)">' +
+          '</div>' +
+          '<div class="col-span-1 flex justify-end">' +
+          (state.items.length > 1
+            ? '<button type="button" onclick="removeFormItem(' + index + ')" class="btn-remove-item" title="Hapus"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>'
+            : '<div style="height:38px"></div>') +
+          '</div>';
+        container.appendChild(row);
+      });
+      calculateTotal();
+    }
+
+    window.addFormItem = function() { state.items.push({ ket: '', qty: '', nominal: 0, keterangan: '' }); renderFormItems(); };
+    window.removeFormItem = function(index) { if (state.items.length <= 1) return; state.items.splice(index, 1); renderFormItems(); };
+    window.updateItem = function(index, key, value) { state.items[index][key] = value; if (key === 'nominal') calculateTotal(); };
+
+    function calculateTotal() {
+      var total = state.items.reduce(function(acc, curr) { return acc + (parseInt(curr.nominal) || 0); }, 0);
+      elements.grandTotalDisplay.value = formatNumber(total);
+      return total;
+    }
+
+    // =============================================
+    // FORM VALIDATION
+    // =============================================
+    function validateForm() {
+      var errors = [];
+      var fd = new FormData(elements.form);
+
+      if (!fd.get('tanggal')) errors.push('Tanggal Invoice wajib diisi');
+      if (!fd.get('lokasi')) errors.push('Lokasi wajib diisi');
+      if (!fd.get('jenis_pengajuan')) errors.push('Jenis Pengajuan wajib diisi');
+      if (!fd.get('kode')) errors.push('Kode wajib diisi');
+      if (!fd.get('status')) errors.push('Status Pembayaran wajib dipilih');
+      if (!fd.get('dibayarkan_kepada')) errors.push('Dibayarkan Kepada wajib diisi');
+
+      if (state.items.length === 0 || state.items.every(function(i) { return !i.ket.trim(); })) errors.push('Minimal 1 item barang/jasa harus diisi');
+      else {
+        state.items.forEach(function(item, idx) {
+          if (!item.ket.trim()) errors.push('Item #' + (idx + 1) + ': Nama kosong');
+          if (!item.nominal || parseInt(item.nominal) <= 0) errors.push('Item #' + (idx + 1) + ': Nominal harus > 0');
+        });
+      }
+
+      if (errors.length > 0) {
+        elements.validationErrorList.innerHTML = errors.map(function(e) { return '<li>' + escapeHtml(e) + '</li>'; }).join('');
+        elements.validationError.classList.add('show');
+        document.querySelectorAll('.input-field[required]').forEach(function(field) {
+          if (!field.value) field.classList.add('required-empty');
+          setTimeout(function() { field.classList.remove('required-empty'); }, 1500);
+        });
+        return false;
+      }
+
+      elements.validationError.classList.remove('show');
+      return true;
+    }
+
+    // =============================================
+    // GET FORM DATA
+    // =============================================
+    function getFormData() {
+      var fd = new FormData(elements.form);
+      return {
+        tanggal: fd.get('tanggal') || '',
+        lokasi: fd.get('lokasi') || '',
+        kode: fd.get('kode') || '',
+        jenis_pengajuan: fd.get('jenis_pengajuan') || '',
+        no_invoice: fd.get('no_invoice') || '',
+        status: fd.get('status') || '',
+        items: state.items.map(function(i) { return { ket: i.ket, qty: i.qty, nominal: parseInt(i.nominal) || 0, keterangan: i.keterangan }; }),
+        total_nominal: calculateTotal(),
+        tanggal_pembayaran: fd.get('tanggal_pembayaran') || '',
+        dibayarkan_kepada: fd.get('dibayarkan_kepada') || '',
+        catatan_tambahan: fd.get('catatan_tambahan') || '',
+        source: 'FinanceSync Pro',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        dibuat_oleh: 'Nur Wahyudi',
+        disetujui_oleh: 'Harijon',
+        keuangan: 'Andi Dhiya Salsabila',
+        dir_keuangan: 'Harijon',
+        direktur_utama: 'H. Andi Nursyam Halid',
+        accounting: 'Sri Ekowati'
+      };
+    }
+
+    // =============================================
+    // PREVIEW DOCUMENT
+    // =============================================
+    function handlePreview() {
+      var data = getFormData();
+      if (data.items.length === 0 || data.items.every(function(i) { return !i.ket; })) { showToast('Lengkapi minimal 1 item', 'error'); return; }
+      state.lastFormData = data;
+      populateDocuments(data);
+      elements.documentModal.classList.add('show');
+    }
+
+    function populateDocuments(data) {
+      var ft = 'Rp ' + formatNumber(data.total_nominal);
+      document.getElementById('p1_lokasi').textContent = data.lokasi || '-';
+      document.getElementById('p1_tanggal').textContent = formatDate(data.tanggal);
+      document.getElementById('p1_kode').textContent = data.kode || '-';
+      document.getElementById('p1_jenis').textContent = data.jenis_pengajuan || '-';
+      document.getElementById('p1_total').textContent = ft;
+      document.getElementById('p1_dibuat').textContent = data.dibuat_oleh;
+      document.getElementById('p1_disetujui').textContent = data.disetujui_oleh;
+
+      document.getElementById('p2_tanggal').textContent = formatDate(data.tanggal);
+      document.getElementById('p2_kode').textContent = data.kode || '-';
+      document.getElementById('p2_dibayarkan').textContent = data.dibayarkan_kepada || '-';
+      document.getElementById('p2_jenis').textContent = data.jenis_pengajuan || '-';
+      document.getElementById('p2_total').textContent = ft;
+      document.getElementById('p2_name_keuangan').textContent = data.keuangan;
+      document.getElementById('p2_name_dirkeuangan').textContent = data.dir_keuangan;
+      document.getElementById('p2_name_direktur').textContent = data.direktur_utama;
+      document.getElementById('p2_name_accounting').textContent = data.accounting;
+
+      document.getElementById('p1_table_body').innerHTML = data.items.map(function(item, idx) {
+        return '<tr><td class="col-no">' + (idx + 1) + '</td><td class="col-item">' + escapeHtml(item.ket) + '</td><td class="col-vol">' + escapeHtml(item.qty) + '</td><td class="col-nominal">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td><td class="col-ket">' + escapeHtml(item.keterangan || '-') + '</td></tr>';
+      }).join('');
+      
+      document.getElementById('p2_table_body').innerHTML = data.items.map(function(item, idx) {
+        return '<tr><td style="text-align:center">' + (idx + 1) + '</td><td>' + escapeHtml(item.ket) + '</td><td style="text-align:center">' + escapeHtml(item.qty) + '</td><td style="text-align:right">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td></tr>';
+      }).join('');
+
+      var hasNote = data.catatan_tambahan && data.catatan_tambahan.trim();
+      document.getElementById('p1_notes_manual_wrapper').style.display = hasNote ? 'block' : 'none';
+      document.getElementById('p2_notes_manual_wrapper').style.display = hasNote ? 'block' : 'none';
+      if (hasNote) {
+        document.getElementById('p1_notes_manual').textContent = data.catatan_tambahan.trim();
+        document.getElementById('p2_notes_manual').textContent = data.catatan_tambahan.trim();
+      }
+    }
+
+    // =============================================
+    // DOWNLOAD PDF
+    // =============================================
+    async function downloadAsPDF() {
+      var element = document.getElementById('pdf-wrapper');
+      var opt = {
+        margin: 0,
+        filename: 'Invoice_' + (state.lastFormData && state.lastFormData.kode ? state.lastFormData.kode : 'FinanceSync') + '_' + new Date().toISOString().split('T')[0] + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      showToast('Membuat PDF...', 'info');
+      try {
+        await html2pdf().set(opt).from(element).save();
+        showToast('PDF berhasil didownload!', 'success');
+      } catch (error) {
+        console.error('[PDF] Error:', error);
+        showToast('Gagal membuat PDF: ' + error.message, 'error');
+      }
+    }
+
+    window.downloadAsPDF = downloadAsPDF;
+
+    // =============================================
+    // HELPER: Roman Numeral
+    // =============================================
+    function toRoman(num) {
+      var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+      var syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+      var result = '';
+      for (var i = 0; i < vals.length; i++) {
+        while (num >= vals[i]) { result += syms[i]; num -= vals[i]; }
+      }
+      return result;
+    }
+
+    // =============================================
+    // HELPER: Auto-generate No Invoice
+    // =============================================
+    async function autoGenerateInvoice() {
+      if (!db) return;
+      try {
+        var now = new Date();
+        var month = now.getMonth(); // 0-11
+        var year = now.getFullYear();
+        var startDate = year + '-' + String(month + 1).padStart(2, '0') + '-01';
+        var endDate = year + '-' + String(month + 1).padStart(2, '0') + '-31';
+
+        var snapshot = await db.collection('submissions')
+          .where('tanggal', '>=', startDate)
+          .where('tanggal', '<=', endDate)
+          .orderBy('tanggal', 'desc')
+          .get();
+
+        var maxNum = 0;
+        snapshot.forEach(function(doc) {
+          var noInv = doc.data().no_invoice || '';
+          // Match last number after last slash: BKK-NMSA/IV/2026/0003
+          var parts = noInv.split('/');
+          var lastPart = parts[parts.length - 1];
+          var match = lastPart.match(/^(\d+)$/);
+          if (match) {
+            var n = parseInt(match[1]);
+            if (n > maxNum) maxNum = n;
+          }
+        });
+
+        var nextNum = maxNum + 1;
+        var romanMonth = toRoman(month + 1);
+        return 'BKK-NMSA/' + romanMonth + '/' + year + '/' + String(nextNum).padStart(4, '0');
+
+      } catch (error) {
+        console.warn('[Auto Invoice Error]:', error.message);
+        return 'BKK-NMSA/' + toRoman(new Date().getMonth() + 1) + '/' + new Date().getFullYear() + '/0001';
+      }
+    }
+
+    // =============================================
+    // HELPER: Check Duplicate Transaction
+    // =============================================
+    async function checkDuplicate(data) {
+      if (!db) return false;
+      try {
+        var snapshot = await db.collection('submissions')
+          .where('tanggal', '==', data.tanggal)
+          .where('total_nominal', '==', data.total_nominal)
+          .where('dibayarkan_kepada', '==', data.dibayarkan_kepada)
+          .get();
+
+        var duplicate = false;
+        snapshot.forEach(function(doc) {
+          var existing = doc.data();
+          // Compare key fields
+          if (existing.lokasi === data.lokasi &&
+              existing.kode === data.kode &&
+              existing.jenis_pengajuan === data.jenis_pengajuan &&
+              existing.status === data.status &&
+              JSON.stringify(existing.items || []) === JSON.stringify(data.items)) {
+            duplicate = true;
+          }
+        });
+        return duplicate;
+      } catch (error) {
+        console.warn('[Duplicate Check Error]:', error.message);
+        return false;
+      }
+    }
+
+    // =============================================
+    // HELPER: Cancel Edit Mode
+    // =============================================
+    window.cancelEdit = function() {
+      state.editingDocId = null;
+      elements.form.reset();
+      state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+      renderFormItems();
+      document.getElementById('tanggal').valueAsDate = new Date();
+      if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
+      // Reset button text
+      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+      // Remove edit banner
+      var editBanner = document.getElementById('editModeBanner');
+      if (editBanner) editBanner.remove();
+      showToast('Mode edit dibatalkan', 'info');
+    };
+
+    // =============================================
+    // HELPER: Promise with timeout (mencegah hang forever)
+    // =============================================
+    function withTimeout(promise, ms, label) {
+      return Promise.race([
+        promise,
+        new Promise(function(_, reject) {
+          setTimeout(function() { reject(new Error(label + ' timeout (' + ms / 1000 + 's)')); }, ms);
+        })
+      ]);
+    }
+
+    // =============================================
+    // SUBMIT HANDLER - DUAL WRITE
+    // =============================================
+    async function handleSubmit(e) {
+      e.preventDefault();
+
+      // Validate first
+      if (!validateForm()) {
+        showToast('Mohon lengkapi semua field yang ditandai *', 'error');
+        return;
+      }
+
+      if (!db) {
+        showToast('Firebase belum terhubung. Setup dulu.', 'error');
+        showSetupModal();
+        return;
+      }
+
+      var data = getFormData();
+      var isEditMode = !!state.editingDocId;
+
+      // ========== DUPLICATE CHECK (hanya mode simpan baru) ==========
+      if (!isEditMode) {
+        elements.submitBtn.disabled = true;
+        elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengecek duplikat...</span>';
+
+        var isDuplicate = await checkDuplicate(data);
+        if (isDuplicate) {
+          showToast('Transaksi duplikat! Data dengan detail sama sudah pernah diinput.', 'error');
+          elements.submitBtn.disabled = false;
+          elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+          return;
+        }
+
+        // Auto-generate invoice jika field kosong
+        if (!data.no_invoice.trim()) {
+          elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Generate No Invoice...</span>';
+          data.no_invoice = await autoGenerateInvoice();
+          document.getElementById('no_invoice').value = data.no_invoice;
+        }
+      }
+
+      var docRef = null;
+
+      // Show loading
+      elements.submitBtn.disabled = true;
+      elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan ke Firebase...</span>';
+
+      var firebaseSuccess = false;
+      var sheetsSuccess = false;
+      var firebaseError = '';
+      var sheetsError = '';
+
+      // ========== STEP 1: SAVE / UPDATE FIREBASE ==========
+      try {
+        var firebaseData = {
+          tanggal: data.tanggal,
+          lokasi: data.lokasi,
+          kode: data.kode,
+          jenis_pengajuan: data.jenis_pengajuan,
+          no_invoice: data.no_invoice,
+          status: data.status,
+          items: data.items,
+          total_nominal: data.total_nominal,
+          tanggal_pembayaran: data.tanggal_pembayaran,
+          dibayarkan_kepada: data.dibayarkan_kepada,
+          catatan_tambahan: data.catatan_tambahan,
+          source: data.source,
+          dibuat_oleh: data.dibuat_oleh,
+          disetujui_oleh: data.disetujui_oleh,
+          keuangan: data.keuangan,
+          dir_keuangan: data.dir_keuangan,
+          direktur_utama: data.direktur_utama,
+          accounting: data.accounting,
+          synced: true,
+          sheets_synced: false,
+          sheets_synced_at: null,
+          sheets_error: null
+        };
+
+        var firebasePromise;
+        if (isEditMode) {
+          // UPDATE existing document
+          firebasePromise = db.collection('submissions').doc(state.editingDocId).update(firebaseData);
+        } else {
+          // CREATE new document
+          firebaseData.created_at = new Date().toISOString();
+          firebaseData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+          firebasePromise = db.collection('submissions').add(firebaseData);
+        }
+
+        docRef = await withTimeout(firebasePromise, 15000, 'Firebase write');
+
+        console.log('[Firebase] ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', isEditMode ? state.editingDocId : docRef.id);
+        firebaseSuccess = true;
+        state.lastFormData = Object.assign({}, data, { id: isEditMode ? state.editingDocId : docRef.id });
+
+      } catch (error) {
+        console.error('[Firebase Save Error]:', error);
+        firebaseError = error.message || 'Unknown error';
+
+        if (firebaseError.indexOf('PERMISSION_DENIED') > -1 || firebaseError.indexOf('Missing or insufficient permissions') > -1) {
+          firebaseError = 'Permission denied! Ubah Security Rules Firebase Anda.';
+        } else if (firebaseError.indexOf('timeout') > -1) {
+          firebaseError = 'Firebase tidak merespon. Cek koneksi internet atau coba lagi.';
+        }
+      }
+
+      // ========== STEP 2: SEND TO SPREADSHEET (SECONDARY) ==========
+      if (state.webhookUrl) {
+        elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengirim ke Spreadsheet...</span>';
+        try {
+          var payload = Object.assign({}, data, {
+            _source: 'FinanceSync Pro',
+            _timestamp: new Date().toISOString(),
+            _firebase_id: docRef ? docRef.id : 'pending'
+          });
+
+          var sheetsPromise = fetch(state.webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            mode: 'no-cors',  // FIX: Gunakan no-cors agar tidak hang karena CORS
+            redirect: 'follow'
+          });
+
+          await withTimeout(sheetsPromise, 20000, 'Spreadsheet fetch');
+
+          // mode: 'no-cors' mengembalikan opaque response, tapi berarti request terkirim
+          sheetsSuccess = true;
+          console.log('[Spreadsheet] Terkirim!');
+
+          // Update Firebase doc with sync info
+          if (docRef) {
+            try {
+              await withTimeout(
+                docRef.update({
+                  sheets_synced: true,
+                  sheets_synced_at: new Date().toISOString()
+                }),
+                10000,
+                'Firebase update'
+              );
+            } catch (updateErr) {
+              console.warn('[Firebase Update Warning]:', updateErr.message);
+            }
+          }
+
+        } catch (error) {
+          console.warn('[Spreadsheet Error]:', error);
+          sheetsError = error.message || 'Unknown error';
+        }
+      }
+
+      // ========== UPDATE UI ==========
+      elements.submitBtn.disabled = false;
+
+      if (firebaseSuccess && sheetsSuccess) {
+        showToast((isEditMode ? 'Berhasil diupdate' : 'Dual Sync Berhasil') + '! (Firebase + Spreadsheet)', 'firebase');
+        updateConnectionUI();
+        populateDocuments(data);
+        elements.documentModal.classList.add('show');
+
+      } else if (firebaseSuccess) {
+        showToast('Firebase OK! ' + (isEditMode ? 'Updated' : 'Saved') + '. Spreadsheet: ' + (sheetsError || 'gagal'), 'info');
+        updateConnectionUI();
+        populateDocuments(data);
+        elements.documentModal.classList.add('show');
+
+      } else if (sheetsSuccess) {
+        showToast('Spreadsheet OK! Firebase gagal: ' + firebaseError, 'error');
+        updateConnectionUI();
+
+      } else {
+        var fullError = '';
+        if (firebaseError) fullError += 'Firebase: ' + firebaseError;
+        if (sheetsError) fullError += (fullError ? ' | ' : '') + 'Spreadsheet: ' + sheetsError;
+        showToast('Gagal menyimpan: ' + fullError, 'error');
+        updateConnectionUI();
+      }
+
+      // Reset form after successful submission
+      if (firebaseSuccess || sheetsSuccess) {
+        state.editingDocId = null;
+        elements.form.reset();
+        state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+        renderFormItems();
+        document.getElementById('tanggal').valueAsDate = new Date();
+        if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
+        // Remove edit banner
+        var editBanner = document.getElementById('editModeBanner');
+        if (editBanner) editBanner.remove();
+        // Reset button
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+        // Auto-generate next invoice for new form
+        autoGenerateInvoice().then(function(inv) {
+          document.getElementById('no_invoice').value = inv;
+        });
+      } else {
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>' + (isEditMode ? 'Update Transaksi' : 'Simpan ke Firebase + Spreadsheet') + '</span>';
+      }
+    }
+
+    // =============================================
+    // DATE FILTER FUNCTIONS
+    // =============================================
+    function applyDateFilter() {
+      if (!db) return;
+
+      var from = state.filterDateFrom;
+      var to = state.filterDateTo;
+
+      // If no filter, restart normal listener
+      if (!from && !to) {
+        startRealtimeListener();
+        return;
+      }
+
+      // Build Firestore query with date range
+      var query = db.collection('submissions').orderBy('tanggal', 'desc');
+
+      if (from) {
+        query = query.where('tanggal', '>=', from);
+      }
+      if (to) {
+        query = query.where('tanggal', '<=', to);
+      }
+
+      // Unsubscribe old listener
+      if (state.unsubscribeListener) state.unsubscribeListener();
+
+      // Show filter active indicator
+      var filterSection = document.getElementById('dateFilterSection');
+      if (filterSection) filterSection.style.borderColor = 'var(--firebase)';
+
+      state.unsubscribeListener = query.limit(100).onSnapshot(
+        function(snapshot) {
+          state.history = snapshot.docs.map(function(doc) {
+            return Object.assign({ id: doc.id }, doc.data(), { synced: true });
+          });
+          renderHistory();
+          updateStats();
+          showToast('Filter aktif: ' + (from || '...') + ' s/d ' + (to || '...') + ' (' + state.history.length + ' data)', 'info');
+        },
+        function(error) {
+          console.error('[Filter Listener] Error:', error);
+          showToast('Filter error: ' + error.message, 'error');
+        }
+      );
+    }
+
+    window.clearDateFilter = function() {
+      state.filterDateFrom = '';
+      state.filterDateTo = '';
+      document.getElementById('filterDateFrom').value = '';
+      document.getElementById('filterDateTo').value = '';
+
+      var filterSection = document.getElementById('dateFilterSection');
+      if (filterSection) filterSection.style.borderColor = 'var(--border)';
+
+      startRealtimeListener();
+      showToast('Filter tanggal direset', 'info');
+    };
+
+    // =============================================
+    // REALTIME LISTENER
+    // =============================================
+    function startRealtimeListener() {
+      if (state.unsubscribeListener) state.unsubscribeListener();
+
+      // Reset filter border when back to normal listener
+      var filterSection = document.getElementById('dateFilterSection');
+      if (filterSection) filterSection.style.borderColor = 'var(--border)';
+
+      state.unsubscribeListener = db
+        .collection('submissions')
+        .orderBy('timestamp', 'desc')
+        .limit(50)
+        .onSnapshot(
+          function(snapshot) {
+            state.history = snapshot.docs.map(function(doc) { return Object.assign({ id: doc.id }, doc.data(), { synced: true }); });
+            renderHistory();
+            updateStats();
+          },
+          function(error) {
+            console.error('[Listener] Error:', error);
+            // Auto-detect: jika butuh composite index, tampilkan link
+            if (error.message && error.message.indexOf('FAILED_PRECONDITION') > -1 && error.message.indexOf('index') > -1) {
+              var linkMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s"']+/);
+              if (linkMatch) {
+                showToast('Perlu buat index di Firebase. Klik error di Console (F12) untuk link-nya.', 'error');
+                console.log('[INDEX NEEDED] Buka link ini untuk buat index:', linkMatch[0]);
+              }
+            }
+            showToast('Realtime listener error', 'error');
+          }
+        );
+    }
+
+    // =============================================
+    // RENDER HISTORY WITH DELETE & EDIT
+    // =============================================
+    function renderHistory() {
+      var filtered = state.currentTab === 'all'
+        ? state.history
+        : state.currentTab === 'synced'
+        ? state.history.filter(function(h) { return h.sheets_synced === true; })
+        : [];
+
+      if (filtered.length === 0) {
+        elements.historyList.innerHTML = '<div class="text-center py-10 color-muted">' +
+          '<svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' +
+          '<p class="text-sm">Belum ada data</p>' +
+          '<p class="text-xs mt-2 color-firebase">Data sync ke Firebase + Spreadsheet</p></div>';
+        return;
+      }
+
+      elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item) {
+        var timestamp = item.timestamp && item.timestamp.seconds
+          ? new Date(item.timestamp.seconds * 1000).toLocaleString('id-ID')
+          : item.created_at || '-';
+        
+        var sheetsIcon = item.sheets_synced 
+          ? '<span class="text-xs color-sheets ml-1">📊</span>'
+          : '<span class="text-xs color-muted ml-1">○</span>';
+        
+        var itemId = item.id ? item.id.substring(0, 6) : '';
+        var safeId = item.id || '';
+        var safeKode = (item.kode || '').replace(/"/g, '\\"');
+        var safeLabel = (item.no_invoice || item.kode || '-').replace(/'/g, "\\'");
+        
+        // FIX: Mengirim 'kode' ke fungsi action menu agar sync delete berfungsi
+        return '<div class="history-item cursor-pointer" onclick="loadHistoryItem(\'' + safeId + '\')">' +
+          '<div class="flex items-start justify-between gap-3">' +
+          '<div class="flex-1 min-w-0 pr-8">' +
+          '<div class="flex items-center gap-2">' +
+          '<span class="font-medium text-sm mono">' + escapeHtml(item.no_invoice || item.kode || '-') + '</span>' +
+          '<span class="status-dot ' + (item.synced ? 'success' : 'pending') + '"></span>' +
+          (itemId ? '<span class="text-xs color-firebase">#' + itemId + '</span>' : '') +
+          sheetsIcon +
+          '</div>' +
+          '<div class="text-xs color-muted truncate mt-0.5">' +
+          (item.items ? item.items.length : 0) + ' Item(s) &bull; ' + escapeHtml(item.jenis_pengajuan || '-') +
+          '</div>' +
+          '<div class="flex items-center gap-3 mt-1.5">' +
+          '<span class="text-xs font-medium color-accent">Rp ' + formatNumber(item.total_nominal || 0) + '</span>' +
+          '</div></div>' +
+          '<div class="flex items-center gap-2">' +
+          '<div class="text-xs color-muted text-right whitespace-nowrap">' + timestamp + '</div>' +
+          // FIX: Menambahkan parameter 'safeKode' di sini
+          '<button onclick="event.stopPropagation();toggleActionMenu(event, \'' + safeId + '\', \'' + safeKode + '\', \'' + safeLabel + '\', ' + (item.total_nominal || 0) + ')" class="btn-action-menu" title="Aksi">' +
+          '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>' +
+          '</button></div></div></div>';
+      }).join('');
+    }
+
+    // =============================================
+    // ACTION MENU (Single Button → Dropdown)
+    // =============================================
+    var activeActionMenu = null;
+
+    window.toggleActionMenu = function(e, id, kode, label, amount) { // FIX: Menerima parameter 'kode'
+      e.stopPropagation();
+      // Close any existing open menu
+      closeAllActionMenus();
+
+      var btn = e.currentTarget;
+      var dropdown = document.createElement('div');
+      dropdown.className = 'action-dropdown';
+      dropdown.innerHTML =
+        '<button class="action-edit" onclick="event.stopPropagation();closeAllActionMenus();editHistoryItem(\'' + id + '\')">' +
+        '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+        'Edit</button>' +
+        '<div class="dropdown-divider"></div>' +
+        // FIX: Mengirim 'kode' ke showDeleteModal
+        '<button class="action-delete" onclick="event.stopPropagation();closeAllActionMenus();showDeleteModal(\'' + id + '\', \'' + kode + '\', \'' + label + '\', ' + amount + ')">' +
+        '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+        'Hapus</button>';
+
+      btn.appendChild(dropdown);
+      activeActionMenu = dropdown;
+    };
+
+    function closeAllActionMenus() {
+      var menus = document.querySelectorAll('.action-dropdown');
+      menus.forEach(function(m) { m.remove(); });
+      activeActionMenu = null;
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function() {
+      closeAllActionMenus();
+    });
+
+    // =============================================
+    // DELETE FUNCTIONALITY (FIXED)
+    // =============================================
+    // FIX: Menambahkan parameter 'kode'
+    window.showDeleteModal = function(id, kode, label, amount) {
+      state.pendingDeleteId = id;
+      state.pendingDeleteKode = kode; // FIX: Simpan kode ini
+      document.getElementById('deleteItemInfo').textContent = 'Kode: ' + kode + ' • ' + label + ' • Rp ' + formatNumber(amount);
+      elements.deleteConfirmModal.classList.add('show');
+    };
+
+    window.closeDeleteModal = function() {
+      elements.deleteConfirmModal.classList.remove('show');
+      state.pendingDeleteId = null;
+      state.pendingDeleteKode = null;
+    };
+
+    window.confirmDelete = async function() {
+      if (!state.pendingDeleteId || !db) return;
+
+      try {
+        // Step 1: Hapus dari Firebase
+        await db.collection('submissions').doc(state.pendingDeleteId).delete();
+        console.log('[Firebase] Data dihapus:', state.pendingDeleteId);
+
+        // Step 2: Hapus dari Spreadsheet
+        // FIX: Mengirim payload JSON yang benar sesuai script GAS (action: "DELETE", kode: "...")
+        if (state.webhookUrl) {
+          try {
+            await withTimeout(
+              fetch(state.webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "DELETE", kode: state.pendingDeleteKode }), // FIX: Kirim kode di body
+                mode: 'no-cors'
+              }),
+              15000,
+              'Spreadsheet delete'
+            );
+            console.log('[Spreadsheet] Hapus request terkirim untuk kode:', state.pendingDeleteKode);
+          } catch (sheetErr) {
+            console.warn('[Spreadsheet Delete Warning]:', sheetErr.message);
+          }
+        }
+
+        showToast('Data berhasil dihapus (Firebase + Spreadsheet)!', 'success');
+        closeDeleteModal();
+      } catch (error) {
+        console.error('[Delete] Error:', error);
+        showToast('Gagal menghapus: ' + error.message, 'error');
+        closeDeleteModal();
+      }
+    };
+
+    // =============================================
+    // EDIT TRANSACTION
+    // =============================================
+    window.editHistoryItem = function(id) {
+      var item = state.history.find(function(h) { return h.id === id; });
+      if (!item) return;
+
+      // Set edit mode
+      state.editingDocId = id;
+
+      // Populate form with existing data
+      document.getElementById('tanggal').value = item.tanggal || '';
+      document.getElementById('lokasi').value = item.lokasi || '';
+      document.getElementById('jenis_pengajuan').value = item.jenis_pengajuan || '';
+      document.getElementById('kode').value = item.kode || '';
+      document.getElementById('no_invoice').value = item.no_invoice || '';
+      document.getElementById('status').value = item.status || '';
+      document.getElementById('dibayarkan_kepada').value = item.dibayarkan_kepada || '';
+      document.getElementById('catatan_tambahan').value = item.catatan_tambahan || '';
+      document.getElementById('tanggal_pembayaran').value = item.tanggal_pembayaran || '';
+
+      // Show/hide payment date
+      if (item.status === 'Lunas') {
+        elements.paymentDateContainer.style.display = 'block';
+      } else {
+        elements.paymentDateContainer.style.display = 'none';
+      }
+
+      // Populate items
+      state.items = (item.items || []).map(function(i) {
+        return { ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' };
+      });
+      renderFormItems();
+
+      // Change submit button
+      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
+
+      // Show edit mode banner
+      var editBanner = document.getElementById('editModeBanner');
+      if (!editBanner) {
+        editBanner = document.createElement('div');
+        editBanner.id = 'editModeBanner';
+        editBanner.style.cssText = 'background:rgba(255,202,40,0.15);border:1px solid rgba(255,202,40,0.4);border-radius:10px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+        var formCard = document.querySelector('#dataForm').parentElement;
+        formCard.insertBefore(editBanner, formCard.firstChild);
+      }
+      editBanner.innerHTML = '<div style="display:flex;align-items:center;gap:8px;"><svg style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span style="font-size:13px;color:#fbbf24;font-weight:600;">MODE EDIT — Mengubah transaksi #' + id.substring(0, 6) + '</span></div><button onclick="cancelEdit()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fbbf24;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Space Grotesk,sans-serif;">Batal</button>';
+
+      // Scroll to form
+      document.getElementById('dataForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Mode edit aktif. Ubah data lalu klik "Update Transaksi".', 'firebase');
+    };
+
+    window.loadHistoryItem = function(id) {
+      var item = state.history.find(function(h) { return h.id === id; });
+      if (item) {
+        state.items = (item.items || []).map(function(i) {
+          return { ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' };
+        });
+        renderFormItems();
+        populateDocuments(item);
+        elements.documentModal.classList.add('show');
+      }
+    };
+
+    // =============================================
+    // STATS
+    // =============================================
+    function updateStats() {
+      animateCounter(elements.totalData, state.history.length);
+      animateCounter(elements.sentData, state.history.filter(function(h) { return h.synced === true; }).length);
+      animateCounter(elements.sheetsData, state.history.filter(function(h) { return h.sheets_synced === true; }).length);
+      animateCounter(elements.pendingData, state.history.filter(function(h) { return !h.synced && !h.sheets_synced; }).length);
+    }
+
+    function animateCounter(el, target) {
+      var current = parseInt(el.textContent) || 0;
+      if (current === target) return;
+      var startTime = performance.now();
+      var duration = 400;
+      function update(currentTime) {
+        var progress = Math.min((currentTime - startTime) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(current + (target - current) * eased);
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    // =============================================
+    // UTILITIES
+    // =============================================
+    function showToast(message, type) {
+      elements.toast.textContent = message;
+      elements.toast.className = 'toast ' + type + ' show';
+      setTimeout(function() { elements.toast.classList.remove('show'); }, 4000);
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      var date = new Date(dateStr + 'T00:00:00');
+      return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function formatNumber(num) { return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    function escapeHtml(text) { var div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+
+    // =============================================
+    // INIT ON LOAD
+    // =============================================
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
