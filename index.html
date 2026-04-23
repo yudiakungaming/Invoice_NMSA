@@ -226,15 +226,14 @@
     .history-item:hover .btn-action-menu { opacity: 1; }
     .btn-action-menu:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--fg); }
 
+    /* FIX 1: Dropdown Styling - Fixed Position to avoid being covered */
     .action-dropdown {
-      position: absolute;
-      top: calc(100% + 4px);
-      right: 0;
+      position: fixed; /* Changed from absolute to fixed */
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-      z-index: 60;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 9999; /* Very high z-index */
       min-width: 130px;
       overflow: hidden;
       animation: slideUp 0.15s ease-out;
@@ -254,6 +253,7 @@
       cursor: pointer;
       transition: background 0.15s;
       white-space: nowrap;
+      text-align: left;
     }
 
     .action-dropdown button:hover { background: rgba(255, 255, 255, 0.08); }
@@ -606,7 +606,7 @@
       border: 1px solid rgba(139, 92, 246, 0.5);
     }
 
-    /* FIX: Utility classes untuk dynamic class switching (menghindari Tailwind CDN MutationObserver bug) */
+    /* Utility classes */
     .status-text { font-size: 14px; }
     .status-text-success { color: var(--success); font-weight: 600; }
     .status-text-default-success { color: var(--success); }
@@ -616,7 +616,6 @@
     .status-text-firebase { color: var(--firebase); }
     .status-text-sheets { color: var(--sheets); }
     .status-text-accent { color: var(--accent); }
-    /* FIX: Color utility classes untuk dynamic innerHTML (renderHistory dll) */
     .color-muted { color: var(--muted); }
     .color-firebase { color: var(--firebase); }
     .color-sheets { color: var(--sheets); }
@@ -757,7 +756,7 @@
               <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
             </div>
 
-            <!-- UPDATE 1: Tab Filter Lunas & Belum Lunas -->
+            <!-- Tab Filter -->
             <div class="flex gap-1 mb-3 p-1 bg-[--bg-secondary] rounded-lg">
               <button class="tab-btn active flex-1" data-tab="Lunas">Lunas</button>
               <button class="tab-btn flex-1" data-tab="Belum Lunas">Belum Lunas</button>
@@ -991,7 +990,6 @@
       WEBHOOK_URL: 'financesync_webhook_url_v5'
     };
 
-    // Default Webhook URL (user's existing script)
     const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec';
 
     let db = null;
@@ -1000,7 +998,7 @@
       isConnecting: true,
       isSheetsConnected: false,
       history: [],
-      currentTab: 'Lunas', // UPDATE: Default tab is Lunas now
+      currentTab: 'Lunas',
       lastFormData: null,
       items: [{ ket: '', qty: '', nominal: 0, keterangan: '' }],
       unsubscribeListener: null,
@@ -1053,13 +1051,9 @@
         validationErrorList: document.getElementById('validationErrorList')
       };
 
-      // Load saved configurations
       loadSavedConfigs();
-
-      // Set tanggal hari ini
       document.getElementById('tanggal').valueAsDate = new Date();
 
-      // Set default filter: bulan sekarang (1 - akhir bulan)
       var now = new Date();
       var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
       var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -1070,14 +1064,11 @@
       document.getElementById('filterDateFrom').value = fromStr;
       document.getElementById('filterDateTo').value = toStr;
 
-      // Initialize
       renderFormItems();
       setupEventListeners();
       
-      // Try connect
       initDualConnection();
 
-      // Auto-generate invoice number after Firebase connects
       setTimeout(function() {
         if (db) {
           autoGenerateInvoice().then(function(inv) {
@@ -1133,7 +1124,6 @@
         return;
       }
 
-      // Step 1: Connect to Firebase
       try {
         const config = JSON.parse(localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG));
         
@@ -1142,8 +1132,6 @@
         }
         
         db = firebase.firestore();
-        
-        // Test connection
         await db.collection('submissions').limit(1).get();
         
         state.isConnected = true;
@@ -1155,7 +1143,6 @@
         showToast('Firebase error: ' + error.message, 'error');
       }
 
-      // Step 2: Test Webhook (Spreadsheet)
       if (hasWebhookUrl) {
         try {
           const response = await fetch(state.webhookUrl + '?test=' + Date.now(), {
@@ -1174,7 +1161,6 @@
 
       updateConnectionUI();
       
-      // Start listening if Firebase connected
       if (state.isConnected) {
         applyDateFilter();
       }
@@ -1191,7 +1177,6 @@
       banner.style.display = 'flex';
       banner.className = 'connection-banner no-print';
       
-      // Reset badges
       elements.badgeFirebase.classList.add('hidden');
       elements.badgeSheets.classList.add('hidden');
       
@@ -1978,29 +1963,27 @@
     }
 
     // =============================================
-    // UPDATE 2: RENDER HISTORY WITH LUNAS/BELUM LUNAS FILTER & LAYOUT
+    // RENDER HISTORY WITH FIX FOR COVERED MENU
     // =============================================
     function renderHistory() {
-      // Filter based on new Tab Logic
       var filtered = [];
+      // LOGIC FIX: Jika status null/undefined, anggap "Belum Lunas" agar data lama tetap muncul
       if (state.currentTab === 'Lunas') {
         filtered = state.history.filter(function(h) { return h.status === 'Lunas'; });
       } else if (state.currentTab === 'Belum Lunas') {
-        filtered = state.history.filter(function(h) { return h.status === 'Belum Lunas'; });
+        filtered = state.history.filter(function(h) { return h.status !== 'Lunas'; }); // Catch null/undefined/empty/Unpaid
       } else {
-        // Fallback if something goes wrong
         filtered = state.history;
       }
 
       if (filtered.length === 0) {
         elements.historyList.innerHTML = '<div class="text-center py-10 color-muted">' +
           '<svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' +
-          '<p class="text-sm">Belum ada data ' + state.currentTab + '</p>' +
+          '<p class="text-sm">Tidak ada data ' + state.currentTab + '</p>' +
           '<p class="text-xs mt-2 color-firebase">Data sync ke Firebase + Spreadsheet</p></div>';
         return;
       }
 
-      // Render items with new layout
       elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item) {
         var dateStr = formatDate(item.tanggal);
         var itemsSummary = (item.items || []).map(function(i) { return i.ket; }).filter(function(k) { return k; }).join(', ');
@@ -2010,7 +1993,6 @@
         var safeKode = (item.kode || '').replace(/"/g, '\\"');
         var safeLabel = (item.no_invoice || item.kode || '-').replace(/'/g, "\\'");
         
-        // Status Badge Logic
         var isLunas = item.status === 'Lunas';
         var statusBadge = isLunas 
           ? '<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>'
@@ -2035,7 +2017,7 @@
     }
 
     // =============================================
-    // ACTION MENU
+    // ACTION MENU - FIXED POSITION FIX
     // =============================================
     var activeActionMenu = null;
 
@@ -2055,7 +2037,17 @@
         '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
         'Hapus</button>';
 
-      btn.appendChild(dropdown);
+      // FIX: Append to body to prevent z-index stacking context issues
+      document.body.appendChild(dropdown);
+
+      // Calculate position based on button
+      const rect = btn.getBoundingClientRect();
+      const width = 130; // Approx width
+
+      // Position: right-aligned to button, below button
+      dropdown.style.top = (rect.bottom + 5) + 'px';
+      dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+
       activeActionMenu = dropdown;
     };
 
@@ -2194,7 +2186,7 @@
       var duration = 400;
       function update(currentTime) {
         var progress = Math.min((currentTime - startTime) / duration, 1);
-        var eased = 1 - Math.pow(1 - progress, 3);
+        var eased =1 - Math.pow(1 - progress, 3);
         el.textContent = Math.round(current + (target - current) * eased);
         if (progress < 1) requestAnimationFrame(update);
       }
