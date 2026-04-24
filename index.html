@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceSync Pro v3.0 - Firebase Centric Architecture</title>
+  <title>FinanceSync Pro v3.1 - Firebase Centric Architecture</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Firebase SDK -->
@@ -628,6 +628,19 @@
       color: var(--error);
     }
 
+    /* Edit Mode Banner */
+    .edit-banner {
+      background: rgba(255, 202, 40, 0.15);
+      border: 1px solid rgba(255, 202, 40, 0.4);
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
     /* Utility classes */
     .status-text { font-size: 14px; }
     .status-text-success { color: var(--success); font-weight: 600; }
@@ -654,7 +667,7 @@
             <svg class="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 19h20L12 2zm0 3.84L18.92 17H5.08L12 5.84z"/><circle cx="12" cy="14" r="2"/></svg>
           </div>
           <div>
-            <h1 class="text-lg font-semibold">FinanceSync Pro v3.0</h1>
+            <h1 class="text-lg font-semibold">FinanceSync Pro v3.1</h1>
             <p class="text-xs text-[--muted]">Firebase-Centric Architecture</p>
           </div>
         </div>
@@ -708,6 +721,9 @@
         <!-- FORM INPUT -->
         <div class="lg:col-span-3 no-print">
           <div class="card animate-in delay-3">
+            <!-- Edit Mode Banner Container -->
+            <div id="editModeContainer"></div>
+            
             <div class="flex items-center gap-3 mb-6">
               <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--firebase]/20 to-[--firebase-orange]/20 flex items-center justify-center">
                 <svg class="w-5 h-5 text-[--firebase]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
@@ -1009,8 +1025,8 @@
     // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v10',
-      WEBHOOK_URL: 'financesync_webhook_url_v10'
+      FIREBASE_CONFIG: 'financesync_firebase_config_v11',
+      WEBHOOK_URL: 'financesync_webhook_url_v11'
     };
 
     let db = null;
@@ -1065,7 +1081,8 @@
         configError: document.getElementById('configError'),
         validationError: document.getElementById('validationError'),
         validationErrorList: document.getElementById('validationErrorList'),
-        archBanner: document.getElementById('archBanner')
+        archBanner: document.getElementById('archBanner'),
+        editModeContainer: document.getElementById('editModeContainer')
       };
 
       loadSavedConfigs();
@@ -1086,15 +1103,41 @@
       
       initConnection();
 
-      setTimeout(function() {
-        if (db) {
-          autoGenerateInvoice().then(function(inv) {
+      // ✅ FIX: Generate invoice setelah connection berhasil (lebih reliable)
+      generateInvoiceAfterConnection();
+
+      // ✅ FIX: Cleanup listener saat page unload (prevent memory leak)
+      window.addEventListener('beforeunload', function() {
+        if (state.unsubscribeListener) {
+          state.unsubscribeListener();
+        }
+      });
+    }
+
+    // ✅ FIX: Fungsi baru untuk generate invoice setelah connection stabil
+    async function generateInvoiceAfterConnection() {
+      // Poll untuk cek koneksi, max 10 detik
+      var attempts = 0;
+      var maxAttempts = 20; // 20 x 500ms = 10 detik
+      
+      var checkInterval = setInterval(async function() {
+        attempts++;
+        
+        if (db && state.isConnected) {
+          clearInterval(checkInterval);
+          try {
+            var inv = await autoGenerateInvoice();
             if (inv && !document.getElementById('no_invoice').value) {
               document.getElementById('no_invoice').value = inv;
             }
-          });
+          } catch (e) {
+            console.warn('[Auto Invoice] Failed:', e.message);
+          }
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          console.warn('[Auto Invoice] Timeout - Firebase not connected in time');
         }
-      }, 3000);
+      }, 500);
     }
 
     // =============================================
@@ -1309,6 +1352,15 @@
           elements.deleteConfirmModal.classList.remove('show');
         }
       });
+
+      // ✅ FIX: Handle form reset properly
+      elements.form.addEventListener('reset', function() {
+        setTimeout(function() {
+          state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+          renderFormItems();
+          clearEditMode();
+        }, 10);
+      });
     }
 
     // =============================================
@@ -1407,7 +1459,7 @@
         tanggal_pembayaran: fd.get('tanggal_pembayaran') || '',
         dibayarkan_kepada: fd.get('dibayarkan_kepada') || '',
         catatan_tambahan: fd.get('catatan_tambahan') || '',
-        source: 'FinanceSync Pro v3.0',
+        source: 'FinanceSync Pro v3.1',
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         dibuat_oleh: 'Nur Wahyudi',
         disetujui_oleh: 'Harijon',
@@ -1415,8 +1467,8 @@
         dir_keuangan: 'Harijon',
         direktur_utama: 'H. Andi Nursyam Halid',
         accounting: 'Sri Ekowati',
-        // 🔥 NEW: Fields for sync tracking
-        synced_to_sheets: false,  // Default: belum sync ke sheets
+        // 🔥 Fields for sync tracking
+        synced_to_sheets: false,
         synced_at: null,
         sheets_error: null
       };
@@ -1512,7 +1564,7 @@
     // HELPER: Auto-generate No Invoice
     // =============================================
     async function autoGenerateInvoice() {
-      if (!db) return;
+      if (!db) return null;
       try {
         var now = new Date();
         var month = now.getMonth(); 
@@ -1579,18 +1631,26 @@
     }
 
     // =============================================
+    // HELPER: Clear Edit Mode UI
+    // =============================================
+    function clearEditMode() {
+      state.editingDocId = null;
+      if (elements.editModeContainer) {
+        elements.editModeContainer.innerHTML = '';
+      }
+    }
+
+    // =============================================
     // HELPER: Cancel Edit Mode
     // =============================================
     window.cancelEdit = function() {
-      state.editingDocId = null;
+      clearEditMode();
       elements.form.reset();
       state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
       renderFormItems();
       document.getElementById('tanggal').valueAsDate = new Date();
       if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
-      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>💾 Simpan ke Firebase</span>';
-      var editBanner = document.getElementById('editModeBanner');
-      if (editBanner) editBanner.remove();
+      resetSubmitButton();
       showToast('Mode edit dibatalkan', 'info');
     };
 
@@ -1607,7 +1667,7 @@
     }
 
     // =============================================
-    // 🎯 MAIN SUBMIT HANDLER - FIREBASE ONLY!
+    // 🎯 MAIN SUBMIT HANDLER - FIXED VERSION v3.1
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
@@ -1625,6 +1685,9 @@
 
       var data = getFormData();
       var isEditMode = !!state.editingDocId;
+      
+      // ✅ FIX: Gunakan flag boolean untuk tracking sukses/gagal
+      var saveSuccess = false;
 
       if (!isEditMode) {
         elements.submitBtn.disabled = true;
@@ -1639,14 +1702,15 @@
         }
 
         if (!data.no_invoice.trim()) {
-          elements.submitBtn.innerHTML = '<div class="spinner"></span>Generate No Invoice...</span>';
+          // ✅ FIX: Tag HTML yang benar (</span>, bukan </div>)
+          elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Generate No Invoice...</span>';
           data.no_invoice = await autoGenerateInvoice();
           document.getElementById('no_invoice').value = data.no_invoice;
         }
       }
 
       elements.submitBtn.disabled = true;
-      elements.submitBtn.innerHTML = '<div class="spinner"></span>Menyimpan ke Firebase...';
+      elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan ke Firebase...</span>';
 
       try {
         var firebaseData = {
@@ -1685,18 +1749,18 @@
 
         var docRef = await withTimeout(firebasePromise, 15000, 'Firebase write');
 
-        console.log('[Firebase] ✅ ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', isEditMode ? state.editingDocID : docRef.id);
+        console.log('[Firebase] ✅ ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', isEditMode ? state.editingDocId : docRef.id);
         
         state.lastFormData = Object.assign({}, data, { id: isEditMode ? state.editingDocId : docRef.id });
+
+        // ✅ FIX: Set flag sukses di dalam try block
+        saveSuccess = true;
 
         // ✅ SUCCESS!
         showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan ke Firebase!') + ' Spreadsheet akan sync otomatis.', 'firebase');
         
         populateDocuments(data);
         elements.documentModal.classList.add('show');
-        
-        // Refresh stats
-        // Stats will auto-update via realtime listener
 
       } catch (error) {
         console.error('[Firebase Save Error]:', error);
@@ -1709,25 +1773,29 @@
         }
         
         showToast('Gagal menyimpan: ' + errorMsg, 'error');
+        // ❌ Jangan set saveSuccess = true di sini (tetap false)
       }
 
+      // Re-enable button
       elements.submitBtn.disabled = false;
 
-      // Reset form jika sukses
-      if (!error) {
-        state.editingDocId = null;
+      // ✅ FIX: Pakai flag saveSuccess, bukan variabel error (yang tidak exist di scope ini)
+      if (saveSuccess) {
+        // Reset form hanya jika sukses
+        clearEditMode();
         elements.form.reset();
         state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
         renderFormItems();
         document.getElementById('tanggal').valueAsDate = new Date();
         if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
-        var editBanner = document.getElementById('editModeBanner');
-        if (editBanner) editBanner.remove();
         resetSubmitButton();
+        
+        // Generate invoice baru untuk transaksi berikutnya
         autoGenerateInvoice().then(function(inv) {
-          document.getElementById('no_invoice').value = inv;
+          if (inv) document.getElementById('no_invoice').value = inv;
         });
       } else {
+        // Gagal - restore button ke mode edit atau normal
         resetSubmitButton(isEditMode);
       }
     }
@@ -1860,7 +1928,7 @@
           syncIndicator = '<span class="sync-indicator synced" title="✅ Sudah sync ke Spreadsheet">✅</span>';
           syncClass = 'synced';
         } else if (item.sheets_error) {
-          syncIndicator = '<span class="sync-indicator error" title="Error: ' + escapeHtml(item.sheets_error)">❌</span>';
+          syncIndicator = '<span class="sync-indicator error" title="Error: ' + escapeHtml(item.sheets_error) + '">❌</span>';
           syncClass = 'sync-error';
         } else {
           syncIndicator = '<span class="sync-indicator pending" title="⏳ Menunggu sync ke Spreadsheet...">⏳</span>';
@@ -1992,15 +2060,16 @@
 
       elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
 
-      var editBanner = document.getElementById('editModeBanner');
-      if (!editBanner) {
-        editBanner = document.createElement('div');
-        editBanner.id = 'editModeBanner';
-        editBanner.style.cssText = 'background:rgba(255,202,40,0.15);border:1px solid rgba(255,202,40,0.4);border-radius:10px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
-        var formCard = document.querySelector('#dataForm').parentElement;
-        formCard.insertBefore(editBanner, formCard.firstChild);
+      // ✅ FIX: Gunakan container yang sudah ada di HTML
+      if (elements.editModeContainer) {
+        elements.editModeContainer.innerHTML = '<div class="edit-banner">' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<svg style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
+            '<span style="font-size:13px;color:#fbbf24;font-weight:600;">MODE EDIT — Sedang mengubah transaksi</span>' +
+          '</div>' +
+          '<button onclick="cancelEdit()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fbbf24;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Space Grotesk,sans-serif;">Batal</button>' +
+        '</div>';
       }
-      editBanner.innerHTML = '<div style="display:flex;align-items:center;gap:8px;"><svg style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span style="font-size:13px;color:#fbbf24;font-weight:600;">MODE EDIT — Mengubah transaksi #' + id.substring(0, 6) + '</span></div><button onclick="cancelEdit()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fbbf24;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Space Grotesk,sans-serif;">Batal</button>';
 
       document.getElementById('dataForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
       showToast('Mode edit aktif. Ubah data lalu klik "Update".', 'firebase');
@@ -2039,7 +2108,7 @@
       var duration = 400;
       function update(currentTime) {
         var progress = Math.min((currentTime - startTime) / duration, 1);
-        var eased =1 - Math.pow(1 - progress, 3);
+        var eased = 1 - Math.pow(1 - progress, 3);
         el.textContent = Math.round(current + (target - current) * eased);
         if (progress < 1) requestAnimationFrame(update);
       }
