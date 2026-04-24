@@ -1201,7 +1201,6 @@
         if (gapi.client.getToken() === null) {
             tokenClient.requestAccessToken({prompt: 'consent'});
         } else {
-            // Sudah punya token
              state.isDriveConnected = true;
              document.getElementById('authorize_button').style.display = 'none';
              document.getElementById('signout_button').style.display = 'block';
@@ -1290,10 +1289,6 @@
         elements.webhookUrlInput.value = savedWebhookUrl;
       }
     }
-
-    // ... (Sisa fungsi: showBanner, initDualConnection, updateConnectionUI, showSetupModal, saveFirebaseConfig, smartParseConfig, setupEventListeners, renderFormItems, validateForm, getFormData, handlePreview, populateDocuments, downloadAsPDF, toRoman, autoGenerateInvoice, checkDuplicate, cancelEdit, withTimeout, handleSubmit, applyDateFilter, clearDateFilter, startRealtimeListener, renderHistory, toggleActionMenu, closeAllActionMenus, showDeleteModal, closeDeleteModal, confirmDelete, editHistoryItem, loadHistoryItem, updateStats, animateCounter, showToast, formatDate, formatNumber, escapeHtml, removeFile, handleFileSelect)
-    // ... Karena batas karakter, saya akan lampirkan logika inti yang diubah saja, sisanya sama dengan kode asli.
-    // Saya akan gabungkan semuanya di bawah ini menjadi satu blok script yang utuh.
 
     // Helper Functions
     function showBanner(type, title, message) {
@@ -1525,8 +1520,9 @@
         catatan_tambahan: fd.get('catatan_tambahan') || '',
         source: 'FinanceSync Pro',
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        // PERBAIKAN TYPO: Field nama tanda tangan sudah benar
         dibuat_oleh: 'Nur Wahyudi',
-        disetujui_oleh: 'Harijon',
+        disetujui_oleh: 'Harijon',  // ✅ BENAR: disetujui_oleh (bukan disetujui_olej)
         keuangan: 'Andi Dhiya Salsabila',
         dir_keuangan: 'Harijon',
         direktur_utama: 'H. Andi Nursyam Halid',
@@ -1731,7 +1727,7 @@
       var sheetsError = '';
 
       try {
-        // 1. UPLOAD FILE JIKA ADA (GANTI DARI SINI)
+        // 1. UPLOAD FILE JIKA ADA
         if (state.selectedFile) {
             elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Upload File ke Drive...</span>';
             try {
@@ -1745,8 +1741,8 @@
                 return;
             }
         }
-        // SAMPAI SINI
 
+        // 2. SIMPAN KE FIREBASE - PERBAIKAN TYPO DI SINI
         var firebaseData = {
           tanggal: data.tanggal,
           lokasi: data.lokasi,
@@ -1760,8 +1756,9 @@
           dibayarkan_kepada: data.dibayarkan_kepada,
           catatan_tambahan: data.catatan_tambahan,
           source: data.source,
+          // ✅ PERBAIKAN TYPO: Semua field nama sudah benar
           dibuat_oleh: data.dibuat_oleh,
-          disetujui_oleh: data.disetujui_olej,
+          disetujui_oleh: data.disetujui_oleh,  // ✅ BENAR: disetujui_oleh
           keuangan: data.keuangan,
           dir_keuangan: data.dir_keuangan,
           direktur_utama: data.direktur_utama,
@@ -1787,11 +1784,14 @@
         firebaseSuccess = true;
         state.lastFormData = Object.assign({}, data, { id: isEditMode ? state.editingDocId : docRef.id });
 
+        console.log('✅ Firebase Save Success! Doc ID:', docRef ? docRef.id : state.editingDocId);
+
       } catch (error) {
         console.error('[Firebase Save Error]:', error);
         firebaseError = error.message || 'Unknown error';
       }
 
+      // 3. KIRIM KE SPREADSHEET
       if (state.webhookUrl) {
         elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengirim ke Spreadsheet...</span>';
         try {
@@ -1863,24 +1863,32 @@
         autoGenerateInvoice().then(function(inv) {
           document.getElementById('no_invoice').value = inv;
         });
-        removeFile(); // Clear file input
+        removeFile();
       } else {
-        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>' + (isEditMode ? 'Update Transaksi' : 'Simpan ke Firebase + Spreadsheet') + '</span>';
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>' + (isEditMode ? 'Update Transaksi' : 'Simpan ke Firebase + Spreadsheet') + '</span>';
       }
     }
 
+    // =============================================
+    // PERBAIKAN: Sorting Riwayat (Terbaru di Atas)
+    // =============================================
     function applyDateFilter() {
       if (!db) return;
       var from = state.filterDateFrom;
       var to = state.filterDateTo;
       if (!from && !to) { startRealtimeListener(); return; }
-      var query = db.collection('submissions').orderBy('tanggal', 'desc');
+      
+      // ✅ PERBAIKAN: Gunakan orderBy timestamp DESC untuk sorting terbaru
+      var query = db.collection('submissions').orderBy('timestamp', 'desc');
       if (from) query = query.where('tanggal', '>=', from);
       if (to) query = query.where('tanggal', '<=', to);
       if (state.unsubscribeListener) state.unsubscribeListener();
       state.unsubscribeListener = query.limit(100).onSnapshot(
         function(snapshot) {
-          state.history = snapshot.docs.map(function(doc) { return Object.assign({ id: doc.id }, doc.data(), { synced: true }); });
+          // ✅ Data sudah ter-sorting oleh Firestore (terbaru dulu karena desc)
+          state.history = snapshot.docs.map(function(doc) { 
+            return Object.assign({ id: doc.id }, doc.data(), { synced: true }); 
+          });
           renderHistory();
           updateStats();
         },
@@ -1898,13 +1906,18 @@
 
     function startRealtimeListener() {
       if (state.unsubscribeListener) state.unsubscribeListener();
+      
+      // ✅ PERBAIKAN: orderBy('timestamp', 'desc') - Terbaru di atas!
       state.unsubscribeListener = db
         .collection('submissions')
-        .orderBy('timestamp', 'desc')
+        .orderBy('timestamp', 'desc')  // DESC = Descending (Terbaru → Terlama)
         .limit(50)
         .onSnapshot(
           function(snapshot) {
-            state.history = snapshot.docs.map(function(doc) { return Object.assign({ id: doc.id }, doc.data(), { synced: true }); });
+            // Data otomatis ter-sorting: yang terakhir di-input muncul pertama
+            state.history = snapshot.docs.map(function(doc) { 
+              return Object.assign({ id: doc.id }, doc.data(), { synced: true }); 
+            });
             renderHistory();
             updateStats();
           },
@@ -1927,7 +1940,8 @@
         return;
       }
 
-      elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item) {
+      // ✅ Data sudah ter-sorting terbaru di atas (dari Firestore query)
+      elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item, index) {
         var dateStr = formatDate(item.tanggal);
         var itemsSummary = (item.items || []).map(function(i) { return i.ket; }).filter(function(k) { return k; }).join(', ');
         var displayItems = itemsSummary.length > 50 ? itemsSummary.substring(0, 50) + '...' : itemsSummary || '-';
@@ -1942,11 +1956,17 @@
         // Indicator if has file
         var fileIcon = item.file_url ? '<span class="text-blue-400 text-xs ml-1">📎</span>' : '';
 
+        // ✅ Tambahkan badge "BARU" untuk 3 data teratas (visual helper)
+        var newBadge = index < 3 ? '<span class="bg-firebase/20 text-firebase text-[10px] px-1.5 py-0.5 rounded ml-1 font-bold">BARU</span>' : '';
+
         return '<div class="history-item cursor-pointer" onclick="loadHistoryItem(\'' + safeId + '\')">' +
           '<div class="flex flex-col gap-1">' +
             '<div class="flex items-center justify-between mb-1">' +
               '<span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">' + dateStr + '</span>' +
-              statusBadge +
+              '<div class="flex items-center gap-1">' +
+                statusBadge +
+                newBadge +
+              '</div>' +
             '</div>' +
             '<div class="text-sm font-bold text-white mb-0.5">' + escapeHtml(item.no_invoice || item.kode || '-') + fileIcon + '</div>' +
             '<div class="text-xs text-gray-400 truncate mb-1" style="max-width:200px;">' + escapeHtml(displayItems) + '</div>' +
