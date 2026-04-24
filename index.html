@@ -1063,8 +1063,8 @@
     // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v6',
-      WEBHOOK_URL: 'financesync_webhook_url_v6'
+      FIREBASE_CONFIG: 'financesync_firebase_config_v7',
+      WEBHOOK_URL: 'financesync_webhook_url_v7'
     };
 
     const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec';
@@ -1326,7 +1326,7 @@
       if (hasWebhookUrl) state.isSheetsConnected = true;
 
       updateConnectionUI();
-      if (state.isConnected) applyDateFilter();
+      if (state.isConnected) applyDateFilter(); // ✅ Gunakan applyDateFilter() yang sudah diperbaiki
     }
 
     function updateConnectionUI() {
@@ -1520,9 +1520,8 @@
         catatan_tambahan: fd.get('catatan_tambahan') || '',
         source: 'FinanceSync Pro',
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        // PERBAIKAN TYPO: Field nama tanda tangan sudah benar
         dibuat_oleh: 'Nur Wahyudi',
-        disetujui_oleh: 'Harijon',  // ✅ BENAR: disetujui_oleh (bukan disetujui_olej)
+        disetujui_oleh: 'Harijon',
         keuangan: 'Andi Dhiya Salsabila',
         dir_keuangan: 'Harijon',
         direktur_utama: 'H. Andi Nursyam Halid',
@@ -1580,7 +1579,7 @@
       }).join('');
       
       document.getElementById('p2_table_body').innerHTML = data.items.map(function(item, idx) {
-        return '<tr><td style="text-align:center">' + (idx + 1) + '</td><td>' + escapeHtml(item.ket) + '</td><td style="text-align:center">' + escapeHtml(item.qty) + '</td><td style="text-align:right">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td></tr>';
+        return '<tr><td style="text-align:center">' + (idx + 1) + '</td><td>' + escapeHtml(item.ket) + '</td><td style="text-align:center">' + escapeHtml(item.qty) + '</td><td style="text-align:right">' + (item.nominal ? 'Rp ' + + formatNumber(item.nominal) : '-') + '</td></tr>';
       }).join('');
 
       var hasNote = data.catatan_tambahan && data.catatan_tambahan.trim();
@@ -1629,7 +1628,14 @@
         var year = now.getFullYear();
         var startDate = year + '-' + String(month + 1).padStart(2, '0') + '-01';
         var endDate = year + '-' + String(month + 1).padStart(2, '0') + '-31';
-        var snapshot = await db.collection('submissions').where('tanggal', '>=', startDate).where('tanggal', '<=', endDate).orderBy('tanggal', 'desc').get();
+        
+        // ✅ PERBAIKAN: Gunakan orderBy('tanggal') karena where juga pakai tanggal
+        var snapshot = await db.collection('submissions')
+          .where('tanggal', '>=', startDate)
+          .where('tanggal', '<=', endDate)
+          .orderBy('tanggal', 'desc')  // ← Harus sama dengan field WHERE
+          .get();
+          
         var maxNum = 0;
         snapshot.forEach(function(doc) {
           var noInv = doc.data().no_invoice || '';
@@ -1644,21 +1650,27 @@
         var nextNum = maxNum + 1;
         var romanMonth = toRoman(month + 1);
         return 'BKK-NMSA/' + romanMonth + '/' + year + '/' + String(nextNum).padStart(4, '0');
-      } catch (error) { return 'BKK-NMSA/' + toRoman(new Date().getMonth() + 1) + '/' + new Date().getFullYear() + '/0001'; }
+      } catch (error) { 
+        console.warn('[Auto Generate Warning]:', error.message);
+        return 'BKK-NMSA/' + toRoman(new Date().getMonth() + 1) + '/' + new Date().getFullYear() + '/0001'; 
+      }
     }
 
     async function checkDuplicate(data) {
       if (!db) return false;
       try {
+        // ✅ PERBAIKAN: orderBy harus sesuai dengan where clause
         var snapshot = await db.collection('submissions')
           .where('tanggal', '==', data.tanggal)
-          .where('total_nominal', '==', data.total_nominal)
-          .where('dibayarkan_kepada', '==', data.dibayarkan_kepada)
+          .orderBy('tanggal', 'desc')  // ← Field yang sama dengan WHERE
           .get();
+          
         var duplicate = false;
         snapshot.forEach(function(doc) {
           var existing = doc.data();
-          if (existing.lokasi === data.lokasi &&
+          if (existing.total_nominal === data.total_nominal &&
+              existing.dibayarkan_kepada === data.dibayarkan_kepada &&
+              existing.lokasi === data.lokasi &&
               existing.kode === data.kode &&
               existing.jenis_pengajuan === data.jenis_pengajuan &&
               existing.status === data.status &&
@@ -1667,7 +1679,10 @@
           }
         });
         return duplicate;
-      } catch (error) { return false; }
+      } catch (error) { 
+        console.warn('[Check Duplicate Warning]:', error.message);
+        return false; 
+      }
     }
 
     window.cancelEdit = function() {
@@ -1742,7 +1757,7 @@
             }
         }
 
-        // 2. SIMPAN KE FIREBASE - PERBAIKAN TYPO DI SINI
+        // 2. SIMPAN KE FIREBASE
         var firebaseData = {
           tanggal: data.tanggal,
           lokasi: data.lokasi,
@@ -1756,9 +1771,8 @@
           dibayarkan_kepada: data.dibayarkan_kepada,
           catatan_tambahan: data.catatan_tambahan,
           source: data.source,
-          // ✅ PERBAIKAN TYPO: Semua field nama sudah benar
           dibuat_oleh: data.dibuat_oleh,
-          disetujui_oleh: data.disetujui_oleh,  // ✅ BENAR: disetujui_oleh
+          disetujui_oleh: data.disetujui_oleh,
           keuangan: data.keuangan,
           dir_keuangan: data.dir_keuangan,
           direktur_utama: data.direktur_utama,
@@ -1870,29 +1884,54 @@
     }
 
     // =============================================
-    // PERBAIKAN: Sorting Riwayat (Terbaru di Atas)
+    // ✅ PERBAIKAN UTAMA: Fix Firestore Query Rules
     // =============================================
+    
+    /**
+     * ATURAN FIRESTORE YANG HARUS DIPATUHI:
+     * ================================
+     * Jika menggunakan WHERE dengan inequality (<, >, <=, >=):
+     * → Field tersebut HARUS jadi orderBy() PERTAMA!
+     * 
+     * ❌ SALAH: where('tanggal', '>=', x).orderBy('timestamp')
+     * ✅ BENAR: where('tanggal', '>=', x).orderBy('tanggal')
+     */
+
     function applyDateFilter() {
       if (!db) return;
       var from = state.filterDateFrom;
       var to = state.filterDateTo;
-      if (!from && !to) { startRealtimeListener(); return; }
       
-      // ✅ PERBAIKAN: Gunakan orderBy timestamp DESC untuk sorting terbaru
-      var query = db.collection('submissions').orderBy('timestamp', 'desc');
+      // Hapus listener sebelumnya
+      if (state.unsubscribeListener) state.unsubscribeListener();
+      
+      if (!from && !to) { 
+        // ✅ Tanpa filter: Bisa pakai orderBy timestamp (tidak ada inequality)
+        startRealtimeListener(); 
+        return; 
+      }
+      
+      // ✅ Dengan filter tanggal: HARUS orderBy('tanggal') bukan timestamp!
+      console.log('[Query] Applying date filter:', from, 'to', '| Using orderBy: tanggal');
+      
+      var query = db.collection('submissions').orderBy('tanggal', 'desc');
       if (from) query = query.where('tanggal', '>=', from);
       if (to) query = query.where('tanggal', '<=', to);
-      if (state.unsubscribeListener) state.unsubscribeListener();
+      
       state.unsubscribeListener = query.limit(100).onSnapshot(
         function(snapshot) {
-          // ✅ Data sudah ter-sorting oleh Firestore (terbaru dulu karena desc)
+          // Data sudah ter-sorting oleh Firestore (terbaru dulu)
           state.history = snapshot.docs.map(function(doc) { 
             return Object.assign({ id: doc.id }, doc.data(), { synced: true }); 
           });
+          console.log('[Query] Loaded', state.history.length, 'records with date filter');
           renderHistory();
           updateStats();
         },
-        function(error) { console.error('[Filter Listener] Error:', error); }
+        function(error) { 
+          console.error('[Filter Listener] Error:', error); 
+          showToast('Error filter: ' + error.message, 'error');
+        }
       );
     }
 
@@ -1907,10 +1946,12 @@
     function startRealtimeListener() {
       if (state.unsubscribeListener) state.unsubscribeListener();
       
-      // ✅ PERBAIKAN: orderBy('timestamp', 'desc') - Terbaru di atas!
+      // ✅ Tanpa date filter: Bisa pakai orderBy timestamp (aman)
+      console.log('[Query] Starting realtime listener | Using orderBy: timestamp (desc)');
+      
       state.unsubscribeListener = db
         .collection('submissions')
-        .orderBy('timestamp', 'desc')  // DESC = Descending (Terbaru → Terlama)
+        .orderBy('timestamp', 'desc')  // DESC = Terbaru di atas
         .limit(50)
         .onSnapshot(
           function(snapshot) {
@@ -1918,10 +1959,14 @@
             state.history = snapshot.docs.map(function(doc) { 
               return Object.assign({ id: doc.id }, doc.data(), { synced: true }); 
             });
+            console.log('[Query] Realtime update:', state.history.length, 'records');
             renderHistory();
             updateStats();
           },
-          function(error) { console.error('[Listener] Error:', error); }
+          function(error) { 
+            console.error('[Listener] Error:', error); 
+            showToast('Error listener: ' + error.message, 'error');
+          }
         );
     }
 
@@ -1956,7 +2001,7 @@
         // Indicator if has file
         var fileIcon = item.file_url ? '<span class="text-blue-400 text-xs ml-1">📎</span>' : '';
 
-        // ✅ Tambahkan badge "BARU" untuk 3 data teratas (visual helper)
+        // Badge "BARU" untuk 3 data teratas
         var newBadge = index < 3 ? '<span class="bg-firebase/20 text-firebase text-[10px] px-1.5 py-0.5 rounded ml-1 font-bold">BARU</span>' : '';
 
         return '<div class="history-item cursor-pointer" onclick="loadHistoryItem(\'' + safeId + '\')">' +
