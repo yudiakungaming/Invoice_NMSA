@@ -72,7 +72,6 @@
     @keyframes firebase-glow { 0%, 100% { box-shadow: 0 0 20px rgba(255, 202, 40, 0.3); } 50% { box-shadow: 0 0 30px rgba(255, 202, 40, 0.6); } }
     @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
     @keyframes sheets-glow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); } }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
     .animate-in { animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
     .delay-1 { animation-delay: 0.1s; }
@@ -99,6 +98,7 @@
     .input-field:disabled { opacity: 0.6; cursor: not-allowed; }
     
     .input-field.required-empty { border-color: var(--error); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); animation: shake 0.5s ease-in-out; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
     .field-label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
     .field-label .required-star { color: var(--error); margin-left: 2px; }
@@ -204,7 +204,7 @@
 
     .btn-remove-item:hover { background: rgba(239, 68, 68, 0.2); }
 
-    /* Action Menu Button */
+    /* Single Action Button with Dropdown */
     .btn-action-menu {
       color: var(--muted);
       background: rgba(255, 255, 255, 0.05);
@@ -226,14 +226,14 @@
     .history-item:hover .btn-action-menu { opacity: 1; }
     .btn-action-menu:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--fg); }
 
-    /* Dropdown Styling */
+    /* FIX 1: Dropdown Styling - Fixed Position to avoid being covered */
     .action-dropdown {
-      position: fixed;
+      position: fixed; /* Changed from absolute to fixed */
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      z-index: 9999;
+      z-index: 9999; /* Very high z-index */
       min-width: 130px;
       overflow: hidden;
       animation: slideUp 0.15s ease-out;
@@ -845,7 +845,7 @@
               <div class="bg-green-900/30 rounded-xl p-4 border border-green-700/30">
                 <p class="text-sm text-green-300 mb-2 flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 4m-2 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  Info: URL sudah terisi otomatis!
+                  Info: Anda sudah punya script!
                 </p>
                 <code class="block text-xs bg-[--bg] p-2 rounded text-green-400 mono truncate mt-2">
                   https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec
@@ -854,7 +854,7 @@
 
               <label class="field-label mt-3">Webhook URL (Auto-filled):</label>
               <input type="url" id="webhookUrl" class="input-field mono text-sm" placeholder="https://script.google.com/macros/s/..." value="https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec">
-              <p class="text-xs text-[--muted] mt-2">✅ Sudah terisi otomatis. Bisa diganti jika perlu.</p>
+              <p class="text-xs text-[--muted] mt-2">✅ Sudah terisi otomatis dari info yang Anda berikan.</p>
             </div>
           </div>
         </div>
@@ -953,6 +953,7 @@
                 <div class="sig-block-page2"><div class="sig-action">DIBUKUKAN</div><div class="sig-space"></div><div class="sig-name" id="p2_name_accounting"></div><div class="sig-title">Accounting</div></div>
               </div>
             </div>
+            <div class="doc-notes"><div class="doc-notes-title">NOTE :</div><div class="doc-notes-content">Dokumen ini adalah bukti pengeluaran kas/bank resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div></div>
           </div>
         </div>
       </div>
@@ -982,7 +983,7 @@
   <!-- JAVASCRIPT -->
   <script>
     // =============================================
-    // CONFIGURATION
+       // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
       FIREBASE_CONFIG: 'financesync_firebase_config_v5',
@@ -1143,8 +1144,19 @@
       }
 
       if (hasWebhookUrl) {
-        state.isSheetsConnected = true;
-        console.log('[Spreadsheet] Configured!');
+        try {
+          const response = await fetch(state.webhookUrl + '?test=' + Date.now(), {
+            method: 'GET',
+            mode: 'no-cors'
+          });
+          
+          state.isSheetsConnected = true;
+          console.log('[Spreadsheet] Connected!');
+          
+        } catch (error) {
+          state.isSheetsConnected = false;
+          console.warn('[Spreadsheet] Warning:', error.message);
+        }
       }
 
       updateConnectionUI();
@@ -1196,7 +1208,7 @@
         elements.badgeFirebase.className = 'sync-status-badge firebase';
         
         elements.bannerTitle.textContent = 'Hanya Firebase';
-        elements.bannerMessage.textContent = 'Spreadsheet belum terkonfigurasi. Data tetap tersimpan di Firebase.';
+        elements.bannerMessage.textContent = 'Spreadsheet belum terhubung. Data tetap tersimpan di Firebase.';
         
       } else if (state.isSheetsConnected) {
         banner.classList.remove('connected', 'dual-connected');
@@ -1227,15 +1239,9 @@
     // =============================================
     // SETUP MODAL FUNCTIONS
     // =============================================
-    window.showSetupModal = function() { 
-      elements.setupModal.classList.add('show'); 
-      console.log('[Setup] Modal opened');
-    };
+    window.showSetupModal = function() { elements.setupModal.classList.add('show'); };
     
-    window.closeSetupModal = function() { 
-      elements.setupModal.classList.remove('show'); 
-      console.log('[Setup] Modal closed');
-    };
+    window.closeSetupModal = function() { elements.setupModal.classList.remove('show'); };
 
     window.saveFirebaseConfig = async function() {
       try {
@@ -1244,23 +1250,13 @@
         errorEl.classList.add('hidden');
         errorEl.textContent = '';
         
-        if (!inputStr) { 
-          showError('Paste Firebase config!'); 
-          return; 
-        }
+        if (!inputStr) { showError('Paste Firebase config!'); return; }
         
-        let config;
-        try {
-          config = JSON.parse(inputStr);
-        } catch (parseErr) {
-          showError('Format JSON tidak valid! Paste HANYA objek JSON.');
-          return;
-        }
+        const result = smartParseConfig(inputStr);
+        if (!result.success) { showError(result.error || 'Format tidak valid'); return; }
         
-        if (!config.apiKey || !config.projectId) { 
-          showError('Config tidak lengkap (apiKey & projectId wajib)'); 
-          return; 
-        }
+        const config = result.config;
+        if (!config.apiKey || !config.projectId) { showError('Config tidak lengkap (apiKey & projectId wajib)'); return; }
         
         localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
         console.log('[Firebase Config] Saved to localStorage');
@@ -1289,6 +1285,46 @@
       elements.configError.textContent = msg;
       elements.configError.classList.remove('hidden');
       showToast(msg, 'error');
+    }
+
+    function smartParseConfig(inputStr) {
+      let str = inputStr.trim();
+      
+      try {
+        const config = JSON.parse(str);
+        if (config.apiKey && config.projectId) return { success: true, config };
+      } catch (e) {}
+      
+      const jsonPattern = /\{[^{}]*"apiKey"\s*:\s*"[^"}]*\}/g;
+      const matches = str.match(jsonPattern);
+      if (matches && matches.length > 0) {
+        for (let match of matches) {
+          try {
+            const config = JSON.parse(match);
+            if (config.apiKey && config.projectId) return { success: true, config, extracted: true };
+          } catch (e) { continue; }
+        }
+      }
+      
+      const firstBrace = str.indexOf('{');
+      const lastBrace = str.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        try {
+          const config = JSON.parse(str.substring(firstBrace, lastBrace + 1));
+          if (config.apiKey || config.projectId) return { success: true, config, extracted: true };
+        } catch (e) {}
+      }
+      
+      let cleaned = str.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/const\s+\w+\s*=\s*/g, '').trim();
+      const cleanMatch = cleaned.match(/\{[^}]*"apiKey"[^}]*\}/);
+      if (cleanMatch) {
+        try {
+          const config = JSON.parse(cleanMatch[0]);
+          if (config.apiKey) return { success: true, config, extracted: true };
+        } catch (e) {}
+      }
+      
+      return { success: false, error: 'Tidak dapat menemukan config Firebase yang valid. Pastikan mempaste HANYA objek JSON: { "apiKey": "...", ... }' };
     }
 
     // =============================================
@@ -1917,7 +1953,7 @@
             if (error.message && error.message.indexOf('FAILED_PRECONDITION') > -1 && error.message.indexOf('index') > -1) {
               var linkMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s"']+/);
               if (linkMatch) {
-                showToast('Perlu buat index di Firebase. Clik error di Console (F12) untuk link-nya.', 'error');
+                showToast('Perlu buat index di Firebase. Klik error di Console (F12) untuk link-nya.', 'error');
                 console.log('[INDEX NEEDED] Buka link ini untuk buat index:', linkMatch[0]);
               }
             }
@@ -1927,14 +1963,15 @@
     }
 
     // =============================================
-    // RENDER HISTORY
+    // RENDER HISTORY WITH FIX FOR COVERED MENU
     // =============================================
     function renderHistory() {
       var filtered = [];
+      // LOGIC FIX: Jika status null/undefined, anggap "Belum Lunas" agar data lama tetap muncul
       if (state.currentTab === 'Lunas') {
         filtered = state.history.filter(function(h) { return h.status === 'Lunas'; });
       } else if (state.currentTab === 'Belum Lunas') {
-        filtered = state.history.filter(function(h) { return h.status !== 'Lunas'; });
+        filtered = state.history.filter(function(h) { return h.status !== 'Lunas'; }); // Catch null/undefined/empty/Unpaid
       } else {
         filtered = state.history;
       }
@@ -1980,7 +2017,7 @@
     }
 
     // =============================================
-    // ACTION MENU
+    // ACTION MENU - FIXED POSITION FIX
     // =============================================
     var activeActionMenu = null;
 
@@ -2000,9 +2037,14 @@
         '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
         'Hapus</button>';
 
+      // FIX: Append to body to prevent z-index stacking context issues
       document.body.appendChild(dropdown);
 
+      // Calculate position based on button
       const rect = btn.getBoundingClientRect();
+      const width = 130; // Approx width
+
+      // Position: right-aligned to button, below button
       dropdown.style.top = (rect.bottom + 5) + 'px';
       dropdown.style.right = (window.innerWidth - rect.right) + 'px';
 
@@ -2131,15 +2173,10 @@
     // STATS
     // =============================================
     function updateStats() {
-      var total = state.history.length;
-      var firebaseCount = state.history.filter(function(h) { return h.synced === true; }).length;
-      var sheetsCount = state.history.filter(function(h) { return h.sheets_synced === true; }).length;
-      var pendingCount = state.history.filter(function(h) { return !h.sheets_synced && h.sheets_synced !== false; }).length;
-      
-      animateCounter(elements.totalData, total);
-      animateCounter(elements.sentData, firebaseCount);
-      animateCounter(elements.sheetsData, sheetsCount);
-      animateCounter(elements.pendingData, pendingCount);
+      animateCounter(elements.totalData, state.history.length);
+      animateCounter(elements.sentData, state.history.filter(function(h) { return h.synced === true; }).length);
+      animateCounter(elements.sheetsData, state.history.filter(function(h) { return h.sheets_synced === true; }).length);
+      animateCounter(elements.pendingData, state.history.filter(function(h) { return !h.synced && !h.sheets_synced; }).length);
     }
 
     function animateCounter(el, target) {
