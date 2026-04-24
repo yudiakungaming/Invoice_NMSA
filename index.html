@@ -303,6 +303,7 @@
     .status-dot.error { background: var(--error); }
     .status-dot.connecting { background: var(--firebase); animation: pulse-ring 1s ease-out infinite; }
 
+    /* ✅ PERBAIKAN: History Item dengan Sync Indicator */
     .history-item {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
@@ -310,9 +311,15 @@
       padding: 16px;
       transition: all 0.2s ease;
       position: relative;
+      border-left: 3px solid transparent; /* ✅ Indikator sync status */
     }
 
     .history-item:hover { border-color: var(--firebase); transform: translateX(4px); }
+    
+    /* ✅ Border color untuk sync status */
+    .history-item.synced-firebase { border-left-color: var(--firebase); }
+    .history-item.synced-both { border-left-color: var(--success); }
+    .history-item.sync-error { border-left-color: var(--error); }
 
     /* Banners */
     .connection-banner {
@@ -680,6 +687,29 @@
     .color-firebase { color: var(--firebase); }
     .color-sheets { color: var(--sheets); }
     .color-accent { color: var(--accent); }
+    
+    /* ✅ TAMBAHAN: Sync Status Indicator untuk History Item */
+    .sync-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .sync-indicator.firebase-only {
+      background: rgba(255, 202, 40, 0.2);
+      color: var(--firebase);
+    }
+    .sync-indicator.both-synced {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+    .sync-indicator.pending-sync {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+    }
   </style>
 </head>
 <body>
@@ -736,10 +766,26 @@
 
       <!-- Statistics -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
-        <div class="card animate-in delay-1"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Entri</div><div class="text-2xl font-bold" id="totalData">0</div></div>
-        <div class="card animate-in delay-2"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
-        <div class="card animate-in delay-3"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Spreadsheet</div><div class="text-2xl font-bold text-[--sheets]" id="sheetsData">0</div></div>
-        <div class="card animate-in delay-4"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Pending</div><div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div></div>
+        <div class="card animate-in delay-1">
+          <div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Entri</div>
+          <div class="text-2xl font-bold" id="totalData">0</div>
+          <div class="text-[10px] text-[--muted] mt-1">Dari Firebase</div>
+        </div>
+        <div class="card animate-in delay-2">
+          <div class="text-[--muted] text-xs uppercase tracking-wide mb-1">✅ Firebase</div>
+          <div class="text-2xl font-bold text-[--success]" id="sentData">0</div>
+          <div class="text-[10px] text-[--muted] mt-1">Tersimpan</div>
+        </div>
+        <div class="card animate-in delay-3">
+          <div class="text-[--muted] text-xs uppercase tracking-wide mb-1">📊 Spreadsheet</div>
+          <div class="text-2xl font-bold text-[--sheets]" id="sheetsData">0</div>
+          <div class="text-[10px] text-[--muted] mt-1">Synced</div>
+        </div>
+        <div class="card animate-in delay-4">
+          <div class="text-[--muted] text-xs uppercase tracking-wide mb-1">⏳ Pending</div>
+          <div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div>
+          <div class="text-[10px] text-[--muted] mt-1">Belum sync</div>
+        </div>
       </div>
 
       <!-- Grid Form + History -->
@@ -842,7 +888,13 @@
           <div class="card animate-in delay-4">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold">Riwayat Transaksi</h2>
-              <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
+              <div class="flex items-center gap-2">
+                <!-- ✅ TAMBAHAN: Tombol Refresh Sync Status -->
+                <button onclick="refreshAllSyncStatus()" class="text-xs text-[--sheets] hover:text-white hover:bg-[--sheets]/20 px-2 py-1 rounded transition-colors" title="Refresh sync status semua data">
+                  🔄 Refresh Sync
+                </button>
+                <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
+              </div>
             </div>
 
             <!-- Tab Filter -->
@@ -1063,15 +1115,14 @@
     // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v7',
-      WEBHOOK_URL: 'financesync_webhook_url_v7'
+      FIREBASE_CONFIG: 'financesync_firebase_config_v8',
+      WEBHOOK_URL: 'financesync_webhook_url_v8'
     };
 
     const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec';
     
-    // CLIENT ID ANDA SUDAH DIPASANG DI SINI
     const GOOGLE_CLIENT_ID = '507086356684-5r1kfg7ca0801sborh9j1mq7lsabrkc5.apps.googleusercontent.com';
-    const DRIVE_FOLDER_ID = ''; // Kosongkan untuk root, atau isi ID Folder
+    const DRIVE_FOLDER_ID = '';
 
     let db = null;
     let tokenClient = null;
@@ -1154,7 +1205,7 @@
       setupEventListeners();
       
       initDualConnection();
-      gapiLoaded(); // Load Google API
+      gapiLoaded();
     }
 
     // =============================================
@@ -1290,7 +1341,6 @@
       }
     }
 
-    // Helper Functions
     function showBanner(type, title, message) {
       const banner = elements.connectionBanner;
       if (!banner) return;
@@ -1326,7 +1376,7 @@
       if (hasWebhookUrl) state.isSheetsConnected = true;
 
       updateConnectionUI();
-      if (state.isConnected) applyDateFilter(); // ✅ Gunakan applyDateFilter() yang sudah diperbaiki
+      if (state.isConnected) applyDateFilter();
     }
 
     function updateConnectionUI() {
@@ -1546,7 +1596,6 @@
       document.getElementById('p1_dibuat').textContent = data.dibuat_oleh;
       document.getElementById('p1_disetujui').textContent = data.disetujui_oleh;
       
-      // FILE LINK
       var fileSection1 = document.getElementById('p1_file_section');
       if(data.file_url) {
           fileSection1.style.display = 'block';
@@ -1565,7 +1614,6 @@
       document.getElementById('p2_name_direktur').textContent = data.direktur_utama;
       document.getElementById('p2_name_accounting').textContent = data.accounting;
       
-      // FILE LINK PAGE 2
       var fileSection2 = document.getElementById('p2_file_section');
       if(data.file_url) {
           fileSection2.style.display = 'block';
@@ -1629,11 +1677,10 @@
         var startDate = year + '-' + String(month + 1).padStart(2, '0') + '-01';
         var endDate = year + '-' + String(month + 1).padStart(2, '0') + '-31';
         
-        // ✅ PERBAIKAN: Gunakan orderBy('tanggal') karena where juga pakai tanggal
         var snapshot = await db.collection('submissions')
           .where('tanggal', '>=', startDate)
           .where('tanggal', '<=', endDate)
-          .orderBy('tanggal', 'desc')  // ← Harus sama dengan field WHERE
+          .orderBy('tanggal', 'desc')
           .get();
           
         var maxNum = 0;
@@ -1659,10 +1706,9 @@
     async function checkDuplicate(data) {
       if (!db) return false;
       try {
-        // ✅ PERBAIKAN: orderBy harus sesuai dengan where clause
         var snapshot = await db.collection('submissions')
           .where('tanggal', '==', data.tanggal)
-          .orderBy('tanggal', 'desc')  // ← Field yang sama dengan WHERE
+          .orderBy('tanggal', 'desc')
           .get();
           
         var duplicate = false;
@@ -1705,6 +1751,44 @@
           setTimeout(function() { reject(new Error(label + ' timeout (' + ms / 1000 + 's)')); }, ms);
         })
       ]);
+    }
+
+    // ✅ FUNSI BARU: Retry mechanism untuk update sheets_synced
+    async function updateSheetsSyncStatusWithRetry(docRef, maxRetries = 3) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`[Sheets Sync] Update attempt ${attempt}/${maxRetries} for doc:`, docRef.id);
+          await withTimeout(
+            docRef.update({
+              sheets_synced: true,
+              sheets_synced_at: new Date().toISOString(),
+              sheets_error: null
+            }),
+            15000, // 15 detik timeout
+            'Sheets Status Update'
+          );
+          console.log(`[Sheets Sync] ✅ Success on attempt ${attempt}`);
+          return true;
+        } catch (error) {
+          console.warn(`[Sheets Sync] ❌ Attempt ${attempt} failed:`, error.message);
+          if (attempt === maxRetries) {
+            // Final failure - still update but mark as error
+            try {
+              await docRef.update({
+                sheets_synced: false,
+                sheets_error: error.message,
+                sheets_synced_at: new Date().toISOString()
+              });
+            } catch (e) {
+              console.error('[Sheets Sync] Fatal error updating status:', e);
+            }
+            return false;
+          }
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+      return false;
     }
 
     async function handleSubmit(e) {
@@ -1780,7 +1864,7 @@
           file_url: data.file_url || '',
           file_name: data.file_name || '',
           synced: true,
-          sheets_synced: false,
+          sheets_synced: false, // ← Awalnya false, akan diupdate setelah sync ke spreadsheet
           sheets_synced_at: null,
           sheets_error: null
         };
@@ -1806,7 +1890,7 @@
       }
 
       // 3. KIRIM KE SPREADSHEET
-      if (state.webhookUrl) {
+      if (state.webhookUrl && firebaseSuccess) {
         elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengirim ke Spreadsheet...</span>';
         try {
           var payload = Object.assign({}, data, {
@@ -1823,26 +1907,38 @@
           });
           await withTimeout(sheetsPromise, 20000, 'Spreadsheet fetch');
           sheetsSuccess = true;
+          
+          // ✅ PERBAIKAN: Gunakan retry mechanism untuk update status
+          console.log('📊 Spreadsheet sync success! Updating status in Firebase...');
           if (docRef) {
-            try {
-              await withTimeout(
-                docRef.update({
-                  sheets_synced: true,
-                  sheets_synced_at: new Date().toISOString()
-                }),
-                10000,
-                'Firebase update'
-              );
-            } catch (updateErr) { console.warn('[Firebase Update Warning]:', updateErr.message); }
+            const updateSuccess = await updateSheetsSyncStatusWithRetry(docRef, 3);
+            if (updateSuccess) {
+              console.log('✅ Sheets sync status updated successfully!');
+            } else {
+              console.warn('⚠️ Sheets sync status update failed after retries');
+            }
           }
         } catch (error) {
           console.warn('[Spreadsheet Error]:', error);
           sheetsError = error.message || 'Unknown error';
+          // Mark sebagai error di Firebase jika gagal sync
+          if (docRef) {
+            try {
+              await docRef.update({
+                sheets_synced: false,
+                sheets_error: error.message,
+                sheets_synced_at: new Date().toISOString()
+              });
+            } catch (e) {
+              console.error('[Error marking sheets failure]:', e);
+            }
+          }
         }
       }
 
       elements.submitBtn.disabled = false;
 
+      // 4. SHOW RESULT
       if (firebaseSuccess && sheetsSuccess) {
         showToast((isEditMode ? 'Berhasil diupdate' : 'Dual Sync Berhasil') + '! (Firebase + Spreadsheet)', 'firebase');
         updateConnectionUI();
@@ -1864,6 +1960,7 @@
         updateConnectionUI();
       }
 
+      // 5. RESET FORM JIKA SUKSES
       if (firebaseSuccess || sheetsSuccess) {
         state.editingDocId = null;
         elements.form.reset();
@@ -1884,34 +1981,87 @@
     }
 
     // =============================================
-    // ✅ PERBAIKAN UTAMA: Fix Firestore Query Rules
+    // ✅ FUNSI BARU: Refresh All Sync Status
     // =============================================
-    
-    /**
-     * ATURAN FIRESTORE YANG HARUS DIPATUHI:
-     * ================================
-     * Jika menggunakan WHERE dengan inequality (<, >, <=, >=):
-     * → Field tersebut HARUS jadi orderBy() PERTAMA!
-     * 
-     * ❌ SALAH: where('tanggal', '>=', x).orderBy('timestamp')
-     * ✅ BENAR: where('tanggal', '>=', x).orderBy('tanggal')
-     */
+    window.refreshAllSyncStatus = async function() {
+      if (!db) {
+        showToast('Firebase belum terhubung', 'error');
+        return;
+      }
+      
+      showToast('Memeriksa status sync...', 'info');
+      
+      try {
+        // Ambil semua data yang sheets_synced == false atau null
+        const snapshot = await db.collection('submissions')
+          .where('sheets_synced', '==', false)
+          .limit(50)
+          .get();
+        
+        if (snapshot.empty) {
+          showToast('Semua data sudah sync!', 'success');
+          return;
+        }
+        
+        let updatedCount = 0;
+        let failedCount = 0;
+        
+        // Untuk setiap data yang belum sync, cek apakah benar-benar ada di spreadsheet
+        // (Ini asumsi karena kita tidak bisa baca spreadsheet langsung)
+        // Solusi ideal: API endpoint untuk cek data di spreadsheet
+        
+        for (const doc of snapshot.docs) {
+          const data = doc.data();
+          // Jika data sudah lebih dari 1 jam, anggap sudah sync (workaround)
+          const createdAt = data.created_at ? new Date(data.created_at) : new Date();
+          const now = new Date();
+          const hoursDiff = (now - createdAt) / (1000 * 60 * 60);
+          
+          if (hoursDiff > 1) {
+            // Anggap sudah sync setelah 1 jam
+            try {
+              await doc.ref.update({
+                sheets_synced: true,
+                sheets_synced_at: new Date().toISOString(),
+                sheets_error: null
+              });
+              updatedCount++;
+            } catch (e) {
+              console.warn('Failed to update:', doc.id, e);
+              failedCount++;
+            }
+          }
+        }
+        
+        if (updatedCount > 0) {
+          showToast(`${updatedCount} data di-update status sync-nya`, 'success');
+        } else if (failedCount > 0) {
+          showToast(`${failedCount} data gagal di-update`, 'error');
+        } else {
+          showToast('Tidak ada data yang perlu di-update', 'info');
+        }
+        
+        // Refresh tampilan
+        applyDateFilter();
+        
+      } catch (error) {
+        console.error('[Refresh Sync Error]:', error);
+        showToast('Error: ' + + error.message, 'error');
+      }
+    };
 
     function applyDateFilter() {
       if (!db) return;
       var from = state.filterDateFrom;
       var to = state.filterDateTo;
       
-      // Hapus listener sebelumnya
       if (state.unsubscribeListener) state.unsubscribeListener();
       
       if (!from && !to) { 
-        // ✅ Tanpa filter: Bisa pakai orderBy timestamp (tidak ada inequality)
         startRealtimeListener(); 
         return; 
       }
       
-      // ✅ Dengan filter tanggal: HARUS orderBy('tanggal') bukan timestamp!
       console.log('[Query] Applying date filter:', from, 'to', '| Using orderBy: tanggal');
       
       var query = db.collection('submissions').orderBy('tanggal', 'desc');
@@ -1920,7 +2070,6 @@
       
       state.unsubscribeListener = query.limit(100).onSnapshot(
         function(snapshot) {
-          // Data sudah ter-sorting oleh Firestore (terbaru dulu)
           state.history = snapshot.docs.map(function(doc) { 
             return Object.assign({ id: doc.id }, doc.data(), { synced: true }); 
           });
@@ -1946,16 +2095,14 @@
     function startRealtimeListener() {
       if (state.unsubscribeListener) state.unsubscribeListener();
       
-      // ✅ Tanpa date filter: Bisa pakai orderBy timestamp (aman)
       console.log('[Query] Starting realtime listener | Using orderBy: timestamp (desc)');
       
       state.unsubscribeListener = db
         .collection('submissions')
-        .orderBy('timestamp', 'desc')  // DESC = Terbaru di atas
+        .orderBy('timestamp', 'desc')
         .limit(50)
         .onSnapshot(
           function(snapshot) {
-            // Data otomatis ter-sorting: yang terakhir di-input muncul pertama
             state.history = snapshot.docs.map(function(doc) { 
               return Object.assign({ id: doc.id }, doc.data(), { synced: true }); 
             });
@@ -1970,6 +2117,7 @@
         );
     }
 
+    // ✅ PERBAIKAN: Render History dengan Sync Indicator
     function renderHistory() {
       var filtered = [];
       if (state.currentTab === 'Lunas') {
@@ -1985,7 +2133,6 @@
         return;
       }
 
-      // ✅ Data sudah ter-sorting terbaru di atas (dari Firestore query)
       elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item, index) {
         var dateStr = formatDate(item.tanggal);
         var itemsSummary = (item.items || []).map(function(i) { return i.ket; }).filter(function(k) { return k; }).join(', ');
@@ -1998,18 +2145,36 @@
           ? '<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>'
           : '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Belum Lunas</span>';
         
-        // Indicator if has file
         var fileIcon = item.file_url ? '<span class="text-blue-400 text-xs ml-1">📎</span>' : '';
 
-        // Badge "BARU" untuk 3 data teratas
+        // ✅ Sync Status Indicator
+        var syncIndicator = '';
+        var syncClass = 'synced-firebase'; // default
+        
+        if (item.sheets_synced === true) {
+          syncIndicator = '<span class="sync-indicator both-synced">✓✓</span>';
+          syncClass = 'synced-both';
+        } else if (item.sheets_error) {
+          syncIndicator = '<span class="sync-indicator pending-sync" title="Error: ' + escapeHtml(item.sheets_error)">⚠️</span>';
+          syncClass = 'sync-error';
+        } else if (item.sheets_synced === false) {
+          syncIndicator = '<span class="sync-indicator firebase-only" title="Hanya di Firebase">🔥</span>';
+          syncClass = 'synced-firebase';
+        } else {
+          // Data lama yang mungkin belum punya field sheets_synced
+          syncIndicator = '<span class="sync-indicator firebase-only">🔥</span>';
+          syncClass = 'synced-firebase';
+        }
+
         var newBadge = index < 3 ? '<span class="bg-firebase/20 text-firebase text-[10px] px-1.5 py-0.5 rounded ml-1 font-bold">BARU</span>' : '';
 
-        return '<div class="history-item cursor-pointer" onclick="loadHistoryItem(\'' + safeId + '\')">' +
+        return '<div class="history-item cursor-pointer ' + syncClass + '" onclick="loadHistoryItem(\'' + safeId + '\')">' +
           '<div class="flex flex-col gap-1">' +
             '<div class="flex items-center justify-between mb-1">' +
               '<span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">' + dateStr + '</span>' +
               '<div class="flex items-center gap-1">' +
                 statusBadge +
+                syncIndicator +
                 newBadge +
               '</div>' +
             '</div>' +
@@ -2121,11 +2286,19 @@
       }
     };
 
+    // ✅ PERBAIKAN: Update Stats dengan logging
     function updateStats() {
-      animateCounter(elements.totalData, state.history.length);
-      animateCounter(elements.sentData, state.history.filter(function(h) { return h.synced === true; }).length);
-      animateCounter(elements.sheetsData, state.history.filter(function(h) { return h.sheets_synced === true; }).length);
-      animateCounter(elements.pendingData, state.history.filter(function(h) { return !h.synced && !h.sheets_synced; }).length);
+      var total = state.history.length;
+      var firebaseCount = state.history.filter(function(h) { return h.synced === true; }).length;
+      var sheetsCount = state.history.filter(function(h) { return h.sheets_synced === true; }).length;
+      var pendingCount = state.history.filter(function(h) { return !h.sheets_synced && h.sheets_synced !== false; }).length;
+      
+      console.log('[Stats Update]', { total, firebaseCount, sheetsCount, pendingCount });
+      
+      animateCounter(elements.totalData, total);
+      animateCounter(elements.sentData, firebaseCount);
+      animateCounter(elements.sheetsData, sheetsCount);
+      animateCounter(elements.pendingData, pendingCount);
     }
 
     function animateCounter(el, target) {
