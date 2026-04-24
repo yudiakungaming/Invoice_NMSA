@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceSync Pro - Dual Sync (Firebase + Spreadsheet)</title>
+  <title>FinanceSync Pro v3.0 - Firebase Centric Architecture</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Firebase SDK -->
@@ -71,7 +71,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes firebase-glow { 0%, 100% { box-shadow: 0 0 20px rgba(255, 202, 40, 0.3); } 50% { box-shadow: 0 0 30px rgba(255, 202, 40, 0.6); } }
     @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-    @keyframes sheets-glow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); } }
+    @keyframes sync-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
     .animate-in { animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
     .delay-1 { animation-delay: 0.1s; }
@@ -204,7 +204,7 @@
 
     .btn-remove-item:hover { background: rgba(239, 68, 68, 0.2); }
 
-    /* Single Action Button with Dropdown */
+    /* Action Menu Button */
     .btn-action-menu {
       color: var(--muted);
       background: rgba(255, 255, 255, 0.05);
@@ -226,14 +226,14 @@
     .history-item:hover .btn-action-menu { opacity: 1; }
     .btn-action-menu:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--fg); }
 
-    /* FIX 1: Dropdown Styling - Fixed Position to avoid being covered */
+    /* Dropdown Styling */
     .action-dropdown {
-      position: fixed; /* Changed from absolute to fixed */
+      position: fixed;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      z-index: 9999; /* Very high z-index */
+      z-index: 9999;
       min-width: 130px;
       overflow: hidden;
       animation: slideUp 0.15s ease-out;
@@ -282,13 +282,15 @@
 
     .status-dot.success { background: var(--success); animation: pulse-ring 2s ease-out infinite; }
     .status-dot.success::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--success); animation: pulse-ring 2s ease-out infinite; }
-    .status-dot.pending { background: var(--warning); }
+    .status-dot.pending { background: var(--warning); animation: pulse-ring 1s ease-out infinite; }
     .status-dot.error { background: var(--error); }
     .status-dot.connecting { background: var(--firebase); animation: pulse-ring 1s ease-out infinite; }
 
+    /* History Item */
     .history-item {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
+      border-left: 3px solid transparent;
       border-radius: 10px;
       padding: 16px;
       transition: all 0.2s ease;
@@ -296,6 +298,11 @@
     }
 
     .history-item:hover { border-color: var(--firebase); transform: translateX(4px); }
+    
+    /* Sync Status Border Colors */
+    .history-item.synced { border-left-color: var(--success); }
+    .history-item.pending-sync { border-left-color: var(--warning); }
+    .history-item.sync-error { border-left-color: var(--error); }
 
     /* Banners */
     .connection-banner {
@@ -312,11 +319,6 @@
     .connection-banner.connected {
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
       border-color: rgba(16, 185, 129, 0.3);
-    }
-
-    .connection-banner.dual-connected {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(16, 185, 129, 0.08));
-      border-color: rgba(139, 92, 246, 0.4);
     }
 
     .connection-banner.error {
@@ -597,13 +599,33 @@
       background: rgba(16, 185, 129, 0.2);
       color: #fff;
       border: 1px solid rgba(16, 185, 129, 0.4);
-      animation: sheets-glow 2s ease-in-out infinite;
     }
 
-    .sync-status-badge.both {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(16, 185, 129, 0.2));
-      color: #fff;
-      border: 1px solid rgba(139, 92, 246, 0.5);
+    /* Sync indicator in history items */
+    .sync-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    .sync-indicator.synced {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+    
+    .sync-indicator.pending {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+      animation: sync-pulse 2s ease-in-out infinite;
+    }
+    
+    .sync-indicator.error {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--error);
     }
 
     /* Utility classes */
@@ -613,13 +635,9 @@
     .status-text-error { color: var(--error); }
     .status-text-warning { color: var(--warning); }
     .status-text-muted { color: var(--muted); }
-    .status-text-firebase { color: var(--firebase); }
-    .status-text-sheets { color: var(--sheets); }
-    .status-text-accent { color: var(--accent); }
     .color-muted { color: var(--muted); }
     .color-firebase { color: var(--firebase); }
     .color-sheets { color: var(--sheets); }
-    .color-accent { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -636,8 +654,8 @@
             <svg class="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 19h20L12 2zm0 3.84L18.92 17H5.08L12 5.84z"/><circle cx="12" cy="14" r="2"/></svg>
           </div>
           <div>
-            <h1 class="text-lg font-semibold">FinanceSync Pro</h1>
-            <p class="text-xs text-[--muted]">Dual Sync: Firebase + Spreadsheet</p>
+            <h1 class="text-lg font-semibold">FinanceSync Pro v3.0</h1>
+            <p class="text-xs text-[--muted]">Firebase-Centric Architecture</p>
           </div>
         </div>
         <div class="flex items-center gap-3 animate-in delay-1">
@@ -660,21 +678,28 @@
         <svg class="w-6 h-6 text-yellow-400 flex-shrink-0 firebase-logo" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 19h20L12 2zm0 3.84L18.92 17H5.08L12 5.84z"/><circle cx="12" cy="14" r="2"/></svg>
         <div class="flex-1">
           <div class="font-semibold text-sm text-white" id="bannerTitle">Menyiapkan...</div>
-          <div class="flex items-center gap-3 mt-2" id="syncBadges">
-            <span id="badgeFirebase" class="sync-status-badge firebase hidden">Firebase</span>
-            <span id="badgeSheets" class="sync-status-badge sheets hidden">Spreadsheet</span>
-          </div>
-          <div class="text-xs text-gray-300" id="bannerMessage">Mohon tunggu sebentar</div>
+          <div class="text-xs text-gray-300 mt-1" id="bannerMessage">Mohon tunggu sebentar</div>
         </div>
         <button onclick="showSetupModal()" class="copy-btn">Setup</button>
       </div>
 
+      <!-- Architecture Info Banner -->
+      <div id="archBanner" class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30 mb-6 no-print" style="display:none;">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div>
+            <h3 class="font-semibold text-sm text-blue-300 mb-1">🏗️ Arsitektur Firebase-Centric</h3>
+            <p class="text-xs text-gray-400">Data disimpan ke <strong class="text-yellow-300">Firebase</strong> terlebih dahulu, kemudian <strong class="text-green-300">Spreadsheet</strong> akan menarik data otomatis.</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Statistics -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
-        <div class="card animate-in delay-1"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Entri</div><div class="text-2xl font-bold" id="totalData">0</div></div>
-        <div class="card animate-in delay-2"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
-        <div class="card animate-in delay-3"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Spreadsheet</div><div class="text-2xl font-bold text-[--sheets]" id="sheetsData">0</div></div>
-        <div class="card animate-in delay-4"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Pending</div><div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div></div>
+        <div class="card animate-in delay-1"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Data</div><div class="text-2xl font-bold" id="totalData">0</div></div>
+        <div class="card animate-in delay-2"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">✅ Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
+        <div class="card animate-in delay-3"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">📊 Spreadsheet</div><div class="text-2xl font-bold text-[--sheets]" id="sheetsData">0</div></div>
+        <div class="card animate-in delay-4"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">⏳ Pending Sync</div><div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div></div>
       </div>
 
       <!-- Grid Form + History -->
@@ -689,7 +714,7 @@
               </div>
               <div>
                 <h2 class="text-lg font-semibold">Form Pengajuan</h2>
-                <p class="text-sm text-[--muted]">Dual Sync: Firebase + Spreadsheet</p>
+                <p class="text-sm text-[--muted]">Simpan ke Firebase → Auto-sync ke Spreadsheet</p>
               </div>
             </div>
 
@@ -736,7 +761,7 @@
               <div class="flex flex-wrap items-center gap-3 pt-4">
                 <button type="submit" id="submitBtn" class="btn-submit">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                  <span>Simpan ke Firebase + Spreadsheet</span>
+                  <span>💾 Simpan ke Firebase</span>
                 </button>
                 <button type="button" id="previewBtn" class="btn-print">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -785,7 +810,7 @@
               <div class="text-center py-10 text-[--muted]">
                 <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 <p class="text-sm">Belum ada data</p>
-                <p class="text-xs mt-2 text-[--firebase]">Data akan sync ke Firebase + Spreadsheet</p>
+                <p class="text-xs mt-2 text-[--firebase]">Data akan tersimpan di Firebase & sync ke Spreadsheet</p>
               </div>
             </div>
           </div>
@@ -799,7 +824,7 @@
   <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content">
       <div class="flex items-center justify-between mb-5">
-        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">⚙️</span> Konfigurasi Dual Sync</h2>
+        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">⚙️</span> Konfigurasi Sistem</h2>
         <button id="closeModal" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
 
@@ -834,42 +859,41 @@
           </div>
         </div>
 
-        <!-- Step 2: Spreadsheet Webhook -->
+        <!-- Step 2: Info Arsitektur -->
         <div class="setup-step">
           <div class="flex items-start gap-3">
             <div class="step-number">2</div>
             <div class="flex-1">
-              <h3 class="font-semibold text-base mb-2">📊 Spreadsheet Webhook (Google Apps Script)</h3>
-              <p class="text-sm text-[--muted] mb-3">URL untuk mengirim data ke Google Sheets Anda.</p>
+              <h3 class="font-semibold text-base mb-2">📖 Cara Kerja (PENTING!)</h3>
               
-              <div class="bg-green-900/30 rounded-xl p-4 border border-green-700/30">
-                <p class="text-sm text-green-300 mb-2 flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 4m-2 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  Info: Anda sudah punya script!
-                </p>
-                <code class="block text-xs bg-[--bg] p-2 rounded text-green-400 mono truncate mt-2">
-                  https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec
-                </code>
+              <div class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30">
+                <div class="space-y-3 text-sm text-gray-300">
+                  <div class="flex items-start gap-2">
+                    <span class="text-yellow-300 font-bold">1️⃣</span>
+                    <div><strong>User isi form</strong> → Data disimpan ke <span class="text-yellow-300">Firebase</span></div>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-green-300 font-bold">2️⃣</span>
+                    <div><strong>Spreadsheet</strong> (Google Apps Script) akan <em>menarik data</em> dari Firebase secara otomatis</div>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-blue-300 font-bold">3️⃣</span>
+                    <div>Status sync ditandai di setiap data (<span class="text-green-300">✅ Synced</span> / <span class="text-yellow-300">⏳ Pending</span>)</div>
+                  </div>
+                </div>
               </div>
 
-              <label class="field-label mt-3">Webhook URL (Auto-filled):</label>
-              <input type="url" id="webhookUrl" class="input-field mono text-sm" placeholder="https://script.google.com/macros/s/..." value="https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec">
-              <p class="text-xs text-[--muted] mt-2">✅ Sudah terisi otomatis dari info yang Anda berikan.</p>
+              <div class="mt-3 p-3 bg-[--bg] rounded-lg border border-[--border]">
+                <p class="text-xs text-[--muted] mb-2 font-semibold">⚠️ PERHATIAN UNTUK SPREADSHEET:</p>
+                <p class="text-xs text-gray-400">Anda perlu setup <strong class="text-green-300">Google Apps Script</strong> yang menjalankan fungsi <code class="text-blue-400 bg-[--bg-secondary] px-1 rounded">pullFromFirebase()</code>. Script ini akan:</p>
+                <ul class="text-xs text-gray-400 mt-2 space-y-1 list-disc list-inside ml-4">
+                  <li>Membaca data dari Firebase (where <code class="text-green-400">synced_to_sheets == false</code>)</li>
+                  <li>Menulis ke Spreadsheet</li>
+                  <li>Update Firebase: <code class="text-green-400">synced_to_sheets = true</code></li>
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30">
-          <h3 class="font-medium text-sm mb-2 text-blue-300 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Cara Kerja Dual Sync
-          </h3>
-          <ul class="text-xs text-gray-300 space-y-1.5 list-decimal list-inside">
-            <li>User isi form → klik "Simpan"</li>
-            <li>Data tersimpan ke <strong class="text-yellow-300">Firebase</strong> (real-time)</li>
-            <li>Otomatis dikirim ke <strong class="text-green-300">Spreadsheet</strong> (backup)</li>
-            <li>Kedua-duanya berhasil = ✅ Data aman!</li>
-          </ul>
         </div>
 
         <button onclick="closeSetupModal()" class="copy-btn mt-4 w-full">Tutup & Mulai Pakai</button>
@@ -953,7 +977,6 @@
                 <div class="sig-block-page2"><div class="sig-action">DIBUKUKAN</div><div class="sig-space"></div><div class="sig-name" id="p2_name_accounting"></div><div class="sig-title">Accounting</div></div>
               </div>
             </div>
-            <div class="doc-notes"><div class="doc-notes-title">NOTE :</div><div class="doc-notes-content">Dokumen ini adalah bukti pengeluaran kas/bank resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div></div>
           </div>
         </div>
       </div>
@@ -983,20 +1006,17 @@
   <!-- JAVASCRIPT -->
   <script>
     // =============================================
-       // CONFIGURATION
+    // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v5',
-      WEBHOOK_URL: 'financesync_webhook_url_v5'
+      FIREBASE_CONFIG: 'financesync_firebase_config_v10',
+      WEBHOOK_URL: 'financesync_webhook_url_v10'
     };
-
-    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec';
 
     let db = null;
     let state = {
       isConnected: false,
       isConnecting: true,
-      isSheetsConnected: false,
       history: [],
       currentTab: 'Lunas',
       lastFormData: null,
@@ -1004,7 +1024,6 @@
       unsubscribeListener: null,
       pendingDeleteId: null,
       pendingDeleteKode: null,
-      webhookUrl: DEFAULT_WEBHOOK_URL,
       filterDateFrom: '',
       filterDateTo: '',
       editingDocId: null
@@ -1042,13 +1061,11 @@
         bannerMessage: document.getElementById('bannerMessage'),
         statusDot: document.getElementById('statusDot'),
         statusText: document.getElementById('statusText'),
-        badgeFirebase: document.getElementById('badgeFirebase'),
-        badgeSheets: document.getElementById('badgeSheets'),
         firebaseConfigInput: document.getElementById('firebaseConfigInput'),
-        webhookUrlInput: document.getElementById('webhookUrl'),
         configError: document.getElementById('configError'),
         validationError: document.getElementById('validationError'),
-        validationErrorList: document.getElementById('validationErrorList')
+        validationErrorList: document.getElementById('validationErrorList'),
+        archBanner: document.getElementById('archBanner')
       };
 
       loadSavedConfigs();
@@ -1067,7 +1084,7 @@
       renderFormItems();
       setupEventListeners();
       
-      initDualConnection();
+      initConnection();
 
       setTimeout(function() {
         if (db) {
@@ -1088,12 +1105,6 @@
       if (savedFirebaseConfig) {
         elements.firebaseConfigInput.value = savedFirebaseConfig;
       }
-
-      const savedWebhookUrl = localStorage.getItem(CONFIG_KEYS.WEBHOOK_URL);
-      if (savedWebhookUrl) {
-        state.webhookUrl = savedWebhookUrl;
-        elements.webhookUrlInput.value = savedWebhookUrl;
-      }
     }
 
     // =============================================
@@ -1111,16 +1122,18 @@
     }
 
     // =============================================
-    // DUAL CONNECTION INITIALIZER
+    // CONNECTION INITIALIZER (SIMPLIFIED)
     // =============================================
-    async function initDualConnection() {
-      showBanner('connecting', 'Menyiapkan Dual Sync...', 'Menghubungkan Firebase & Spreadsheet...');
+    async function initConnection() {
+      showBanner('connecting', 'Menyiapkan Koneksi...', 'Menghubungkan Firebase...');
       
       const hasFirebaseConfig = !!localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
-      const hasWebhookUrl = !!state.webhookUrl;
 
       if (!hasFirebaseConfig) {
-        setTimeout(function() { showSetupModal(); }, 1000);
+        setTimeout(function() { 
+          showSetupModal(); 
+          showBanner('error', 'Belum Terkonfigurasi', 'Klik Setup untuk konfigurasi Firebase');
+        }, 1000);
         return;
       }
 
@@ -1132,116 +1145,67 @@
         }
         
         db = firebase.firestore();
+        
+        // Test connection
         await db.collection('submissions').limit(1).get();
         
         state.isConnected = true;
-        console.log('[Firebase] Connected!');
+        
+        console.log('[Firebase] ✅ Connected successfully!');
+        
+        // Show architecture banner
+        if (elements.archBanner) {
+          elements.archBanner.style.display = 'block';
+        }
+        
+        updateConnectionUI(true);
+        
+        // Start listening
+        applyDateFilter();
         
       } catch (error) {
         console.error('[Firebase Error]:', error);
         state.isConnected = false;
+        showBanner('error', 'Koneksi Gagal', error.message);
         showToast('Firebase error: ' + error.message, 'error');
-      }
-
-      if (hasWebhookUrl) {
-        try {
-          const response = await fetch(state.webhookUrl + '?test=' + Date.now(), {
-            method: 'GET',
-            mode: 'no-cors'
-          });
-          
-          state.isSheetsConnected = true;
-          console.log('[Spreadsheet] Connected!');
-          
-        } catch (error) {
-          state.isSheetsConnected = false;
-          console.warn('[Spreadsheet] Warning:', error.message);
-        }
-      }
-
-      updateConnectionUI();
-      
-      if (state.isConnected) {
-        applyDateFilter();
       }
     }
 
     // =============================================
     // UPDATE CONNECTION UI
     // =============================================
-    function updateConnectionUI() {
+    function updateConnectionUI(connected) {
       const banner = elements.connectionBanner;
       const dot = elements.statusDot;
       const text = elements.statusText;
       
-      banner.style.display = 'flex';
-      banner.className = 'connection-banner no-print';
-      
-      elements.badgeFirebase.classList.add('hidden');
-      elements.badgeSheets.classList.add('hidden');
-      
-      if (state.isConnected && state.isSheetsConnected) {
-        banner.classList.add('dual-connected');
+      if (connected) {
+        banner.className = 'connection-banner connected no-print';
         dot.className = 'status-dot success';
-        text.textContent = 'Dual Sync Active';
+        text.textContent = 'Firebase Connected';
         text.className = 'status-text status-text-success';
-        
-        elements.badgeFirebase.textContent = 'Firebase';
-        elements.badgeFirebase.classList.remove('hidden');
-        elements.badgeFirebase.className = 'sync-status-badge firebase';
-        
-        elements.badgeSheets.textContent = 'Spreadsheet';
-        elements.badgeSheets.classList.remove('hidden');
-        elements.badgeSheets.className = 'sync-status-badge sheets';
-        
-        elements.bannerTitle.textContent = 'Dual Sync Aktif!';
-        elements.bannerMessage.textContent = 'Firebase & Spreadsheet terhubung. Data akan tersinkronisasi ke kedua-duanya.';
-        
-      } else if (state.isConnected) {
-        banner.classList.add('connected');
-        dot.className = 'status-dot success';
-        text.textContent = 'Firebase Active';
-        text.className = 'status-text status-text-default-success';
-        
-        elements.badgeFirebase.textContent = 'Firebase';
-        elements.badgeFirebase.classList.remove('hidden');
-        elements.badgeFirebase.className = 'sync-status-badge firebase';
-        
-        elements.bannerTitle.textContent = 'Hanya Firebase';
-        elements.bannerMessage.textContent = 'Spreadsheet belum terhubung. Data tetap tersimpan di Firebase.';
-        
-      } else if (state.isSheetsConnected) {
-        banner.classList.remove('connected', 'dual-connected');
-        banner.classList.add('error');
-        dot.className = 'status-dot error';
-        text.textContent = 'Hanya Spreadsheet';
-        text.className = 'status-text status-text-error';
-        
-        elements.badgeSheets.textContent = 'Spreadsheet';
-        elements.badgeSheets.classList.remove('hidden');
-        elements.badgeSheets.className = 'sync-status-badge sheets';
-        
-        elements.bannerTitle.textContent = 'Firebase belum terhubung';
-        elements.bannerMessage.textContent = 'Setup Firebase terlebih dahulu untuk dual sync.';
-        
+        elements.bannerTitle.textContent = '✅ Firebase Terhubung';
+        elements.bannerMessage.textContent = 'Data akan disimpan ke Firebase dan di-sync ke Spreadsheet oleh Apps Script.';
       } else {
-        banner.classList.remove('connected', 'dual-connected');
-        banner.classList.add('error');
-        dot.className = 'status-dot connecting';
-        text.textContent = 'Belum ada koneksi';
-        text.className = 'status-text status-text-warning';
-        
-        elements.bannerTitle.textContent = 'Belum Terkonfigurasi';
-        elements.bannerMessage.textContent = 'Klik "Setup" untuk konfigurasi Firebase + Spreadsheet.';
+        banner.className = 'connection-banner error no-print';
+        dot.className = 'status-dot error';
+        text.textContent = 'Tidak Terhubung';
+        text.className = 'status-text status-text-error';
+        elements.bannerTitle.textContent = '❌ Koneksi Gagal';
+        elements.bannerMessage.textContent = 'Periksa konfigurasi Firebase Anda.';
       }
     }
 
     // =============================================
     // SETUP MODAL FUNCTIONS
     // =============================================
-    window.showSetupModal = function() { elements.setupModal.classList.add('show'); };
+    window.showSetupModal = function() { 
+      elements.setupModal.classList.add('show'); 
+    };
     
-    window.closeSetupModal = function() { elements.setupModal.classList.remove('show'); };
+    window.closeSetupModal = function() { 
+      elements.setupModal.classList.remove('show'); 
+    };
 
     window.saveFirebaseConfig = async function() {
       try {
@@ -1250,34 +1214,34 @@
         errorEl.classList.add('hidden');
         errorEl.textContent = '';
         
-        if (!inputStr) { showError('Paste Firebase config!'); return; }
+        if (!inputStr) { 
+          showError('Paste Firebase config!'); 
+          return; 
+        }
         
-        const result = smartParseConfig(inputStr);
-        if (!result.success) { showError(result.error || 'Format tidak valid'); return; }
+        let config;
+        try {
+          config = JSON.parse(inputStr);
+        } catch (parseErr) {
+          showError('Format JSON tidak valid!');
+          return;
+        }
         
-        const config = result.config;
-        if (!config.apiKey || !config.projectId) { showError('Config tidak lengkap (apiKey & projectId wajib)'); return; }
+        if (!config.apiKey || !config.projectId) { 
+          showError('Config tidak lengkap (apiKey & projectId wajib)'); 
+          return; 
+        }
         
         localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
-        console.log('[Firebase Config] Saved to localStorage');
-        
-        const currentWebhook = elements.webhookUrlInput.value.trim();
-        if (currentWebhook && currentWebhook !== DEFAULT_WEBHOOK_URL) {
-          state.webhookUrl = currentWebhook;
-          localStorage.setItem(CONFIG_KEYS.WEBHOOK_URL, currentWebhook);
-        } else {
-          state.webhookUrl = DEFAULT_WEBHOOK_URL;
-          localStorage.setItem(CONFIG_KEYS.WEBHOOK_URL, DEFAULT_WEBHOOK_URL);
-        }
         
         showToast('Config tersimpan! Menghubungkan...', 'info');
         closeSetupModal();
         
-        await initDualConnection();
+        await initConnection();
         
       } catch (error) {
         console.error('[Save Config Error]:', error);
-        showError('Gagal menyimpan config: ' + error.message);
+        showError('Gagal menyimpan: ' + error.message);
       }
     };
 
@@ -1285,46 +1249,6 @@
       elements.configError.textContent = msg;
       elements.configError.classList.remove('hidden');
       showToast(msg, 'error');
-    }
-
-    function smartParseConfig(inputStr) {
-      let str = inputStr.trim();
-      
-      try {
-        const config = JSON.parse(str);
-        if (config.apiKey && config.projectId) return { success: true, config };
-      } catch (e) {}
-      
-      const jsonPattern = /\{[^{}]*"apiKey"\s*:\s*"[^"}]*\}/g;
-      const matches = str.match(jsonPattern);
-      if (matches && matches.length > 0) {
-        for (let match of matches) {
-          try {
-            const config = JSON.parse(match);
-            if (config.apiKey && config.projectId) return { success: true, config, extracted: true };
-          } catch (e) { continue; }
-        }
-      }
-      
-      const firstBrace = str.indexOf('{');
-      const lastBrace = str.lastIndexOf('}');
-      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        try {
-          const config = JSON.parse(str.substring(firstBrace, lastBrace + 1));
-          if (config.apiKey || config.projectId) return { success: true, config, extracted: true };
-        } catch (e) {}
-      }
-      
-      let cleaned = str.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/const\s+\w+\s*=\s*/g, '').trim();
-      const cleanMatch = cleaned.match(/\{[^}]*"apiKey"[^}]*\}/);
-      if (cleanMatch) {
-        try {
-          const config = JSON.parse(cleanMatch[0]);
-          if (config.apiKey) return { success: true, config, extracted: true };
-        } catch (e) {}
-      }
-      
-      return { success: false, error: 'Tidak dapat menemukan config Firebase yang valid. Pastikan mempaste HANYA objek JSON: { "apiKey": "...", ... }' };
     }
 
     // =============================================
@@ -1345,17 +1269,15 @@
       elements.setupModal.addEventListener('click', function(e) { if (e.target === elements.setupModal) elements.setupModal.classList.remove('show'); });
       elements.closeDocModal.addEventListener('click', function() { elements.documentModal.classList.remove('show'); });
       elements.clearHistory.addEventListener('click', function() {
-        if (confirm('Hapus SEMUA data dari Firebase & Spreadsheet?')) {
+        if (confirm('Hapus SEMUA data dari Firebase? (Spreadsheet akan ter-update otomatis pada sync berikutnya)')) {
           if (db) {
             db.collection('submissions').get().then(function(snapshot) {
               var batch = db.batch();
               snapshot.docs.forEach(function(doc) { batch.delete(doc.ref); });
               return batch.commit();
             }).then(function() {
-              showToast('Semua data dihapus', 'success');
+              showToast('Semua data dihapus dari Firebase', 'success');
             }).catch(function(err) { showToast('Error: ' + err.message, 'error'); });
-          } else {
-            showToast('Tidak ada koneksi ke database', 'error');
           }
         }
       });
@@ -1461,10 +1383,6 @@
       if (errors.length > 0) {
         elements.validationErrorList.innerHTML = errors.map(function(e) { return '<li>' + escapeHtml(e) + '</li>'; }).join('');
         elements.validationError.classList.add('show');
-        document.querySelectorAll('.input-field[required]').forEach(function(field) {
-          if (!field.value) field.classList.add('required-empty');
-          setTimeout(function() { field.classList.remove('required-empty'); }, 1500);
-        });
         return false;
       }
 
@@ -1489,14 +1407,18 @@
         tanggal_pembayaran: fd.get('tanggal_pembayaran') || '',
         dibayarkan_kepada: fd.get('dibayarkan_kepada') || '',
         catatan_tambahan: fd.get('catatan_tambahan') || '',
-        source: 'FinanceSync Pro',
+        source: 'FinanceSync Pro v3.0',
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         dibuat_oleh: 'Nur Wahyudi',
         disetujui_oleh: 'Harijon',
         keuangan: 'Andi Dhiya Salsabila',
         dir_keuangan: 'Harijon',
         direktur_utama: 'H. Andi Nursyam Halid',
-        accounting: 'Sri Ekowati'
+        accounting: 'Sri Ekowati',
+        // 🔥 NEW: Fields for sync tracking
+        synced_to_sheets: false,  // Default: belum sync ke sheets
+        synced_at: null,
+        sheets_error: null
       };
     }
 
@@ -1666,7 +1588,7 @@
       renderFormItems();
       document.getElementById('tanggal').valueAsDate = new Date();
       if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
-      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>💾 Simpan ke Firebase</span>';
       var editBanner = document.getElementById('editModeBanner');
       if (editBanner) editBanner.remove();
       showToast('Mode edit dibatalkan', 'info');
@@ -1685,7 +1607,7 @@
     }
 
     // =============================================
-    // SUBMIT HANDLER - DUAL WRITE
+    // 🎯 MAIN SUBMIT HANDLER - FIREBASE ONLY!
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
@@ -1712,26 +1634,19 @@
         if (isDuplicate) {
           showToast('Transaksi duplikat! Data dengan detail sama sudah pernah diinput.', 'error');
           elements.submitBtn.disabled = false;
-          elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+          resetSubmitButton();
           return;
         }
 
         if (!data.no_invoice.trim()) {
-          elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Generate No Invoice...</span>';
+          elements.submitBtn.innerHTML = '<div class="spinner"></span>Generate No Invoice...</span>';
           data.no_invoice = await autoGenerateInvoice();
           document.getElementById('no_invoice').value = data.no_invoice;
         }
       }
 
-      var docRef = null;
-
       elements.submitBtn.disabled = true;
-      elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan ke Firebase...</span>';
-
-      var firebaseSuccess = false;
-      var sheetsSuccess = false;
-      var firebaseError = '';
-      var sheetsError = '';
+      elements.submitBtn.innerHTML = '<div class="spinner"></span>Menyimpan ke Firebase...';
 
       try {
         var firebaseData = {
@@ -1753,9 +1668,9 @@
           dir_keuangan: data.dir_keuangan,
           direktur_utama: data.direktur_utama,
           accounting: data.accounting,
-          synced: true,
-          sheets_synced: false,
-          sheets_synced_at: null,
+          // 🔥 SYNC TRACKING FIELDS
+          synced_to_sheets: false,
+          synced_at: null,
           sheets_error: null
         };
 
@@ -1768,93 +1683,38 @@
           firebasePromise = db.collection('submissions').add(firebaseData);
         }
 
-        docRef = await withTimeout(firebasePromise, 15000, 'Firebase write');
+        var docRef = await withTimeout(firebasePromise, 15000, 'Firebase write');
 
-        console.log('[Firebase] ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', isEditMode ? state.editingDocId : docRef.id);
-        firebaseSuccess = true;
+        console.log('[Firebase] ✅ ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', isEditMode ? state.editingDocID : docRef.id);
+        
         state.lastFormData = Object.assign({}, data, { id: isEditMode ? state.editingDocId : docRef.id });
+
+        // ✅ SUCCESS!
+        showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan ke Firebase!') + ' Spreadsheet akan sync otomatis.', 'firebase');
+        
+        populateDocuments(data);
+        elements.documentModal.classList.add('show');
+        
+        // Refresh stats
+        // Stats will auto-update via realtime listener
 
       } catch (error) {
         console.error('[Firebase Save Error]:', error);
-        firebaseError = error.message || 'Unknown error';
-
-        if (firebaseError.indexOf('PERMISSION_DENIED') > -1 || firebaseError.indexOf('Missing or insufficient permissions') > -1) {
-          firebaseError = 'Permission denied! Ubah Security Rules Firebase Anda.';
-        } else if (firebaseError.indexOf('timeout') > -1) {
-          firebaseError = 'Firebase tidak merespon. Cek koneksi internet atau coba lagi.';
+        
+        let errorMsg = error.message || 'Unknown error';
+        if (errorMsg.indexOf('PERMISSION_DENIED') > -1 || errorMsg.indexOf('Missing or insufficient permissions') > -1) {
+          errorMsg = 'Permission denied! Ubah Security Rules Firebase Anda.';
+        } else if (errorMsg.indexOf('timeout') > -1) {
+          errorMsg = 'Firebase tidak merespon. Cek koneksi internet.';
         }
-      }
-
-      if (state.webhookUrl) {
-        elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengirim ke Spreadsheet...</span>';
-        try {
-          var payload = Object.assign({}, data, {
-            _source: 'FinanceSync Pro',
-            _timestamp: new Date().toISOString(),
-            _firebase_id: docRef ? docRef.id : 'pending'
-          });
-
-          var sheetsPromise = fetch(state.webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            mode: 'no-cors',
-            redirect: 'follow'
-          });
-
-          await withTimeout(sheetsPromise, 20000, 'Spreadsheet fetch');
-
-          sheetsSuccess = true;
-          console.log('[Spreadsheet] Terkirim!');
-
-          if (docRef) {
-            try {
-              await withTimeout(
-                docRef.update({
-                  sheets_synced: true,
-                  sheets_synced_at: new Date().toISOString()
-                }),
-                10000,
-                'Firebase update'
-              );
-            } catch (updateErr) {
-              console.warn('[Firebase Update Warning]:', updateErr.message);
-            }
-          }
-
-        } catch (error) {
-          console.warn('[Spreadsheet Error]:', error);
-          sheetsError = error.message || 'Unknown error';
-        }
+        
+        showToast('Gagal menyimpan: ' + errorMsg, 'error');
       }
 
       elements.submitBtn.disabled = false;
 
-      if (firebaseSuccess && sheetsSuccess) {
-        showToast((isEditMode ? 'Berhasil diupdate' : 'Dual Sync Berhasil') + '! (Firebase + Spreadsheet)', 'firebase');
-        updateConnectionUI();
-        populateDocuments(data);
-        elements.documentModal.classList.add('show');
-
-      } else if (firebaseSuccess) {
-        showToast('Firebase OK! ' + (isEditMode ? 'Updated' : 'Saved') + '. Spreadsheet: ' + (sheetsError || 'gagal'), 'info');
-        updateConnectionUI();
-        populateDocuments(data);
-        elements.documentModal.classList.add('show');
-
-      } else if (sheetsSuccess) {
-        showToast('Spreadsheet OK! Firebase gagal: ' + firebaseError, 'error');
-        updateConnectionUI();
-
-      } else {
-        var fullError = '';
-        if (firebaseError) fullError += 'Firebase: ' + firebaseError;
-        if (sheetsError) fullError += (fullError ? ' | ' : '') + 'Spreadsheet: ' + sheetsError;
-        showToast('Gagal menyimpan: ' + fullError, 'error');
-        updateConnectionUI();
-      }
-
-      if (firebaseSuccess || sheetsSuccess) {
+      // Reset form jika sukses
+      if (!error) {
         state.editingDocId = null;
         elements.form.reset();
         state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
@@ -1863,12 +1723,20 @@
         if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
         var editBanner = document.getElementById('editModeBanner');
         if (editBanner) editBanner.remove();
-        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+        resetSubmitButton();
         autoGenerateInvoice().then(function(inv) {
           document.getElementById('no_invoice').value = inv;
         });
       } else {
-        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>' + (isEditMode ? 'Update Transaksi' : 'Simpan ke Firebase + Spreadsheet') + '</span>';
+        resetSubmitButton(isEditMode);
+      }
+    }
+
+    function resetSubmitButton(isEdit) {
+      if (isEdit) {
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
+      } else {
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>💾 Simpan ke Firebase</span>';
       }
     }
 
@@ -1897,17 +1765,14 @@
 
       if (state.unsubscribeListener) state.unsubscribeListener();
 
-      var filterSection = document.getElementById('dateFilterSection');
-      if (filterSection) filterSection.style.borderColor = 'var(--firebase)';
-
       state.unsubscribeListener = query.limit(100).onSnapshot(
         function(snapshot) {
-          state.history = snapshot.docs.map(function(doc) {
-            return Object.assign({ id: doc.id }, doc.data(), { synced: true });
+          state.history = snapshot.docs.map(function(doc) { 
+            return Object.assign({ id: doc.id }, doc.data()); 
           });
+          console.log('[Query] Loaded', state.history.length, 'records');
           renderHistory();
           updateStats();
-          showToast('Filter aktif: ' + (from || '...') + ' s/d ' + (to || '...') + ' (' + state.history.length + ' data)', 'info');
         },
         function(error) {
           console.error('[Filter Listener] Error:', error);
@@ -1922,9 +1787,6 @@
       document.getElementById('filterDateFrom').value = '';
       document.getElementById('filterDateTo').value = '';
 
-      var filterSection = document.getElementById('dateFilterSection');
-      if (filterSection) filterSection.style.borderColor = 'var(--border)';
-
       startRealtimeListener();
       showToast('Filter tanggal direset', 'info');
     };
@@ -1935,43 +1797,35 @@
     function startRealtimeListener() {
       if (state.unsubscribeListener) state.unsubscribeListener();
 
-      var filterSection = document.getElementById('dateFilterSection');
-      if (filterSection) filterSection.style.borderColor = 'var(--border)';
-
       state.unsubscribeListener = db
         .collection('submissions')
         .orderBy('timestamp', 'desc')
         .limit(50)
         .onSnapshot(
           function(snapshot) {
-            state.history = snapshot.docs.map(function(doc) { return Object.assign({ id: doc.id }, doc.data(), { synced: true }); });
+            state.history = snapshot.docs.map(function(doc) { 
+              return Object.assign({ id: doc.id }, doc.data()); 
+            });
+            console.log('[Listener] Updated:', state.history.length, 'records');
             renderHistory();
             updateStats();
           },
           function(error) {
             console.error('[Listener] Error:', error);
-            if (error.message && error.message.indexOf('FAILED_PRECONDITION') > -1 && error.message.indexOf('index') > -1) {
-              var linkMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s"']+/);
-              if (linkMatch) {
-                showToast('Perlu buat index di Firebase. Klik error di Console (F12) untuk link-nya.', 'error');
-                console.log('[INDEX NEEDED] Buka link ini untuk buat index:', linkMatch[0]);
-              }
-            }
             showToast('Realtime listener error', 'error');
           }
         );
     }
 
     // =============================================
-    // RENDER HISTORY WITH FIX FOR COVERED MENU
+    // RENDER HISTORY WITH SYNC STATUS
     // =============================================
     function renderHistory() {
       var filtered = [];
-      // LOGIC FIX: Jika status null/undefined, anggap "Belum Lunas" agar data lama tetap muncul
       if (state.currentTab === 'Lunas') {
         filtered = state.history.filter(function(h) { return h.status === 'Lunas'; });
       } else if (state.currentTab === 'Belum Lunas') {
-        filtered = state.history.filter(function(h) { return h.status !== 'Lunas'; }); // Catch null/undefined/empty/Unpaid
+        filtered = state.history.filter(function(h) { return h.status !== 'Lunas'; });
       } else {
         filtered = state.history;
       }
@@ -1980,7 +1834,7 @@
         elements.historyList.innerHTML = '<div class="text-center py-10 color-muted">' +
           '<svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' +
           '<p class="text-sm">Tidak ada data ' + state.currentTab + '</p>' +
-          '<p class="text-xs mt-2 color-firebase">Data sync ke Firebase + Spreadsheet</p></div>';
+          '<p class="text-xs mt-2 color-firebase">Data tersimpan di Firebase & sync ke Spreadsheet</p></div>';
         return;
       }
 
@@ -1998,11 +1852,29 @@
           ? '<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>'
           : '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Belum Lunas</span>';
 
-        return '<div class="history-item cursor-pointer" onclick="loadHistoryItem(\'' + safeId + '\')">' +
+        // 🔥 SYNC STATUS INDICATOR
+        var syncIndicator = '';
+        var syncClass = 'pending-sync'; // default
+        
+        if (item.synced_to_sheets === true) {
+          syncIndicator = '<span class="sync-indicator synced" title="✅ Sudah sync ke Spreadsheet">✅</span>';
+          syncClass = 'synced';
+        } else if (item.sheets_error) {
+          syncIndicator = '<span class="sync-indicator error" title="Error: ' + escapeHtml(item.sheets_error)">❌</span>';
+          syncClass = 'sync-error';
+        } else {
+          syncIndicator = '<span class="sync-indicator pending" title="⏳ Menunggu sync ke Spreadsheet...">⏳</span>';
+          syncClass = 'pending-sync';
+        }
+
+        return '<div class="history-item cursor-pointer ' + syncClass + '" onclick="loadHistoryItem(\'' + safeId + '\')">' +
           '<div class="flex flex-col gap-1">' +
             '<div class="flex items-center justify-between mb-1">' +
               '<span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">' + dateStr + '</span>' +
-              statusBadge +
+              '<div class="flex items-center gap-1">' +
+                statusBadge +
+                syncIndicator +
+              '</div>' +
             '</div>' +
             '<div class="text-sm font-bold text-white mb-0.5">' + escapeHtml(item.no_invoice || item.kode || '-') + '</div>' +
             '<div class="text-xs text-gray-400 truncate mb-1" style="max-width:200px;">' + escapeHtml(displayItems) + '</div>' +
@@ -2017,7 +1889,7 @@
     }
 
     // =============================================
-    // ACTION MENU - FIXED POSITION FIX
+    // ACTION MENU
     // =============================================
     var activeActionMenu = null;
 
@@ -2037,14 +1909,9 @@
         '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
         'Hapus</button>';
 
-      // FIX: Append to body to prevent z-index stacking context issues
       document.body.appendChild(dropdown);
 
-      // Calculate position based on button
       const rect = btn.getBoundingClientRect();
-      const width = 130; // Approx width
-
-      // Position: right-aligned to button, below button
       dropdown.style.top = (rect.bottom + 5) + 'px';
       dropdown.style.right = (window.innerWidth - rect.right) + 'px';
 
@@ -2084,25 +1951,7 @@
         await db.collection('submissions').doc(state.pendingDeleteId).delete();
         console.log('[Firebase] Data dihapus:', state.pendingDeleteId);
 
-        if (state.webhookUrl) {
-          try {
-            await withTimeout(
-              fetch(state.webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: "DELETE", kode: state.pendingDeleteKode }),
-                mode: 'no-cors'
-              }),
-              15000,
-              'Spreadsheet delete'
-            );
-            console.log('[Spreadsheet] Hapus request terkirim untuk kode:', state.pendingDeleteKode);
-          } catch (sheetErr) {
-            console.warn('[Spreadsheet Delete Warning]:', sheetErr.message);
-          }
-        }
-
-        showToast('Data berhasil dihapus (Firebase + Spreadsheet)!', 'success');
+        showToast('Data berhasil dihapus dari Firebase!', 'success');
         closeDeleteModal();
       } catch (error) {
         console.error('[Delete] Error:', error);
@@ -2154,7 +2003,7 @@
       editBanner.innerHTML = '<div style="display:flex;align-items:center;gap:8px;"><svg style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span style="font-size:13px;color:#fbbf24;font-weight:600;">MODE EDIT — Mengubah transaksi #' + id.substring(0, 6) + '</span></div><button onclick="cancelEdit()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fbbf24;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Space Grotesk,sans-serif;">Batal</button>';
 
       document.getElementById('dataForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      showToast('Mode edit aktif. Ubah data lalu klik "Update Transaksi".', 'firebase');
+      showToast('Mode edit aktif. Ubah data lalu klik "Update".', 'firebase');
     };
 
     window.loadHistoryItem = function(id) {
@@ -2170,13 +2019,17 @@
     };
 
     // =============================================
-    // STATS
+    // STATS - ACCURATE COUNTING
     // =============================================
     function updateStats() {
-      animateCounter(elements.totalData, state.history.length);
-      animateCounter(elements.sentData, state.history.filter(function(h) { return h.synced === true; }).length);
-      animateCounter(elements.sheetsData, state.history.filter(function(h) { return h.sheets_synced === true; }).length);
-      animateCounter(elements.pendingData, state.history.filter(function(h) { return !h.synced && !h.sheets_synced; }).length);
+      var total = state.history.length;
+      var syncedCount = state.history.filter(function(h) { return h.synced_to_sheets === true; }).length;
+      var pendingCount = state.history.filter(function(h) { return h.synced_to_sheets === false; }).length;
+      
+      animateCounter(elements.totalData, total);
+      animateCounter(elements.sentData, total); // Semua data ada di Firebase
+      animateCounter(elements.sheetsData, syncedCount);
+      animateCounter(elements.pendingData, pendingCount);
     }
 
     function animateCounter(el, target) {
