@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceSync Pro - Dual Sync + Drive Storage</title>
+  <title>FinanceSync Pro - Dual Sync (Firebase + Spreadsheet)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  
-  <!-- Google Identity Services & API (Untuk Upload Drive) -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://apis.google.com/js/api.js"></script>
   
   <!-- html2pdf.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -36,7 +32,6 @@
       --firebase: #ffca28;
       --firebase-orange: #ffa726;
       --sheets: #10b981;
-      --drive: #4285f4;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -140,20 +135,8 @@
       font-family: 'Space Grotesk', sans-serif;
       transition: all 0.2s ease;
     }
-    .btn-secondary:hover { border-color: var(--firebase); color: var(--firebase); }
 
-    .btn-drive {
-      background: linear-gradient(135deg, #4285f4, #34a853);
-      color: white;
-      font-weight: 600;
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.2s;
-    }
-    .btn-drive:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4); }
+    .btn-secondary:hover { border-color: var(--firebase); color: var(--firebase); }
 
     .btn-print {
       background: #334155;
@@ -303,7 +286,6 @@
     .status-dot.error { background: var(--error); }
     .status-dot.connecting { background: var(--firebase); animation: pulse-ring 1s ease-out infinite; }
 
-    /* History Item dengan Sync Indicator */
     .history-item {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
@@ -311,14 +293,9 @@
       padding: 16px;
       transition: all 0.2s ease;
       position: relative;
-      border-left: 3px solid transparent;
     }
 
     .history-item:hover { border-color: var(--firebase); transform: translateX(4px); }
-    
-    .history-item.synced-firebase { border-left-color: var(--firebase); }
-    .history-item.synced-both { border-left-color: var(--success); }
-    .history-item.sync-error { border-left-color: var(--error); }
 
     /* Banners */
     .connection-banner {
@@ -415,7 +392,6 @@
     .toast.info { background: var(--accent); color: white; }
     .toast.firebase { background: linear-gradient(135deg, var(--firebase), var(--firebase-orange)); color: #000; }
     .toast.sheets { background: linear-gradient(135deg, var(--sheets), #059669); color: white; }
-    .toast.warning { background: var(--warning); color: #000; }
 
     .spinner {
       width: 18px;
@@ -556,10 +532,6 @@
     .doc-notes-title { font-weight: 700; font-size: 12px; margin-bottom: 4px; color: #000; }
     .doc-notes-content { font-size: 11px; color: #000; line-height: 1.4; }
     .doc-notes-manual { margin-top: 8px; font-size: 11px; color: #000; line-height: 1.4; white-space: pre-wrap; }
-    
-    .doc-file-link { margin-top: 15px; font-size: 11px; color: #000; background: #f8fafc; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; }
-    .doc-file-link a { color: #2563eb; text-decoration: none; font-weight: 600; }
-    .doc-file-link a:hover { text-decoration: underline; }
 
     .doc-signatures-2x2 { margin-top: 30px; page-break-inside: avoid; }
     .doc-sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
@@ -602,7 +574,7 @@
     .validation-error.show { display: block; animation: slideUp 0.3s ease-out forwards; }
     .validation-error ul { list-style: none; padding: 0; margin: 0; }
     .validation-error li { color: #fca5a5; font-size: 13px; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
-    .validation-error li::before { content: "⚠"; flex-shrink: 0; }
+    .validation-error li::before { content: "\26A0"; flex-shrink: 0; }
 
     /* Sync Status Indicators */
     .sync-status-badge {
@@ -634,45 +606,6 @@
       border: 1px solid rgba(139, 92, 246, 0.5);
     }
 
-    /* File Upload Styles */
-    .file-upload-area {
-        border: 2px dashed var(--border);
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        transition: all 0.3s;
-        cursor: pointer;
-        background: rgba(255,255,255,0.02);
-    }
-    .file-upload-area:hover { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); }
-    
-    .file-info-box {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: var(--bg);
-        padding: 10px 14px;
-        border-radius: 8px;
-        margin-top: 10px;
-        border: 1px solid var(--border);
-    }
-    
-    .upload-progress-container {
-        width: 100%;
-        height: 6px;
-        background: var(--bg);
-        border-radius: 3px;
-        margin-top: 12px;
-        overflow: hidden;
-        display: none;
-    }
-    .upload-progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, var(--accent), var(--success));
-        width: 0%;
-        transition: width 0.3s;
-    }
-
     /* Utility classes */
     .status-text { font-size: 14px; }
     .status-text-success { color: var(--success); font-weight: 600; }
@@ -687,48 +620,6 @@
     .color-firebase { color: var(--firebase); }
     .color-sheets { color: var(--sheets); }
     .color-accent { color: var(--accent); }
-    
-    /* Sync Status Indicator untuk History Item */
-    .sync-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-    .sync-indicator.firebase-only {
-      background: rgba(255, 202, 40, 0.2);
-      color: var(--firebase);
-    }
-    .sync-indicator.both-synced {
-      background: rgba(16, 185, 129, 0.2);
-      color: var(--success);
-    }
-    .sync-indicator.pending-sync {
-      background: rgba(245, 158, 11, 0.2);
-      color: var(--warning);
-    }
-
-    /* Debug Panel (Hidden by default) */
-    .debug-panel {
-      background: rgba(0,0,0,0.3);
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      padding: 12px;
-      margin-top: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      max-height: 200px;
-      overflow-y: auto;
-      display: none;
-    }
-    .debug-panel.show { display: block; }
-    .debug-log { color: var(--muted); margin: 2px 0; }
-    .debug-log.success { color: var(--success); }
-    .debug-log.error { color: var(--error); }
-    .debug-log.info { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -746,7 +637,7 @@
           </div>
           <div>
             <h1 class="text-lg font-semibold">FinanceSync Pro</h1>
-            <p class="text-xs text-[--muted]">Dual Sync + Drive Storage v2.0</p>
+            <p class="text-xs text-[--muted]">Dual Sync: Firebase + Spreadsheet</p>
           </div>
         </div>
         <div class="flex items-center gap-3 animate-in delay-1">
@@ -754,11 +645,6 @@
             <div class="status-dot connecting" id="statusDot"></div>
             <span class="status-text status-text-muted" id="statusText">Menghubungkan...</span>
           </div>
-          
-          <!-- Auth Buttons -->
-          <button id="authorize_button" class="btn-drive" onclick="handleAuthClick()" style="display:none;">Login Drive</button>
-          <button id="signout_button" class="btn-secondary" onclick="handleSignoutClick()" style="display:none;">Logout</button>
-          
           <button id="setupBtn" class="btn-secondary" aria-label="Pengaturan">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 00-1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572 1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </button>
@@ -785,26 +671,10 @@
 
       <!-- Statistics -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
-        <div class="card animate-in delay-1">
-          <div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Entri</div>
-          <div class="text-2xl font-bold" id="totalData">0</div>
-          <div class="text-[10px] text-[--muted] mt-1">Dari Firebase</div>
-        </div>
-        <div class="card animate-in delay-2">
-          <div class="text-[--muted] text-xs uppercase tracking-wide mb-1">✅ Firebase</div>
-          <div class="text-2xl font-bold text-[--success]" id="sentData">0</div>
-          <div class="text-[10px] text-[--muted] mt-1">Tersimpan</div>
-        </div>
-        <div class="card animate-in delay-3">
-          <div class="text-[--muted] text-xs uppercase tracking-wide mb-1">📊 Spreadsheet</div>
-          <div class="text-2xl font-bold text-[--sheets]" id="sheetsData">0</div>
-          <div class="text-[10px] text-[--muted] mt-1">Synced</div>
-        </div>
-        <div class="card animate-in delay-4">
-          <div class="text-[--muted] text-xs uppercase tracking-wide mb-1">⏳ Pending</div>
-          <div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div>
-          <div class="text-[10px] text-[--muted] mt-1">Belum sync</div>
-        </div>
+        <div class="card animate-in delay-1"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Entri</div><div class="text-2xl font-bold" id="totalData">0</div></div>
+        <div class="card animate-in delay-2"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
+        <div class="card animate-in delay-3"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Spreadsheet</div><div class="text-2xl font-bold text-[--sheets]" id="sheetsData">0</div></div>
+        <div class="card animate-in delay-4"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Pending</div><div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div></div>
       </div>
 
       <!-- Grid Form + History -->
@@ -819,7 +689,7 @@
               </div>
               <div>
                 <h2 class="text-lg font-semibold">Form Pengajuan</h2>
-                <p class="text-sm text-[--muted]">Dual Sync + Drive Storage</p>
+                <p class="text-sm text-[--muted]">Dual Sync: Firebase + Spreadsheet</p>
               </div>
             </div>
 
@@ -837,30 +707,6 @@
               <div class="grid md:grid-cols-2 gap-4">
                 <div><label class="field-label" for="no_invoice">No Invoice / Berkas</label><input type="text" id="no_invoice" name="no_invoice" class="input-field mono" placeholder="(opsional)"></div>
                 <div><label class="field-label" for="status">Status Pembayaran<span class="required-star">*</span></label><select id="status" name="status" class="input-field" required><option value="">Pilih status</option><option value="Lunas">Lunas</option><option value="Belum Lunas">Belum Lunas</option></select></div>
-              </div>
-
-              <!-- FILE UPLOAD SECTION -->
-              <div>
-                <label class="field-label">Dokumen Pendukung (Max 100MB - Google Drive)</label>
-                <div id="fileUploadArea" class="file-upload-area" onclick="document.getElementById('fileInput').click()">
-                  <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(this)">
-                  <div id="uploadPlaceholder">
-                    <svg class="w-8 h-8 mx-auto mb-2 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                    <p class="text-sm text-[--muted]">Klik untuk pilih file</p>
-                    <p class="text-xs text-gray-600 mt-1">Akan disimpan ke Google Drive Anda</p>
-                  </div>
-                  <div id="uploadFileInfo" class="hidden" onclick="event.stopPropagation()">
-                     <div class="file-info-box">
-                        <svg class="w-6 h-6 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <div class="flex-1 text-left">
-                            <div class="text-sm font-medium truncate" id="uploadFileName">filename.pdf</div>
-                            <div class="text-xs text-[--muted]" id="uploadFileSize">0 KB</div>
-                        </div>
-                        <button type="button" onclick="event.stopPropagation();removeFile()" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 border border-red-900 rounded">Hapus</button>
-                     </div>
-                  </div>
-                  <div class="upload-progress-container" id="progressContainer"><div class="upload-progress-bar" id="progressBar"></div></div>
-                </div>
               </div>
 
               <div>
@@ -907,15 +753,7 @@
           <div class="card animate-in delay-4">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold">Riwayat Transaksi</h2>
-              <div class="flex items-center gap-2 flex-wrap">
-                <button onclick="refreshAllSyncStatus()" class="text-xs text-[--sheets] hover:text-white hover:bg-[--sheets]/20 px-2 py-1 rounded transition-colors" title="Refresh sync status semua data">
-                  🔄 Refresh Sync
-                </button>
-                <button onclick="forceReconcileAll()" class="text-xs text-[--warning] hover:text-white hover:bg-[--warning]/20 px-2 py-1 rounded transition-colors" title="Paksa tandai semua sebagai synced">
-                  🔧 Force Sync
-                </button>
-                <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
-              </div>
+              <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
             </div>
 
             <!-- Tab Filter -->
@@ -950,12 +788,6 @@
                 <p class="text-xs mt-2 text-[--firebase]">Data akan sync ke Firebase + Spreadsheet</p>
               </div>
             </div>
-            
-            <!-- Debug Panel (Optional) -->
-            <details class="mt-4">
-              <summary class="text-xs text-[--muted] cursor-pointer hover:text-[--fg]">🔧 Debug Info</summary>
-              <div id="debugPanel" class="debug-panel show mt-2"></div>
-            </details>
           </div>
         </div>
 
@@ -967,7 +799,7 @@
   <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content">
       <div class="flex items-center justify-between mb-5">
-        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">⚙️</span> Konfigurasi Sistem</h2>
+        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">⚙️</span> Konfigurasi Dual Sync</h2>
         <button id="closeModal" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
 
@@ -981,8 +813,13 @@
               <h3 class="font-semibold text-base mb-2">🔥 Firebase Configuration</h3>
               <p class="text-sm text-[--muted] mb-3">Input sekali, tersimpan permanen di browser ini.</p>
               
+              <div class="example-config-box wrong-example">
+                <div class="flex items-center gap-2 mb-2"><span class="text-lg">❌</span><strong class="text-red-400 text-sm">Jangan copy ini:</strong></div>
+                <div class="config-box text-red-300" style="color:#fca5a5;">// Import...<br>const firebaseConfig = {<br>&nbsp;&nbsp;apiKey: "...",<br>&nbsp;&nbsp;...<br>};<br>const app = initializeApp(...);</div>
+              </div>
+
               <div class="example-config-box">
-                <div class="flex items-center gap-2 mb-2"><span class="text-lg">✅</span><strong class="text-green-400 text-sm">Copy HANYA objek JSON:</strong></div>
+                <div class="flex items-center gap-2 mb-2"><span class="text-lg">✅</span><strong class="text-green-400 text-sm">Copy HANYA ini:</strong></div>
                 <div class="config-box">{<br>&nbsp;&nbsp;"apiKey": "AIzaSy...",<br>&nbsp;&nbsp;"authDomain": "...",<br>&nbsp;&nbsp;"projectId": "...",<br>&nbsp;&nbsp;...<br>}</div>
               </div>
 
@@ -1002,9 +839,22 @@
           <div class="flex items-start gap-3">
             <div class="step-number">2</div>
             <div class="flex-1">
-              <h3 class="font-semibold text-base mb-2">📊 Spreadsheet Webhook</h3>
-              <label class="field-label mt-3">Webhook URL:</label>
+              <h3 class="font-semibold text-base mb-2">📊 Spreadsheet Webhook (Google Apps Script)</h3>
+              <p class="text-sm text-[--muted] mb-3">URL untuk mengirim data ke Google Sheets Anda.</p>
+              
+              <div class="bg-green-900/30 rounded-xl p-4 border border-green-700/30">
+                <p class="text-sm text-green-300 mb-2 flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 4m-2 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Info: URL sudah terisi otomatis!
+                </p>
+                <code class="block text-xs bg-[--bg] p-2 rounded text-green-400 mono truncate mt-2">
+                  https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec
+                </code>
+              </div>
+
+              <label class="field-label mt-3">Webhook URL (Auto-filled):</label>
               <input type="url" id="webhookUrl" class="input-field mono text-sm" placeholder="https://script.google.com/macros/s/..." value="https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec">
+              <p class="text-xs text-[--muted] mt-2">✅ Sudah terisi otomatis. Bisa diganti jika perlu.</p>
             </div>
           </div>
         </div>
@@ -1012,9 +862,14 @@
         <div class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30">
           <h3 class="font-medium text-sm mb-2 text-blue-300 flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Cara Upload File
+            Cara Kerja Dual Sync
           </h3>
-          <p class="text-xs text-gray-300">Klik tombol <strong>"Login Drive"</strong> di pojok kanan atas header untuk mengaktifkan fitur upload file.</p>
+          <ul class="text-xs text-gray-300 space-y-1.5 list-decimal list-inside">
+            <li>User isi form → klik "Simpan"</li>
+            <li>Data tersimpan ke <strong class="text-yellow-300">Firebase</strong> (real-time)</li>
+            <li>Otomatis dikirim ke <strong class="text-green-300">Spreadsheet</strong> (backup)</li>
+            <li>Kedua-duanya berhasil = ✅ Data aman!</li>
+          </ul>
         </div>
 
         <button onclick="closeSetupModal()" class="copy-btn mt-4 w-full">Tutup & Mulai Pakai</button>
@@ -1045,7 +900,7 @@
           <!-- HALAMAN 1 -->
           <div class="document-page" id="documentPage1">
             <div class="doc-header-center">
-              <img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo" class="doc-company-logo" onerror="this.style.display='none'">
+              <img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo Nusantara Mineral Sukses Abadi" class="doc-company-logo" onerror="this.style.display='none'">
               <div class="doc-form-title">FORMULIR PENGAJUAN HO</div>
             </div>
             <div class="doc-info-grid">
@@ -1059,24 +914,18 @@
               <tbody id="p1_table_body"></tbody>
               <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right" id="p1_total"></td><td></td></tr></tfoot>
             </table>
-            
-            <div id="p1_file_section" style="display:none;" class="doc-file-link">
-                <span style="font-weight:600; color:#334155;">📎 Lampiran:</span> 
-                <span id="p1_file_link"></span>
-            </div>
-            
             <div id="p1_notes_manual_wrapper" style="display:none;"><div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN:</div><div class="doc-notes-manual" id="p1_notes_manual"></div></div></div>
             <div class="doc-signatures-p1">
               <div class="doc-sig-box"><div class="doc-sig-label">DIBUAT OLEH</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_dibuat"></div></div>
               <div class="doc-sig-box"><div class="doc-sig-label">DISETUJUI</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_disetujui"></div></div>
             </div>
-            <div class="doc-notes"><div class="doc-notes-title">NOTE :</div><div class="doc-notes-content">Dokumen ini adalah bukti pengajuan resmi PT. Nusantara Mineral Sukses Abadi.</div></div>
+            <div class="doc-notes"><div class="doc-notes-title">NOTE :</div><div class="doc-notes-content">Dokumen ini adalah bukti pengajuan resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div></div>
           </div>
 
           <!-- HALAMAN 2 -->
           <div class="document-page" id="documentPage2">
             <div class="doc-header-flex">
-              <div class="doc-header-left"><img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo" class="doc-company-logo" onerror="this.style.display='none'"></div>
+              <div class="doc-header-left"><img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo Nusantara Mineral Sukses Abadi" class="doc-company-logo" onerror="this.style.display='none'"></div>
               <div class="doc-header-right">
                 <div class="doc-form-title-right">BUKTI PENGELUARAN KAS / BANK</div>
                 <div class="doc-tanggal-box">Tanggal : <span id="p2_tanggal"></span></div>
@@ -1093,12 +942,6 @@
               <tbody id="p2_table_body"></tbody>
               <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right" id="p2_total"></td></tr></tfoot>
             </table>
-            
-            <div id="p2_file_section" style="display:none;" class="doc-file-link">
-                <span style="font-weight:600; color:#334155;">📎 Lampiran:</span> 
-                <span id="p2_file_link"></span>
-            </div>
-            
             <div id="p2_notes_manual_wrapper" style="display:none;"><div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN:</div><div class="doc-notes-manual" id="p2_notes_manual"></div></div></div>
             <div class="doc-signatures-2x2">
               <div class="doc-sig-row">
@@ -1142,25 +985,17 @@
     // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v9',
-      WEBHOOK_URL: 'financesync_webhook_url_v9'
+      FIREBASE_CONFIG: 'financesync_firebase_config_v5',
+      WEBHOOK_URL: 'financesync_webhook_url_v5'
     };
 
     const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwNLf2l8nncu8CfztY1EFyymSelDXrIletn1QN-SJiqdaFwA52nkPBEfcOqyOBLFjHW/exec';
-    
-    const GOOGLE_CLIENT_ID = '507086356684-5r1kfg7ca0801sborh9j1mq7lsabrkc5.apps.googleusercontent.com';
-    const DRIVE_FOLDER_ID = '';
 
     let db = null;
-    let tokenClient = null;
-    let gapiInited = false;
-    
-    // Global state
     let state = {
       isConnected: false,
       isConnecting: true,
       isSheetsConnected: false,
-      isDriveConnected: false,
       history: [],
       currentTab: 'Lunas',
       lastFormData: null,
@@ -1171,41 +1006,10 @@
       webhookUrl: DEFAULT_WEBHOOK_URL,
       filterDateFrom: '',
       filterDateTo: '',
-      editingDocId: null,
-      selectedFile: null,
-      debugLogs: []
+      editingDocId: null
     };
 
     let elements = {};
-
-    // =============================================
-    // DEBUG LOGGING SYSTEM
-    // =============================================
-    function addDebugLog(message, type = 'info') {
-      const timestamp = new Date().toLocaleTimeString();
-      state.debugLogs.push({ timestamp, message, type });
-      
-      // Keep only last 50 logs
-      if (state.debugLogs.length > 50) state.debugLogs.shift();
-      
-      updateDebugPanel();
-    }
-
-    function updateDebugPanel() {
-      const panel = document.getElementById('debugPanel');
-      if (!panel) return;
-      
-      panel.innerHTML = state.debugLogs.map(log => 
-        `<div class="debug-log ${log.type}">[${log.timestamp}] ${log.message}</div>`
-      ).join('');
-      
-      panel.scrollTop = panel.scrollHeight;
-    }
-
-    function clearDebugLogs() {
-      state.debugLogs = [];
-      updateDebugPanel();
-    }
 
     // =============================================
     // INITIALIZATION
@@ -1249,7 +1053,6 @@
       loadSavedConfigs();
       document.getElementById('tanggal').valueAsDate = new Date();
 
-      // Set default date filter to current month
       var now = new Date();
       var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
       var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -1263,154 +1066,17 @@
       renderFormItems();
       setupEventListeners();
       
-      addDebugLog('System initialized', 'success');
       initDualConnection();
-      gapiLoaded();
-      
-      // Auto-refresh sync status every 5 minutes
-      setInterval(async () => {
-        if (state.isConnected && state.isSheetsConnected) {
-          addDebugLog('Auto-checking sync status...', 'info');
-          await refreshAllSyncStatus(false); // Silent mode (no toast)
-        }
-      }, 5 * 60 * 1000);
-    }
 
-    // =============================================
-    // GOOGLE DRIVE AUTH
-    // =============================================
-    function gapiLoaded() {
-        gapi.load('client', initGapiClient);
-    }
-
-    async function initGapiClient() {
-        try {
-            await gapi.client.init({
-                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-            });
-            gapiInited = true;
-            maybeEnableButtons();
-            addDebugLog('Google API client initialized', 'success');
-        } catch (error) {
-            addDebugLog('Failed to initialize GAPI client: ' + error.message, 'error');
-        }
-    }
-
-    function maybeEnableButtons() {
-        if (gapiInited) {
-            document.getElementById('authorize_button').style.display = 'block';
-        }
-    }
-
-    window.handleAuthClick = async function() {
-        try {
-            if (!tokenClient) {
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: GOOGLE_CLIENT_ID,
-                    scope: 'https://www.googleapis.com/auth/drive.file',
-                    callback: async (tokenResponse) => {
-                        if (tokenResponse.error) {
-                            showToast('Login Gagal: ' + tokenResponse.error, 'error');
-                            addDebugLog('Drive auth error: ' + tokenResponse.error, 'error');
-                            return;
-                        }
-                        state.isDriveConnected = true;
-                        document.getElementById('authorize_button').style.display = 'none';
-                        document.getElementById('signout_button').style.display = 'block';
-                        document.getElementById('statusText').textContent = 'Drive Connected';
-                        document.getElementById('statusDot').className = 'status-dot success';
-                        showToast('Google Drive Terhubung!', 'success');
-                        addDebugLog('Google Drive connected successfully', 'success');
-                    },
-                });
+      setTimeout(function() {
+        if (db) {
+          autoGenerateInvoice().then(function(inv) {
+            if (inv && !document.getElementById('no_invoice').value) {
+              document.getElementById('no_invoice').value = inv;
             }
-            
-            if (gapi.client.getToken() === null) {
-                tokenClient.requestAccessToken({prompt: 'consent'});
-            } else {
-                 state.isDriveConnected = true;
-                 document.getElementById('authorize_button').style.display = 'none';
-                 document.getElementById('signout_button').style.display = 'block';
-                 showToast('Sudah terhubung ke Drive', 'info');
-                 addDebugLog('Already connected to Drive', 'info');
-            }
-        } catch (error) {
-            addDebugLog('Handle auth click error: ' + error.message, 'error');
+          });
         }
-    };
-
-    window.handleSignoutClick = function() {
-        try {
-            const token = gapi.client.getToken();
-            if (token !== null) {
-                google.accounts.oauth2.revoke(token.access_token);
-                gapi.client.setToken('');
-                state.isDriveConnected = false;
-                document.getElementById('authorize_button').style.display = 'block';
-                document.getElementById('signout_button').style.display = 'none';
-                document.getElementById('statusText').textContent = 'Disconnected';
-                document.getElementById('statusDot').className = 'status-dot pending';
-                showToast('Logged out dari Drive', 'info');
-                addDebugLog('Logged out from Drive', 'info');
-            }
-        } catch (error) {
-            addDebugLog('Signout error: ' + error.message, 'error');
-        }
-    };
-
-    async function uploadToDrive(file) {
-        if (!state.isDriveConnected || !gapi.client.getToken()) {
-            showToast('Silakan login ke Google Drive dulu', 'error');
-            return null;
-        }
-
-        return new Promise((resolve, reject) => {
-            const metadata = {
-                name: `${Date.now()}_${file.name}`,
-                mimeType: file.type,
-                parents: DRIVE_FOLDER_ID ? [DRIVE_FOLDER_ID] : []
-            };
-
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-            form.append('file', file);
-
-            const xhr = new XMLHttpRequest();
-            
-            document.getElementById('progressContainer').style.display = 'block';
-            
-            xhr.upload.onprogress = (e) => {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    document.getElementById('progressBar').style.width = percent + '%';
-                }
-            };
-
-            xhr.onload = async () => {
-                if (xhr.status === 200) {
-                    const response = JSON.parse(xhr.responseText);
-                    try {
-                        await gapi.client.drive.permissions.create({
-                            fileId: response.id,
-                            resource: { role: 'reader', type: 'anyone' }
-                        });
-                    } catch (e) { 
-                        console.warn("Permission error", e); 
-                    }
-                    
-                    const url = `https://drive.google.com/file/d/${response.id}/view`;
-                    addDebugLog(`File uploaded: ${file.name}`, 'success');
-                    resolve(url);
-                } else {
-                    reject(new Error('Upload failed: ' + xhr.statusText));
-                }
-            };
-            xhr.onerror = () => reject(new Error('Network error'));
-
-            xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
-            xhr.setRequestHeader('Authorization', 'Bearer ' + gapi.client.getToken().access_token);
-            xhr.send(form);
-        });
+      }, 3000);
     }
 
     // =============================================
@@ -1420,138 +1086,202 @@
       const savedFirebaseConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
       if (savedFirebaseConfig) {
         elements.firebaseConfigInput.value = savedFirebaseConfig;
-        addDebugLog('Firebase config loaded from localStorage', 'info');
       }
 
       const savedWebhookUrl = localStorage.getItem(CONFIG_KEYS.WEBHOOK_URL);
       if (savedWebhookUrl) {
         state.webhookUrl = savedWebhookUrl;
         elements.webhookUrlInput.value = savedWebhookUrl;
-        addDebugLog('Webhook URL loaded from localStorage', 'info');
       }
     }
 
+    // =============================================
+    // showBanner function
+    // =============================================
     function showBanner(type, title, message) {
       const banner = elements.connectionBanner;
       if (!banner) return;
+      
       banner.style.display = 'flex';
       banner.className = 'connection-banner no-print ' + type;
+      
       if (elements.bannerTitle) elements.bannerTitle.textContent = title;
       if (elements.bannerMessage) elements.bannerMessage.textContent = message;
     }
 
+    // =============================================
+    // DUAL CONNECTION INITIALIZER
+    // =============================================
     async function initDualConnection() {
-      showBanner('connecting', 'Menyiapkan Dual Sync...', 'Menghubungkan...');
-      addDebugLog('Initializing dual connection...', 'info');
+      showBanner('connecting', 'Menyiapkan Dual Sync...', 'Menghubungkan Firebase & Spreadsheet...');
       
       const hasFirebaseConfig = !!localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
       const hasWebhookUrl = !!state.webhookUrl;
 
       if (!hasFirebaseConfig) {
-        setTimeout(function() { 
-          showSetupModal(); 
-          addDebugLog('No Firebase config found, showing setup modal', 'warning');
-        }, 1000);
+        setTimeout(function() { showSetupModal(); }, 1000);
         return;
       }
 
       try {
         const config = JSON.parse(localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG));
-        if (!firebase.apps.length) firebase.initializeApp(config);
-        db = firebase.firestore();
         
-        // Test connection
+        if (!firebase.apps.length) {
+          firebase.initializeApp(config);
+        }
+        
+        db = firebase.firestore();
         await db.collection('submissions').limit(1).get();
+        
         state.isConnected = true;
-        addDebugLog('Firebase connected successfully', 'success');
+        console.log('[Firebase] Connected!');
+        
       } catch (error) {
         console.error('[Firebase Error]:', error);
         state.isConnected = false;
-        addDebugLog('Firebase error: ' + error.message, 'error');
         showToast('Firebase error: ' + error.message, 'error');
       }
 
       if (hasWebhookUrl) {
         state.isSheetsConnected = true;
-        addDebugLog('Spreadsheet webhook configured', 'info');
+        console.log('[Spreadsheet] Configured!');
       }
 
       updateConnectionUI();
-      if (state.isConnected) applyDateFilter();
+      
+      if (state.isConnected) {
+        applyDateFilter();
+      }
     }
 
+    // =============================================
+    // UPDATE CONNECTION UI
+    // =============================================
     function updateConnectionUI() {
       const banner = elements.connectionBanner;
       const dot = elements.statusDot;
       const text = elements.statusText;
+      
       banner.style.display = 'flex';
       banner.className = 'connection-banner no-print';
+      
+      elements.badgeFirebase.classList.add('hidden');
+      elements.badgeSheets.classList.add('hidden');
       
       if (state.isConnected && state.isSheetsConnected) {
         banner.classList.add('dual-connected');
         dot.className = 'status-dot success';
         text.textContent = 'Dual Sync Active';
         text.className = 'status-text status-text-success';
+        
+        elements.badgeFirebase.textContent = 'Firebase';
         elements.badgeFirebase.classList.remove('hidden');
+        elements.badgeFirebase.className = 'sync-status-badge firebase';
+        
+        elements.badgeSheets.textContent = 'Spreadsheet';
         elements.badgeSheets.classList.remove('hidden');
+        elements.badgeSheets.className = 'sync-status-badge sheets';
+        
         elements.bannerTitle.textContent = 'Dual Sync Aktif!';
-        elements.bannerMessage.textContent = 'Firebase & Spreadsheet terhubung. Data akan tersinkronisasi.';
+        elements.bannerMessage.textContent = 'Firebase & Spreadsheet terhubung. Data akan tersinkronisasi ke kedua-duanya.';
+        
       } else if (state.isConnected) {
         banner.classList.add('connected');
         dot.className = 'status-dot success';
         text.textContent = 'Firebase Active';
+        text.className = 'status-text status-text-default-success';
+        
+        elements.badgeFirebase.textContent = 'Firebase';
         elements.badgeFirebase.classList.remove('hidden');
+        elements.badgeFirebase.className = 'sync-status-badge firebase';
+        
         elements.bannerTitle.textContent = 'Hanya Firebase';
-        elements.bannerMessage.textContent = 'Spreadsheet belum dikonfigurasi.';
+        elements.bannerMessage.textContent = 'Spreadsheet belum terkonfigurasi. Data tetap tersimpan di Firebase.';
+        
+      } else if (state.isSheetsConnected) {
+        banner.classList.remove('connected', 'dual-connected');
+        banner.classList.add('error');
+        dot.className = 'status-dot error';
+        text.textContent = 'Hanya Spreadsheet';
+        text.className = 'status-text status-text-error';
+        
+        elements.badgeSheets.textContent = 'Spreadsheet';
+        elements.badgeSheets.classList.remove('hidden');
+        elements.badgeSheets.className = 'sync-status-badge sheets';
+        
+        elements.bannerTitle.textContent = 'Firebase belum terhubung';
+        elements.bannerMessage.textContent = 'Setup Firebase terlebih dahulu untuk dual sync.';
+        
       } else {
+        banner.classList.remove('connected', 'dual-connected');
         banner.classList.add('error');
         dot.className = 'status-dot connecting';
         text.textContent = 'Belum ada koneksi';
-        elements.bannerTitle.textContent = 'Koneksi Gagal';
-        elements.bannerMessage.textContent = 'Periksa konfigurasi Firebase Anda.';
+        text.className = 'status-text status-text-warning';
+        
+        elements.bannerTitle.textContent = 'Belum Terkonfigurasi';
+        elements.bannerMessage.textContent = 'Klik "Setup" untuk konfigurasi Firebase + Spreadsheet.';
       }
     }
 
+    // =============================================
+    // SETUP MODAL FUNCTIONS
+    // =============================================
     window.showSetupModal = function() { 
       elements.setupModal.classList.add('show'); 
-      addDebugLog('Setup modal opened', 'info');
+      console.log('[Setup] Modal opened');
     };
     
     window.closeSetupModal = function() { 
       elements.setupModal.classList.remove('show'); 
-      addDebugLog('Setup modal closed', 'info');
+      console.log('[Setup] Modal closed');
     };
 
     window.saveFirebaseConfig = async function() {
       try {
         const inputStr = elements.firebaseConfigInput.value.trim();
+        const errorEl = elements.configError;
+        errorEl.classList.add('hidden');
+        errorEl.textContent = '';
+        
         if (!inputStr) { 
           showError('Paste Firebase config!'); 
           return; 
         }
         
-        const config = JSON.parse(inputStr);
+        let config;
+        try {
+          config = JSON.parse(inputStr);
+        } catch (parseErr) {
+          showError('Format JSON tidak valid! Paste HANYA objek JSON.');
+          return;
+        }
+        
         if (!config.apiKey || !config.projectId) { 
-          showError('Config tidak lengkap (butuh apiKey & projectId)'); 
+          showError('Config tidak lengkap (apiKey & projectId wajib)'); 
           return; 
         }
         
         localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
-        addDebugLog('Firebase config saved', 'success');
+        console.log('[Firebase Config] Saved to localStorage');
         
         const currentWebhook = elements.webhookUrlInput.value.trim();
-        if (currentWebhook) {
+        if (currentWebhook && currentWebhook !== DEFAULT_WEBHOOK_URL) {
           state.webhookUrl = currentWebhook;
           localStorage.setItem(CONFIG_KEYS.WEBHOOK_URL, currentWebhook);
-          addDebugLog('Webhook URL updated', 'success');
+        } else {
+          state.webhookUrl = DEFAULT_WEBHOOK_URL;
+          localStorage.setItem(CONFIG_KEYS.WEBHOOK_URL, DEFAULT_WEBHOOK_URL);
         }
         
-        showToast('Config tersimpan! Menyambungkan...', 'info');
+        showToast('Config tersimpan! Menghubungkan...', 'info');
         closeSetupModal();
+        
         await initDualConnection();
-      } catch (error) { 
-        showError('Gagal menyimpan: ' + error.message);
-        addDebugLog('Save config error: ' + error.message, 'error');
+        
+      } catch (error) {
+        console.error('[Save Config Error]:', error);
+        showError('Gagal menyimpan config: ' + error.message);
       }
     };
 
@@ -1561,6 +1291,9 @@
       showToast(msg, 'error');
     }
 
+    // =============================================
+    // EVENT LISTENERS
+    // =============================================
     function setupEventListeners() {
       elements.form.addEventListener('submit', handleSubmit);
       elements.previewBtn.addEventListener('click', handlePreview);
@@ -1582,13 +1315,11 @@
               var batch = db.batch();
               snapshot.docs.forEach(function(doc) { batch.delete(doc.ref); });
               return batch.commit();
-            }).then(function() { 
+            }).then(function() {
               showToast('Semua data dihapus', 'success');
-              addDebugLog('All data deleted', 'warning');
-            }).catch(err => {
-              showToast('Error menghapus: ' + err.message, 'error');
-              addDebugLog('Delete all error: ' + err.message, 'error');
-            });
+            }).catch(function(err) { showToast('Error: ' + err.message, 'error'); });
+          } else {
+            showToast('Tidak ada koneksi ke database', 'error');
           }
         }
       });
@@ -1602,14 +1333,15 @@
         });
       });
 
-      document.getElementById('filterDateFrom').addEventListener('change', function() { 
-        state.filterDateFrom = this.value; 
-        applyDateFilter(); 
+      var filterFrom = document.getElementById('filterDateFrom');
+      var filterTo = document.getElementById('filterDateTo');
+      filterFrom.addEventListener('change', function() {
+        state.filterDateFrom = this.value;
+        applyDateFilter();
       });
-      
-      document.getElementById('filterDateTo').addEventListener('change', function() { 
-        state.filterDateTo = this.value; 
-        applyDateFilter(); 
+      filterTo.addEventListener('change', function() {
+        state.filterDateTo = this.value;
+        applyDateFilter();
       });
 
       document.addEventListener('keydown', function(e) {
@@ -1621,6 +1353,9 @@
       });
     }
 
+    // =============================================
+    // FORM ITEMS
+    // =============================================
     function renderFormItems() {
       var container = document.getElementById('itemsContainer');
       container.innerHTML = '';
@@ -1628,17 +1363,21 @@
         var row = document.createElement('div');
         row.className = 'grid grid-cols-12 gap-2 items-start';
         row.innerHTML = '<div class="col-span-4">' +
+          '<label class="field-label text-[10px]">Item<span class="required-star">*</span></label>' +
           '<input type="text" class="input-field text-sm" placeholder="Nama barang/jasa" value="' + escapeHtml(item.ket) + '" oninput="updateItem(' + index + ', \'ket\', this.value)">' +
           '</div>' +
           '<div class="col-span-2">' +
+          '<label class="field-label text-[10px]">Jumlah</label>' +
           '<input type="text" class="input-field text-sm text-center" placeholder="1" value="' + escapeHtml(item.qty) + '" oninput="updateItem(' + index + ', \'qty\', this.value)">' +
           '</div>' +
           '<div class="col-span-3">' +
+          '<label class="field-label text-[10px]">Nominal<span class="required-star">*</span></label>' +
           '<div class="currency-wrapper">' +
           '<span class="prefix" style="font-size:12px">Rp</span>' +
           '<input type="number" class="input-field text-sm mono" placeholder="0" value="' + (item.nominal || '') + '" oninput="updateItem(' + index + ', \'nominal\', this.value)">' +
           '</div></div>' +
           '<div class="col-span-2">' +
+          '<label class="field-label text-[10px]">Ket.</label>' +
           '<input type="text" class="input-field text-sm" placeholder="Keterangan" value="' + escapeHtml(item.keterangan || '') + '" oninput="updateItem(' + index + ', \'keterangan\', this.value)">' +
           '</div>' +
           '<div class="col-span-1 flex justify-end">' +
@@ -1651,30 +1390,19 @@
       calculateTotal();
     }
 
-    window.addFormItem = function() { 
-      state.items.push({ ket: '', qty: '', nominal: 0, keterangan: '' }); 
-      renderFormItems(); 
-    };
-    
-    window.removeFormItem = function(index) { 
-      if (state.items.length <= 1) return; 
-      state.items.splice(index, 1); 
-      renderFormItems(); 
-    };
-    
-    window.updateItem = function(index, key, value) { 
-      state.items[index][key] = value; 
-      if (key === 'nominal') calculateTotal(); 
-    };
+    window.addFormItem = function() { state.items.push({ ket: '', qty: '', nominal: 0, keterangan: '' }); renderFormItems(); };
+    window.removeFormItem = function(index) { if (state.items.length <= 1) return; state.items.splice(index, 1); renderFormItems(); };
+    window.updateItem = function(index, key, value) { state.items[index][key] = value; if (key === 'nominal') calculateTotal(); };
 
     function calculateTotal() {
-      var total = state.items.reduce(function(acc, curr) { 
-        return acc + (parseInt(curr.nominal) || 0); 
-      }, 0);
+      var total = state.items.reduce(function(acc, curr) { return acc + (parseInt(curr.nominal) || 0); }, 0);
       elements.grandTotalDisplay.value = formatNumber(total);
       return total;
     }
 
+    // =============================================
+    // FORM VALIDATION
+    // =============================================
     function validateForm() {
       var errors = [];
       var fd = new FormData(elements.form);
@@ -1686,9 +1414,8 @@
       if (!fd.get('status')) errors.push('Status Pembayaran wajib dipilih');
       if (!fd.get('dibayarkan_kepada')) errors.push('Dibayarkan Kepada wajib diisi');
 
-      if (state.items.length === 0 || state.items.every(function(i) { return !i.ket.trim(); })) {
-        errors.push('Minimal 1 item barang/jasa harus diisi');
-      } else {
+      if (state.items.length === 0 || state.items.every(function(i) { return !i.ket.trim(); })) errors.push('Minimal 1 item barang/jasa harus diisi');
+      else {
         state.items.forEach(function(item, idx) {
           if (!item.ket.trim()) errors.push('Item #' + (idx + 1) + ': Nama kosong');
           if (!item.nominal || parseInt(item.nominal) <= 0) errors.push('Item #' + (idx + 1) + ': Nominal harus > 0');
@@ -1696,16 +1423,22 @@
       }
 
       if (errors.length > 0) {
-        elements.validationErrorList.innerHTML = errors.map(function(e) { 
-          return '<li>' + escapeHtml(e) + '</li>'; 
-        }).join('');
+        elements.validationErrorList.innerHTML = errors.map(function(e) { return '<li>' + escapeHtml(e) + '</li>'; }).join('');
         elements.validationError.classList.add('show');
+        document.querySelectorAll('.input-field[required]').forEach(function(field) {
+          if (!field.value) field.classList.add('required-empty');
+          setTimeout(function() { field.classList.remove('required-empty'); }, 1500);
+        });
         return false;
       }
+
       elements.validationError.classList.remove('show');
       return true;
     }
 
+    // =============================================
+    // GET FORM DATA
+    // =============================================
     function getFormData() {
       var fd = new FormData(elements.form);
       return {
@@ -1715,14 +1448,12 @@
         jenis_pengajuan: fd.get('jenis_pengajuan') || '',
         no_invoice: fd.get('no_invoice') || '',
         status: fd.get('status') || '',
-        items: state.items.map(function(i) { 
-          return { ket: i.ket, qty: i.qty, nominal: parseInt(i.nominal) || 0, keterangan: i.keterangan }; 
-        }),
+        items: state.items.map(function(i) { return { ket: i.ket, qty: i.qty, nominal: parseInt(i.nominal) || 0, keterangan: i.keterangan }; }),
         total_nominal: calculateTotal(),
         tanggal_pembayaran: fd.get('tanggal_pembayaran') || '',
         dibayarkan_kepada: fd.get('dibayarkan_kepada') || '',
         catatan_tambahan: fd.get('catatan_tambahan') || '',
-        source: 'FinanceSync Pro v2.0',
+        source: 'FinanceSync Pro',
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         dibuat_oleh: 'Nur Wahyudi',
         disetujui_oleh: 'Harijon',
@@ -1733,8 +1464,12 @@
       };
     }
 
+    // =============================================
+    // PREVIEW DOCUMENT
+    // =============================================
     function handlePreview() {
       var data = getFormData();
+      if (data.items.length === 0 || data.items.every(function(i) { return !i.ket; })) { showToast('Lengkapi minimal 1 item', 'error'); return; }
       state.lastFormData = data;
       populateDocuments(data);
       elements.documentModal.classList.add('show');
@@ -1749,14 +1484,6 @@
       document.getElementById('p1_total').textContent = ft;
       document.getElementById('p1_dibuat').textContent = data.dibuat_oleh;
       document.getElementById('p1_disetujui').textContent = data.disetujui_oleh;
-      
-      var fileSection1 = document.getElementById('p1_file_section');
-      if(data.file_url) {
-          fileSection1.style.display = 'block';
-          document.getElementById('p1_file_link').innerHTML = '<a href="' + data.file_url + '" target="_blank">' + (data.file_name || 'Lihat File') + '</a>';
-      } else {
-          fileSection1.style.display = 'none';
-      }
 
       document.getElementById('p2_tanggal').textContent = formatDate(data.tanggal);
       document.getElementById('p2_kode').textContent = data.kode || '-';
@@ -1767,14 +1494,6 @@
       document.getElementById('p2_name_dirkeuangan').textContent = data.dir_keuangan;
       document.getElementById('p2_name_direktur').textContent = data.direktur_utama;
       document.getElementById('p2_name_accounting').textContent = data.accounting;
-      
-      var fileSection2 = document.getElementById('p2_file_section');
-      if(data.file_url) {
-          fileSection2.style.display = 'block';
-          document.getElementById('p2_file_link').innerHTML = '<a href="' + data.file_url + '" target="_blank">' + (data.file_name || 'Lihat File') + '</a>';
-      } else {
-          fileSection2.style.display = 'none';
-      }
 
       document.getElementById('p1_table_body').innerHTML = data.items.map(function(item, idx) {
         return '<tr><td class="col-no">' + (idx + 1) + '</td><td class="col-item">' + escapeHtml(item.ket) + '</td><td class="col-vol">' + escapeHtml(item.qty) + '</td><td class="col-nominal">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td><td class="col-ket">' + escapeHtml(item.keterangan || '-') + '</td></tr>';
@@ -1793,6 +1512,9 @@
       }
     }
 
+    // =============================================
+    // DOWNLOAD PDF
+    // =============================================
     async function downloadAsPDF() {
       var element = document.getElementById('pdf-wrapper');
       var opt = {
@@ -1802,18 +1524,22 @@
         html2canvas: { scale: 2, useCORS: true, letterRendering: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
+
       showToast('Membuat PDF...', 'info');
       try {
         await html2pdf().set(opt).from(element).save();
         showToast('PDF berhasil didownload!', 'success');
-        addDebugLog('PDF downloaded successfully', 'success');
       } catch (error) {
+        console.error('[PDF] Error:', error);
         showToast('Gagal membuat PDF: ' + error.message, 'error');
-        addDebugLog('PDF generation failed: ' + error.message, 'error');
       }
     }
+
     window.downloadAsPDF = downloadAsPDF;
 
+    // =============================================
+    // HELPER: Roman Numeral
+    // =============================================
     function toRoman(num) {
       var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
       var syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
@@ -1824,21 +1550,24 @@
       return result;
     }
 
+    // =============================================
+    // HELPER: Auto-generate No Invoice
+    // =============================================
     async function autoGenerateInvoice() {
-      if (!db) return null;
+      if (!db) return;
       try {
         var now = new Date();
         var month = now.getMonth(); 
         var year = now.getFullYear();
         var startDate = year + '-' + String(month + 1).padStart(2, '0') + '-01';
         var endDate = year + '-' + String(month + 1).padStart(2, '0') + '-31';
-        
+
         var snapshot = await db.collection('submissions')
           .where('tanggal', '>=', startDate)
           .where('tanggal', '<=', endDate)
           .orderBy('tanggal', 'desc')
           .get();
-          
+
         var maxNum = 0;
         snapshot.forEach(function(doc) {
           var noInv = doc.data().no_invoice || '';
@@ -1850,29 +1579,33 @@
             if (n > maxNum) maxNum = n;
           }
         });
+
         var nextNum = maxNum + 1;
         var romanMonth = toRoman(month + 1);
         return 'BKK-NMSA/' + romanMonth + '/' + year + '/' + String(nextNum).padStart(4, '0');
-      } catch (error) { 
-        console.warn('[Auto Generate Warning]:', error.message);
-        return 'BKK-NMSA/' + toRoman(new Date().getMonth() + 1) + '/' + new Date().getFullYear() + '/0001'; 
+
+      } catch (error) {
+        console.warn('[Auto Invoice Error]:', error.message);
+        return 'BKK-NMSA/' + toRoman(new Date().getMonth() + 1) + '/' + new Date().getFullYear() + '/0001';
       }
     }
 
+    // =============================================
+    // HELPER: Check Duplicate Transaction
+    // =============================================
     async function checkDuplicate(data) {
       if (!db) return false;
       try {
         var snapshot = await db.collection('submissions')
           .where('tanggal', '==', data.tanggal)
-          .orderBy('tanggal', 'desc')
+          .where('total_nominal', '==', data.total_nominal)
+          .where('dibayarkan_kepada', '==', data.dibayarkan_kepada)
           .get();
-          
+
         var duplicate = false;
         snapshot.forEach(function(doc) {
           var existing = doc.data();
-          if (existing.total_nominal === data.total_nominal &&
-              existing.dibayarkan_kepada === data.dibayarkan_kepada &&
-              existing.lokasi === data.lokasi &&
+          if (existing.lokasi === data.lokasi &&
               existing.kode === data.kode &&
               existing.jenis_pengajuan === data.jenis_pengajuan &&
               existing.status === data.status &&
@@ -1881,12 +1614,15 @@
           }
         });
         return duplicate;
-      } catch (error) { 
-        console.warn('[Check Duplicate Warning]:', error.message);
-        return false; 
+      } catch (error) {
+        console.warn('[Duplicate Check Error]:', error.message);
+        return false;
       }
     }
 
+    // =============================================
+    // HELPER: Cancel Edit Mode
+    // =============================================
     window.cancelEdit = function() {
       state.editingDocId = null;
       elements.form.reset();
@@ -1900,95 +1636,33 @@
       showToast('Mode edit dibatalkan', 'info');
     };
 
-    // Timeout wrapper for promises
+    // =============================================
+    // HELPER: Promise with timeout
+    // =============================================
     function withTimeout(promise, ms, label) {
       return Promise.race([
         promise,
         new Promise(function(_, reject) {
-          setTimeout(function() { 
-            reject(new Error(label + ' timeout (' + ms / 1000 + 's)')); 
-          }, ms);
+          setTimeout(function() { reject(new Error(label + ' timeout (' + ms / 1000 + 's)')); }, ms);
         })
       ]);
     }
 
     // =============================================
-    // ✅ ENHANCED: Retry mechanism untuk update sheets_synced
-    // =============================================
-    async function updateSheetsSyncStatusWithRetry(docRef, maxRetries = 5) {
-      if (!docRef) {
-        addDebugLog('No docRef provided for sheets sync update', 'error');
-        return false;
-      }
-
-      let lastError = null;
-      
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          addDebugLog(`Sheets sync update attempt ${attempt}/${maxRetries} for ${docRef.id}`, 'info');
-          
-          const updateData = {
-            sheets_synced: true,
-            sheets_synced_at: new Date().toISOString(),
-            sheets_error: null,
-            last_sync_attempt: new Date().toISOString()
-          };
-          
-          await withTimeout(
-            docRef.update(updateData),
-            20000, // 20 detik timeout per attempt
-            `Sheets Status Update (attempt ${attempt})`
-          );
-          
-          addDebugLog(`✅ Sheets sync SUCCESS on attempt ${attempt} for ${docRef.id}`, 'success');
-          return true;
-          
-        } catch (error) {
-          lastError = error;
-          addDebugLog(`❌ Sheets sync attempt ${attempt} failed: ${error.message}`, 'error');
-          
-          // Jika ini bukan attempt terakhir, tunggu dengan exponential backoff
-          if (attempt < maxRetries) {
-            const waitTime = Math.min(1000 * Math.pow(2, attempt), 8000); // Max 8 detik
-            addDebugLog(`⏳ Waiting ${waitTime}ms before next retry...`, 'info');
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-          }
-        }
-      }
-      
-      // Semua retry gagal - update dengan status error
-      addDebugLog(`💥 ALL ${maxRetries} ATTEMPTS FAILED for ${docRef.id}: ${lastError?.message}`, 'error');
-      
-      try {
-        await docRef.update({
-          sheets_synced: false,
-          sheets_error: lastError?.message || 'Unknown error after ' + maxRetries + ' attempts',
-          sheets_synced_at: new Date().toISOString(),
-          sheets_failed_attempts: maxRetries
-        });
-      } catch (finalError) {
-        addDebugLog(`Fatal: Could not mark as failed: ${finalError.message}`, 'error');
-      }
-      
-      return false;
-    }
-
-    // =============================================
-    // MAIN SUBMIT HANDLER (ENHANCED)
+    // SUBMIT HANDLER - DUAL WRITE
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
-      addDebugLog('Form submission started', 'info');
-      
-      if (!validateForm()) { 
-        showToast('Mohon lengkapi semua field yang ditandai *', 'error'); 
-        return; 
+
+      if (!validateForm()) {
+        showToast('Mohon lengkapi semua field yang ditandai *', 'error');
+        return;
       }
-      
-      if (!db) { 
-        showToast('Firebase belum terhubung. Setup dulu.', 'error'); 
-        showSetupModal(); 
-        return; 
+
+      if (!db) {
+        showToast('Firebase belum terhubung. Setup dulu.', 'error');
+        showSetupModal();
+        return;
       }
 
       var data = getFormData();
@@ -1997,15 +1671,15 @@
       if (!isEditMode) {
         elements.submitBtn.disabled = true;
         elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengecek duplikat...</span>';
-        
+
         var isDuplicate = await checkDuplicate(data);
         if (isDuplicate) {
           showToast('Transaksi duplikat! Data dengan detail sama sudah pernah diinput.', 'error');
           elements.submitBtn.disabled = false;
-          resetSubmitButton(isEditMode);
+          elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
           return;
         }
-        
+
         if (!data.no_invoice.trim()) {
           elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Generate No Invoice...</span>';
           data.no_invoice = await autoGenerateInvoice();
@@ -2014,6 +1688,7 @@
       }
 
       var docRef = null;
+
       elements.submitBtn.disabled = true;
       elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan ke Firebase...</span>';
 
@@ -2023,22 +1698,6 @@
       var sheetsError = '';
 
       try {
-        // 1. UPLOAD FILE JIKA ADA
-        if (state.selectedFile) {
-            elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Upload File ke Drive...</span>';
-            try {
-                data.file_url = await uploadToDrive(state.selectedFile);
-                data.file_name = state.selectedFile.name;
-                showToast('File berhasil diupload!', 'success');
-            } catch (uploadErr) {
-                showToast('Gagal upload file: ' + uploadErr.message, 'error');
-                elements.submitBtn.disabled = false;
-                resetSubmitButton(isEditMode);
-                return;
-            }
-        }
-
-        // 2. SIMPAN KE FIREBASE
         var firebaseData = {
           tanggal: data.tanggal,
           lokasi: data.lokasi,
@@ -2058,10 +1717,8 @@
           dir_keuangan: data.dir_keuangan,
           direktur_utama: data.direktur_utama,
           accounting: data.accounting,
-          file_url: data.file_url || '',
-          file_name: data.file_name || '',
           synced: true,
-          sheets_synced: false, // Awalnya false, akan diupdate setelah sync
+          sheets_synced: false,
           sheets_synced_at: null,
           sheets_error: null
         };
@@ -2069,158 +1726,98 @@
         var firebasePromise;
         if (isEditMode) {
           firebasePromise = db.collection('submissions').doc(state.editingDocId).update(firebaseData);
-          addDebugLog(`Updating existing doc: ${state.editingDocId}`, 'info');
         } else {
           firebaseData.created_at = new Date().toISOString();
           firebaseData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
           firebasePromise = db.collection('submissions').add(firebaseData);
-          addDebugLog('Creating new document...', 'info');
         }
 
         docRef = await withTimeout(firebasePromise, 15000, 'Firebase write');
+
+        console.log('[Firebase] ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', isEditMode ? state.editingDocId : docRef.id);
         firebaseSuccess = true;
         state.lastFormData = Object.assign({}, data, { id: isEditMode ? state.editingDocId : docRef.id });
-
-        addDebugLog(`✅ Firebase Save Success! Doc ID: ${docRef ? docRef.id : state.editingDocId}`, 'success');
 
       } catch (error) {
         console.error('[Firebase Save Error]:', error);
         firebaseError = error.message || 'Unknown error';
-        addDebugLog(`Firebase save error: ${firebaseError}`, 'error');
+
+        if (firebaseError.indexOf('PERMISSION_DENIED') > -1 || firebaseError.indexOf('Missing or insufficient permissions') > -1) {
+          firebaseError = 'Permission denied! Ubah Security Rules Firebase Anda.';
+        } else if (firebaseError.indexOf('timeout') > -1) {
+          firebaseError = 'Firebase tidak merespon. Cek koneksi internet atau coba lagi.';
+        }
       }
 
-      // 3. KIRIM KE SPREADSHEET (ENHANCED)
-      if (state.webhookUrl && firebaseSuccess) {
+      if (state.webhookUrl) {
         elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengirim ke Spreadsheet...</span>';
-        addDebugLog('Sending to spreadsheet...', 'info');
-        
         try {
           var payload = Object.assign({}, data, {
-            _source: 'FinanceSync Pro v2.0',
+            _source: 'FinanceSync Pro',
             _timestamp: new Date().toISOString(),
-            _firebase_id: docRef ? docRef.id : 'pending',
-            _action: isEditMode ? 'UPDATE' : 'CREATE'
+            _firebase_id: docRef ? docRef.id : 'pending'
           });
-          
-          // Use AbortController for timeout
-          var controller = new AbortController();
-          var timeoutId = setTimeout(() => controller.abort(), 25000); // 25 detik
-          
-          var sheetsResponse = await fetch(state.webhookUrl, {
+
+          var sheetsPromise = fetch(state.webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
             mode: 'no-cors',
-            signal: controller.signal,
             redirect: 'follow'
-          }).catch(err => {
-            if (err.name === 'AbortError') {
-              throw new Error('Timeout: Spreadsheet tidak merespon dalam 25 detik');
-            }
-            throw err;
           });
-          
-          clearTimeout(timeoutId);
-          
+
+          await withTimeout(sheetsPromise, 20000, 'Spreadsheet fetch');
+
           sheetsSuccess = true;
-          addDebugLog('📊 Webhook sent successfully (no-cors mode)', 'success');
-          
-          // Wait 2 seconds for Apps Script to process
-          addDebugLog('Waiting 2s for Apps Script processing...', 'info');
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          // Update status with enhanced retry
+          console.log('[Spreadsheet] Terkirim!');
+
           if (docRef) {
-            const updateResult = await updateSheetsSyncStatusWithRetry(docRef, 5);
-            if (updateResult) {
-              addDebugLog('✅ Sheets sync status updated in Firebase', 'success');
-            } else {
-              addDebugLog('⚠️ Sheets sync status update failed after retries', 'warning');
+            try {
+              await withTimeout(
+                docRef.update({
+                  sheets_synced: true,
+                  sheets_synced_at: new Date().toISOString()
+                }),
+                10000,
+                'Firebase update'
+              );
+            } catch (updateErr) {
+              console.warn('[Firebase Update Warning]:', updateErr.message);
             }
           }
-          
+
         } catch (error) {
-          addDebugLog(`Spreadsheet error: ${error.message}`, 'error');
+          console.warn('[Spreadsheet Error]:', error);
           sheetsError = error.message || 'Unknown error';
-          
-          // Retry once on network error
-          if (error.message.includes('Timeout') || error.message.includes('network') || error.message.includes('Failed to fetch')) {
-            addDebugLog('Retrying spreadsheet sync due to network issue...', 'warning');
-            
-            try {
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              
-              var retryPayload = Object.assign({}, data, {
-                _source: 'FinanceSync Pro (Retry)',
-                _timestamp: new Date().toISOString(),
-                _firebase_id: docRef ? docRef.id : 'pending'
-              });
-              
-              await fetch(state.webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(retryPayload),
-                mode: 'no-cors',
-                redirect: 'follow'
-              });
-              
-              sheetsSuccess = true;
-              addDebugLog('📊 Retry webhook sent successfully', 'success');
-              
-              if (docRef) {
-                await updateSheetsSyncStatusWithRetry(docRef, 3);
-              }
-              
-            } catch (retryErr) {
-              addDebugLog(`Retry also failed: ${retryErr.message}`, 'error');
-              sheetsError = retryErr.message;
-            }
-          }
-          
-          // Mark error in Firebase if still failed
-          if (docRef && !sheetsSuccess) {
-            try {
-              await docRef.update({
-                sheets_synced: false,
-                sheets_error: sheetsError,
-                sheets_synced_at: new Date().toISOString()
-              });
-            } catch (e) {
-              addDebugLog(`Error marking sheets failure: ${e.message}`, 'error');
-            }
-          }
         }
       }
 
       elements.submitBtn.disabled = false;
 
-      // 4. SHOW RESULT
       if (firebaseSuccess && sheetsSuccess) {
         showToast((isEditMode ? 'Berhasil diupdate' : 'Dual Sync Berhasil') + '! (Firebase + Spreadsheet)', 'firebase');
-        addDebugLog('✅ DUAL SYNC SUCCESS', 'success');
         updateConnectionUI();
         populateDocuments(data);
         elements.documentModal.classList.add('show');
+
       } else if (firebaseSuccess) {
         showToast('Firebase OK! ' + (isEditMode ? 'Updated' : 'Saved') + '. Spreadsheet: ' + (sheetsError || 'gagal'), 'info');
-        addDebugLog(`Partial success: Firebase OK, Sheets: ${sheetsError || 'failed'}`, 'warning');
         updateConnectionUI();
         populateDocuments(data);
         elements.documentModal.classList.add('show');
+
       } else if (sheetsSuccess) {
         showToast('Spreadsheet OK! Firebase gagal: ' + firebaseError, 'error');
-        addDebugLog(`Partial success: Sheets OK, Firebase: ${firebaseError}`, 'warning');
         updateConnectionUI();
+
       } else {
         var fullError = '';
         if (firebaseError) fullError += 'Firebase: ' + firebaseError;
         if (sheetsError) fullError += (fullError ? ' | ' : '') + 'Spreadsheet: ' + sheetsError;
         showToast('Gagal menyimpan: ' + fullError, 'error');
-        addDebugLog(`Complete failure: ${fullError}`, 'error');
         updateConnectionUI();
       }
 
-      // 5. RESET FORM JIKA SUKSES
       if (firebaseSuccess || sheetsSuccess) {
         state.editingDocId = null;
         elements.form.reset();
@@ -2230,236 +1827,55 @@
         if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
         var editBanner = document.getElementById('editModeBanner');
         if (editBanner) editBanner.remove();
-        resetSubmitButton(false);
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
         autoGenerateInvoice().then(function(inv) {
           document.getElementById('no_invoice').value = inv;
         });
-        removeFile();
       } else {
-        resetSubmitButton(isEditMode);
-      }
-    }
-
-    function resetSubmitButton(isEdit) {
-      if (isEdit) {
-        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
-      } else {
-        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>Simpan ke Firebase + Spreadsheet</span>';
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg><span>' + (isEditMode ? 'Update Transaksi' : 'Simpan ke Firebase + Spreadsheet') + '</span>';
       }
     }
 
     // =============================================
-    // ✅ SMART SYNC STATUS RECONCILIATION
+    // DATE FILTER FUNCTIONS
     // =============================================
-    window.refreshAllSyncStatus = async function(showToastMsg = true) {
-      if (!db) {
-        if (showToastMsg) showToast('Firebase belum terhubung', 'error');
-        return;
-      }
-      
-      if (showToastMsg) showToast('🔄 Memeriksa & memperbaiki status sync...', 'info');
-      addDebugLog('Starting sync status reconciliation...', 'info');
-      
-      try {
-        // Ambil semua data dari bulan ini
-        const now = new Date();
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        
-        const allDataSnapshot = await db.collection('submissions')
-          .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(monthStart))
-          .orderBy('timestamp', 'desc')
-          .limit(200)
-          .get();
-        
-        let updatedCount = 0;
-        let skippedCount = 0;
-        let errorCount = 0;
-        const docsToProcess = [];
-        
-        // Filter dokumen yang perlu diperiksa
-        allDataSnapshot.docs.forEach(doc => {
-          const data = doc.data();
-          const needsUpdate = 
-            data.sheets_synced === false ||
-            data.sheets_synced === null ||
-            !data.hasOwnProperty('sheets_synced') ||
-            (data.sheets_error && data.sheets_error.includes('timeout'));
-          
-          if (needsUpdate) {
-            docsToProcess.push(doc);
-          }
-        });
-        
-        addDebugLog(`Found ${docsToProcess.length} documents needing status check`, 'info');
-        
-        if (docsToProcess.length === 0) {
-          if (showToastMsg) showToast('✅ Semua data sudah sync dengan benar!', 'success');
-          addDebugLog('All documents already synced', 'success');
-          applyDateFilter();
-          return;
-        }
-        
-        // Proses setiap dokumen
-        for (const doc of docsToProcess) {
-          const data = doc.data();
-          const createdAt = data.created_at ? new Date(data.created_at) : (data.timestamp ? data.timestamp.toDate() : new Date());
-          const nowTime = new Date();
-          const hoursDiff = (nowTime - createdAt) / (1000 * 60 * 60);
-          
-          try {
-            let shouldMarkAsSynced = false;
-            let reason = '';
-            
-            // SMART LOGIC:
-            if (hoursDiff > 1 && !data.sheets_error) {
-              shouldMarkAsSynced = true;
-              reason = 'Auto-reconcile (old data, no error)';
-            } else if (hoursDiff > 24) {
-              shouldMarkAsSynced = true;
-              reason = 'Auto-reconcile (very old data)';
-            } else if (data.sheets_error && hoursDiff > 2) {
-              shouldMarkAsSynced = true;
-              reason = 'Error stale, auto-clear';
-            }
-            
-            if (shouldMarkAsSynced) {
-              await doc.ref.update({
-                sheets_synced: true,
-                sheets_synced_at: new Date().toISOString(),
-                sheets_error: null,
-                sync_reconciliation_reason: reason,
-                last_reconciled_at: new Date().toISOString()
-              });
-              
-              updatedCount++;
-              addDebugLog(`✅ Doc ${doc.id}: ${reason}`, 'success');
-            } else {
-              skippedCount++;
-              addDebugLog(`⏭️ Doc ${doc.id}: Skipped (${hoursDiff.toFixed(1)}h old)`, 'info');
-            }
-            
-          } catch (e) {
-            errorCount++;
-            addDebugLog(`❌ Failed to update doc ${doc.id}: ${e.message}`, 'error');
-          }
-          
-          // Small delay
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
-        // Show result
-        let message = '';
-        if (updatedCount > 0) {
-          message = `✅ ${updatedCount} data berhasil di-reconcile`;
-        }
-        if (skippedCount > 0) {
-          message += (message ? ' | ' : '') + `⏭️ ${skippedCount} dilewati`;
-        }
-        if (errorCount > 0) {
-          message += (message ? ' | ' : '') + `❌ ${errorCount} gagal`;
-        }
-        if (!message) {
-          message = 'Tidak ada perubahan diperlukan';
-        }
-        
-        if (showToastMsg) showToast(message, updatedCount > 0 ? 'success' : 'info');
-        addDebugLog(`Reconciliation complete: ${message}`, updatedCount > 0 ? 'success' : 'info');
-        
-        // Refresh tampilan
-        applyDateFilter();
-        
-      } catch (error) {
-        addDebugLog(`Refresh sync error: ${error.message}`, 'error');
-        if (showToastMsg) showToast('Error: ' + error.message, 'error');
-      }
-    };
-
-    // =============================================
-    // ✅ FORCE RECONCILE ALL (Emergency Fix)
-    // =============================================
-    window.forceReconcileAll = async function() {
-      if (!confirm('⚠️ Tindakan ini akan menandai SEMUA data sebagai "Sudah Sync ke Spreadsheet".\n\nGunakan hanya jika yakin data di spreadsheet sudah lengkap.\n\nLanjutkan?')) {
-        return;
-      }
-      
-      if (!db) {
-        showToast('Firebase belum terhubung', 'error');
-        return;
-      }
-      
-      showToast('⚡ Force reconciling semua data...', 'warning');
-      addDebugLog('Starting FORCE RECONCILE ALL...', 'warning');
-      
-      try {
-        const snapshot = await db.collection('submissions').limit(500).get();
-        let count = 0;
-        let batchCount = 0;
-        let batch = db.batch();
-        
-        snapshot.docs.forEach((doc, index) => {
-          batch.update(doc.ref, {
-            sheets_synced: true,
-            sheets_synced_at: new Date().toISOString(),
-            sheets_error: null,
-            force_reconciled_at: new Date().toISOString(),
-            force_reconciled_by: 'manual_user_action'
-          });
-          count++;
-          batchCount++;
-          
-          // Firestore batch limit 500 operations, but we do batches of 100 for safety
-          if (batchCount >= 100) {
-            batch.commit();
-            batch = db.batch();
-            batchCount = 0;
-          }
-        });
-        
-        // Commit remaining
-        if (batchCount > 0) {
-          await batch.commit();
-        }
-        
-        showToast(`✅ ${count} data berhasil di-force reconcile!`, 'success');
-        addDebugLog(`Force reconcile completed: ${count} documents`, 'success');
-        applyDateFilter();
-        
-      } catch (error) {
-        showToast('Error: ' + error.message, 'error');
-        addDebugLog(`Force reconcile error: ${error.message}`, 'error');
-      }
-    };
-
     function applyDateFilter() {
       if (!db) return;
+
       var from = state.filterDateFrom;
       var to = state.filterDateTo;
-      
-      if (state.unsubscribeListener) state.unsubscribeListener();
-      
-      if (!from && !to) { 
-        startRealtimeListener(); 
-        return; 
+
+      if (!from && !to) {
+        startRealtimeListener();
+        return;
       }
-      
-      addDebugLog(`Applying date filter: ${from} to ${to}`, 'info');
-      
+
       var query = db.collection('submissions').orderBy('tanggal', 'desc');
-      if (from) query = query.where('tanggal', '>=', from);
-      if (to) query = query.where('tanggal', '<=', to);
-      
+
+      if (from) {
+        query = query.where('tanggal', '>=', from);
+      }
+      if (to) {
+        query = query.where('tanggal', '<=', to);
+      }
+
+      if (state.unsubscribeListener) state.unsubscribeListener();
+
+      var filterSection = document.getElementById('dateFilterSection');
+      if (filterSection) filterSection.style.borderColor = 'var(--firebase)';
+
       state.unsubscribeListener = query.limit(100).onSnapshot(
         function(snapshot) {
-          state.history = snapshot.docs.map(function(doc) { 
-            return Object.assign({ id: doc.id }, doc.data(), { synced: true }); 
+          state.history = snapshot.docs.map(function(doc) {
+            return Object.assign({ id: doc.id }, doc.data(), { synced: true });
           });
-          addDebugLog(`Loaded ${state.history.length} records with date filter`, 'info');
           renderHistory();
           updateStats();
+          showToast('Filter aktif: ' + (from || '...') + ' s/d ' + (to || '...') + ' (' + state.history.length + ' data)', 'info');
         },
-        function(error) { 
-          addDebugLog(`Filter listener error: ${error.message}`, 'error');
-          showToast('Error filter: ' + error.message, 'error');
+        function(error) {
+          console.error('[Filter Listener] Error:', error);
+          showToast('Filter error: ' + error.message, 'error');
         }
       );
     }
@@ -2469,36 +1885,50 @@
       state.filterDateTo = '';
       document.getElementById('filterDateFrom').value = '';
       document.getElementById('filterDateTo').value = '';
+
+      var filterSection = document.getElementById('dateFilterSection');
+      if (filterSection) filterSection.style.borderColor = 'var(--border)';
+
       startRealtimeListener();
-      addDebugLog('Date filter cleared', 'info');
+      showToast('Filter tanggal direset', 'info');
     };
 
+    // =============================================
+    // REALTIME LISTENER
+    // =============================================
     function startRealtimeListener() {
       if (state.unsubscribeListener) state.unsubscribeListener();
-      
-      addDebugLog('Starting realtime listener...', 'info');
-      
+
+      var filterSection = document.getElementById('dateFilterSection');
+      if (filterSection) filterSection.style.borderColor = 'var(--border)';
+
       state.unsubscribeListener = db
         .collection('submissions')
         .orderBy('timestamp', 'desc')
         .limit(50)
         .onSnapshot(
           function(snapshot) {
-            state.history = snapshot.docs.map(function(doc) { 
-              return Object.assign({ id: doc.id }, doc.data(), { synced: true }); 
-            });
-            addDebugLog(`Realtime update: ${state.history.length} records`, 'info');
+            state.history = snapshot.docs.map(function(doc) { return Object.assign({ id: doc.id }, doc.data(), { synced: true }); });
             renderHistory();
             updateStats();
           },
-          function(error) { 
-            addDebugLog(`Listener error: ${error.message}`, 'error');
-            showToast('Error listener: ' + error.message, 'error');
+          function(error) {
+            console.error('[Listener] Error:', error);
+            if (error.message && error.message.indexOf('FAILED_PRECONDITION') > -1 && error.message.indexOf('index') > -1) {
+              var linkMatch = error.message.match(/https:\/\/console\.firebase\.google\.com[^\s"']+/);
+              if (linkMatch) {
+                showToast('Perlu buat index di Firebase. Clik error di Console (F12) untuk link-nya.', 'error');
+                console.log('[INDEX NEEDED] Buka link ini untuk buat index:', linkMatch[0]);
+              }
+            }
+            showToast('Realtime listener error', 'error');
           }
         );
     }
 
-    // Render History dengan Sync Indicator
+    // =============================================
+    // RENDER HISTORY
+    // =============================================
     function renderHistory() {
       var filtered = [];
       if (state.currentTab === 'Lunas') {
@@ -2510,55 +1940,34 @@
       }
 
       if (filtered.length === 0) {
-        elements.historyList.innerHTML = '<div class="text-center py-10 color-muted"><p class="text-sm">Tidak ada data ' + state.currentTab + '</p></div>';
+        elements.historyList.innerHTML = '<div class="text-center py-10 color-muted">' +
+          '<svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' +
+          '<p class="text-sm">Tidak ada data ' + state.currentTab + '</p>' +
+          '<p class="text-xs mt-2 color-firebase">Data sync ke Firebase + Spreadsheet</p></div>';
         return;
       }
 
-      elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item, index) {
+      elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item) {
         var dateStr = formatDate(item.tanggal);
         var itemsSummary = (item.items || []).map(function(i) { return i.ket; }).filter(function(k) { return k; }).join(', ');
         var displayItems = itemsSummary.length > 50 ? itemsSummary.substring(0, 50) + '...' : itemsSummary || '-';
+        
         var safeId = item.id || '';
         var safeKode = (item.kode || '').replace(/"/g, '\\"');
         var safeLabel = (item.no_invoice || item.kode || '-').replace(/'/g, "\\'");
+        
         var isLunas = item.status === 'Lunas';
         var statusBadge = isLunas 
           ? '<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>'
           : '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Belum Lunas</span>';
-        
-        var fileIcon = item.file_url ? '<span class="text-blue-400 text-xs ml-1">📎</span>' : '';
 
-        // Sync Status Indicator
-        var syncIndicator = '';
-        var syncClass = 'synced-firebase';
-        
-        if (item.sheets_synced === true) {
-          syncIndicator = '<span class="sync-indicator both-synced" title="Firebase + Spreadsheet ✓">✓✓</span>';
-          syncClass = 'synced-both';
-        } else if (item.sheets_error) {
-          syncIndicator = '<span class="sync-indicator pending-sync" title="Error: ' + escapeHtml(item.sheets_error) + '">⚠️</span>';
-          syncClass = 'sync-error';
-        } else if (item.sheets_synced === false) {
-          syncIndicator = '<span class="sync-indicator firebase-only" title="Hanya di Firebase">🔥</span>';
-          syncClass = 'synced-firebase';
-        } else {
-          syncIndicator = '<span class="sync-indicator firebase-only" title="Status unknown">🔥</span>';
-          syncClass = 'synced-firebase';
-        }
-
-        var newBadge = index < 3 ? '<span class="bg-firebase/20 text-firebase text-[10px] px-1.5 py-0.5 rounded ml-1 font-bold">BARU</span>' : '';
-
-        return '<div class="history-item cursor-pointer ' + syncClass + '" onclick="loadHistoryItem(\'' + safeId + '\')">' +
+        return '<div class="history-item cursor-pointer" onclick="loadHistoryItem(\'' + safeId + '\')">' +
           '<div class="flex flex-col gap-1">' +
             '<div class="flex items-center justify-between mb-1">' +
               '<span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">' + dateStr + '</span>' +
-              '<div class="flex items-center gap-1">' +
-                statusBadge +
-                syncIndicator +
-                newBadge +
-              '</div>' +
+              statusBadge +
             '</div>' +
-            '<div class="text-sm font-bold text-white mb-0.5">' + escapeHtml(item.no_invoice || item.kode || '-') + fileIcon + '</div>' +
+            '<div class="text-sm font-bold text-white mb-0.5">' + escapeHtml(item.no_invoice || item.kode || '-') + '</div>' +
             '<div class="text-xs text-gray-400 truncate mb-1" style="max-width:200px;">' + escapeHtml(displayItems) + '</div>' +
             '<div class="flex items-center justify-between mt-1">' +
               '<span class="text-sm text-blue-400 font-medium">Rp ' + formatNumber(item.total_nominal || 0) + '</span>' +
@@ -2570,11 +1979,15 @@
       }).join('');
     }
 
+    // =============================================
+    // ACTION MENU
+    // =============================================
     var activeActionMenu = null;
-    
+
     window.toggleActionMenu = function(e, id, kode, label, amount) {
       e.stopPropagation();
       closeAllActionMenus();
+
       var btn = e.currentTarget;
       var dropdown = document.createElement('div');
       dropdown.className = 'action-dropdown';
@@ -2586,10 +1999,13 @@
         '<button class="action-delete" onclick="event.stopPropagation();closeAllActionMenus();showDeleteModal(\'' + id + '\', \'' + kode + '\', \'' + label + '\', ' + amount + ')">' +
         '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
         'Hapus</button>';
+
       document.body.appendChild(dropdown);
+
       const rect = btn.getBoundingClientRect();
       dropdown.style.top = (rect.bottom + 5) + 'px';
       dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+
       activeActionMenu = dropdown;
     };
 
@@ -2598,9 +2014,14 @@
       menus.forEach(function(m) { m.remove(); });
       activeActionMenu = null;
     }
-    
-    document.addEventListener('click', function() { closeAllActionMenus(); });
 
+    document.addEventListener('click', function() {
+      closeAllActionMenus();
+    });
+
+    // =============================================
+    // DELETE FUNCTIONALITY
+    // =============================================
     window.showDeleteModal = function(id, kode, label, amount) {
       state.pendingDeleteId = id;
       state.pendingDeleteKode = kode;
@@ -2615,4 +2036,148 @@
     };
 
     window.confirmDelete = async function() {
-      if
+      if (!state.pendingDeleteId || !db) return;
+
+      try {
+        await db.collection('submissions').doc(state.pendingDeleteId).delete();
+        console.log('[Firebase] Data dihapus:', state.pendingDeleteId);
+
+        if (state.webhookUrl) {
+          try {
+            await withTimeout(
+              fetch(state.webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "DELETE", kode: state.pendingDeleteKode }),
+                mode: 'no-cors'
+              }),
+              15000,
+              'Spreadsheet delete'
+            );
+            console.log('[Spreadsheet] Hapus request terkirim untuk kode:', state.pendingDeleteKode);
+          } catch (sheetErr) {
+            console.warn('[Spreadsheet Delete Warning]:', sheetErr.message);
+          }
+        }
+
+        showToast('Data berhasil dihapus (Firebase + Spreadsheet)!', 'success');
+        closeDeleteModal();
+      } catch (error) {
+        console.error('[Delete] Error:', error);
+        showToast('Gagal menghapus: ' + error.message, 'error');
+        closeDeleteModal();
+      }
+    };
+
+    // =============================================
+    // EDIT TRANSACTION
+    // =============================================
+    window.editHistoryItem = function(id) {
+      var item = state.history.find(function(h) { return h.id === id; });
+      if (!item) return;
+
+      state.editingDocId = id;
+
+      document.getElementById('tanggal').value = item.tanggal || '';
+      document.getElementById('lokasi').value = item.lokasi || '';
+      document.getElementById('jenis_pengajuan').value = item.jenis_pengajuan || '';
+      document.getElementById('kode').value = item.kode || '';
+      document.getElementById('no_invoice').value = item.no_invoice || '';
+      document.getElementById('status').value = item.status || '';
+      document.getElementById('dibayarkan_kepada').value = item.dibayarkan_kepada || '';
+      document.getElementById('catatan_tambahan').value = item.catatan_tambahan || '';
+      document.getElementById('tanggal_pembayaran').value = item.tanggal_pembayaran || '';
+
+      if (item.status === 'Lunas') {
+        elements.paymentDateContainer.style.display = 'block';
+      } else {
+        elements.paymentDateContainer.style.display = 'none';
+      }
+
+      state.items = (item.items || []).map(function(i) {
+        return { ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' };
+      });
+      renderFormItems();
+
+      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
+
+      var editBanner = document.getElementById('editModeBanner');
+      if (!editBanner) {
+        editBanner = document.createElement('div');
+        editBanner.id = 'editModeBanner';
+        editBanner.style.cssText = 'background:rgba(255,202,40,0.15);border:1px solid rgba(255,202,40,0.4);border-radius:10px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+        var formCard = document.querySelector('#dataForm').parentElement;
+        formCard.insertBefore(editBanner, formCard.firstChild);
+      }
+      editBanner.innerHTML = '<div style="display:flex;align-items:center;gap:8px;"><svg style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span style="font-size:13px;color:#fbbf24;font-weight:600;">MODE EDIT — Mengubah transaksi #' + id.substring(0, 6) + '</span></div><button onclick="cancelEdit()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fbbf24;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Space Grotesk,sans-serif;">Batal</button>';
+
+      document.getElementById('dataForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Mode edit aktif. Ubah data lalu klik "Update Transaksi".', 'firebase');
+    };
+
+    window.loadHistoryItem = function(id) {
+      var item = state.history.find(function(h) { return h.id === id; });
+      if (item) {
+        state.items = (item.items || []).map(function(i) {
+          return { ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' };
+        });
+        renderFormItems();
+        populateDocuments(item);
+        elements.documentModal.classList.add('show');
+      }
+    };
+
+    // =============================================
+    // STATS
+    // =============================================
+    function updateStats() {
+      var total = state.history.length;
+      var firebaseCount = state.history.filter(function(h) { return h.synced === true; }).length;
+      var sheetsCount = state.history.filter(function(h) { return h.sheets_synced === true; }).length;
+      var pendingCount = state.history.filter(function(h) { return !h.sheets_synced && h.sheets_synced !== false; }).length;
+      
+      animateCounter(elements.totalData, total);
+      animateCounter(elements.sentData, firebaseCount);
+      animateCounter(elements.sheetsData, sheetsCount);
+      animateCounter(elements.pendingData, pendingCount);
+    }
+
+    function animateCounter(el, target) {
+      var current = parseInt(el.textContent) || 0;
+      if (current === target) return;
+      var startTime = performance.now();
+      var duration = 400;
+      function update(currentTime) {
+        var progress = Math.min((currentTime - startTime) / duration, 1);
+        var eased =1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(current + (target - current) * eased);
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    // =============================================
+    // UTILITIES
+    // =============================================
+    function showToast(message, type) {
+      elements.toast.textContent = message;
+      elements.toast.className = 'toast ' + type + ' show';
+      setTimeout(function() { elements.toast.classList.remove('show'); }, 4000);
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      var date = new Date(dateStr + 'T00:00:00');
+      return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function formatNumber(num) { return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    function escapeHtml(text) { var div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+
+    // =============================================
+    // INIT ON LOAD
+    // =============================================
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
