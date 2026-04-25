@@ -74,6 +74,7 @@
     @keyframes drive-glow { 0%, 100% { box-shadow: 0 0 20px rgba(66, 133, 244, 0.3); } 50% { box-shadow: 0 0 30px rgba(66, 133, 244, 0.5); } }
     @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
     @keyframes sync-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes drive-sync-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     .animate-in { animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
     .delay-1 { animation-delay: 0.1s; }
@@ -286,6 +287,47 @@
     .action-dropdown button.action-delete:hover { background: rgba(239, 68, 68, 0.1); }
     .action-dropdown .dropdown-divider { height: 1px; background: var(--border); margin: 2px 0; }
 
+    /* 🆕 Google Drive Sync Button */
+    .btn-drive-sync {
+      background: linear-gradient(135deg, var(--drive), #34a853);
+      color: white;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-drive-sync:hover:not(:disabled) { 
+      transform: translateY(-2px); 
+      box-shadow: 0 6px 20px rgba(66, 133, 244, 0.35); 
+    }
+    
+    .btn-drive-sync:disabled { 
+      opacity: 0.6; 
+      cursor: not-allowed; 
+    }
+
+    .btn-drive-sync.syncing { 
+      animation: drive-glow 1.5s ease-in-out infinite; 
+    }
+
+    .drive-sync-icon {
+      width: 14px;
+      height: 14px;
+      animation: drive-sync-spin 1s linear infinite;
+    }
+
+    .btn-drive-sync.synced .drive-sync-icon {
+      animation: none;
+    }
+
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -306,6 +348,37 @@
     .status-dot.pending { background: var(--warning); animation: pulse-ring 1s ease-out infinite; }
     .status-dot.error { background: var(--error); }
     .status-dot.connecting { background: var(--firebase); animation: pulse-ring 1s ease-out infinite; }
+
+    /* 🆕 Drive Status Badge Enhancement */
+    .drive-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .drive-status-badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .drive-status-badge.synced {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .drive-status-badge.error {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
 
     .history-item {
       background: var(--bg-secondary);
@@ -342,6 +415,24 @@
     .connection-banner.error {
       background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
       border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* 🆕 Drive Connection Status Banner */
+    .drive-status-banner {
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.1), rgba(52, 168, 83, 0.08));
+      border: 1px solid rgba(66, 133, 244, 0.25);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .drive-status-banner.active {
+      background: linear-gradient(135deg, rgba(52, 168, 83, 0.12), rgba(52, 168, 83, 0.05));
+      border-color: rgba(52, 168, 83, 0.3);
     }
 
     .modal-overlay {
@@ -677,6 +768,62 @@
       color: var(--drive);
       border: 1px solid rgba(66, 133, 244, 0.3);
     }
+
+    /* 🆕 File Item with Drive Status */
+    .file-item-drive {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.03);
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-top: 4px;
+      border-left: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .file-item-drive.synced { border-left-color: var(--success); }
+    .file-item-drive.pending { border-left-color: var(--warning); }
+    .file-item-drive.error { border-left-color: var(--error); }
+
+    .file-name-drive {
+      flex: 1;
+      font-size: 12px;
+      color: var(--fg);
+      truncate: true;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-size-drive {
+      font-size: 10px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .file-action-drive {
+      flex-shrink: 0;
+      font-size: 12px;
+    }
+
+    .file-link-drive {
+      color: var(--drive);
+      text-decoration: none;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(66, 133, 244, 0.1);
+      transition: all 0.2s;
+    }
+
+    .file-link-drive:hover {
+      background: rgba(66, 133, 244, 0.2);
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -724,6 +871,17 @@
         <button onclick="openSetupModal()" class="copy-btn">Setup</button>
       </div>
 
+      <!-- 🆕 Google Drive Sync Status Banner -->
+      <div id="driveStatusBanner" class="drive-status-banner no-print" style="display:none;">
+        <svg class="w-5 h-5 text-blue-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        <div class="flex-1">
+          <span class="font-medium text-white" id="driveStatusText">Menunggu sinkronisasi Google Drive...</span>
+        </div>
+        <div id="driveStatusBadge" class="drive-status-badge pending">
+          ⏳ Pending
+        </div>
+      </div>
+
       <!-- Architecture Info Banner -->
       <div id="archBanner" class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30 mb-6 no-print" style="display:none;">
         <div class="flex items-start gap-3">
@@ -739,7 +897,7 @@
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
         <div class="card animate-in delay-1"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Data</div><div class="text-2xl font-bold" id="totalData">0</div></div>
         <div class="card animate-in delay-2"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">🔥 Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
-        <div class="card animate-in delay-3"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">📊 Spreadsheet</div><div class="text-2xl font-bold text-[--sheets]" id="sheetsData">0</div></div>
+        <div class="card animate-in delay-3"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">☁️ Google Drive</div><div class="text-2xl font-bold text-[--drive]" id="sheetsData">0</div></div>
         <div class="card animate-in delay-4"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">⏳ Pending Sync</div><div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div></div>
       </div>
 
@@ -804,8 +962,8 @@
                   <div id="uploadPlaceholder">
                     <svg class="w-8 h-8 mx-auto mb-2 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                     <p class="text-sm text-[--muted]">Klik untuk upload bukti invoice/foto</p>
-                    <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, PDF (Maks 5MB per file)</p>
-                    <p class="text-xs text-blue-400 mt-1">File akan disimpan ke Google Drive via sync</p>
+                    <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, PDF (Maks 750KB per file)</p>
+                    <p class="text-xs text-blue-400 mt-1">File akan disimpan ke Google Drive via Apps Script (delay 5-10 menit)</p>
                   </div>
                   <div id="fileListDisplay" class="text-left mt-2 space-y-1"></div>
                 </div>
@@ -826,6 +984,11 @@
                 <button type="button" id="previewBtn" class="btn-print">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                   <span>Preview & PDF</span>
+                </button>
+                <!-- 🆕 Tombol Force Sync ke Google Drive -->
+                <button type="button" id="forceSyncBtn" class="btn-drive-sync" onclick="forceSyncToDrive()" title="Paksa sinkronisasi ke Google Drive sekarang">
+                  <svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span>Force Sync Drive</span>
                 </button>
                 <button type="reset" class="text-[--muted] hover:text-[--fg] transition-colors text-sm">Reset</button>
               </div>
@@ -920,7 +1083,7 @@
           <div class="flex items-start gap-3">
             <div class="step-number">2</div>
             <div class="flex-1">
-              <h3 class="font-semibold text-base mb-2">📖 Cara Kerja File</h3>
+              <h3 class="font-semibold text-base mb-2">📖 Cara Kerja File → Google Drive</h3>
               
               <div class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30">
                 <div class="space-y-3 text-sm text-gray-300">
@@ -936,15 +1099,20 @@
                     <span class="text-blue-300 font-bold">3️⃣</span>
                     <div><strong>Apps Script</strong> membuat file di <strong class="text-blue-300">Google Drive</strong> & dapat link shareable</div>
                   </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-purple-300 font-bold">4️⃣</span>
+                    <div>Status otomatis <strong class="text-purple-300">update</strong> di aplikasi (real-time listener)</div>
+                  </div>
                 </div>
               </div>
 
               <div class="mt-3 p-3 bg-[--bg] rounded-lg border border-[--border]">
                 <p class="text-xs text-[--muted] mb-2 font-semibold">⚠️ BATASAN:</p>
                 <ul class="text-xs text-gray-400 space-y-1 list-disc list-inside ml-4">
-                  <li>Maksimal <strong class="text-white">5MB per file</strong></li>
-                  <li>File muncul di Drive setelah <strong class="text-white">sync (max 1 jam)</strong></li>
+                  <li>Maksimal <strong class="text-white">750KB per file</strong> (limit Firestore document)</li>
+                  <li>File muncul di Drive setelah <strong class="text-white">5-10 menit</strong> (Apps Script trigger)</li>
                   <li>Tidak perlu kartu kredit!</li>
+                  <li>Status sync otomatis ter-update via real-time listener</li>
                 </ul>
               </div>
             </div>
@@ -1058,7 +1226,7 @@
   <!-- Toast -->
   <div id="toast" class="toast" role="alert"></div>
 
-  <!-- JAVASCRIPT - BASE64 MODE (TANPA FIREBASE STORAGE) -->
+  <!-- JAVASCRIPT - BASE64 MODE + GOOGLE DRIVE SYNC TRACKING -->
   <script>
     // =============================================
     // CONFIGURATION
@@ -1074,6 +1242,7 @@
       history: [],
       currentTab: 'Lunas',
       lastFormData: null,
+      lastSavedDocId: null, // 🆕 Track ID dokumen terakhir
       items: [{ ket: '', qty: '', nominal: 0, keterangan: '' }],
       unsubscribeListener: null,
       pendingDeleteId: null,
@@ -1081,7 +1250,9 @@
       filterDateFrom: '',
       filterDateTo: '',
       editingDocId: null,
-      selectedFiles: [] // Akan menyimpan base64 data
+      selectedFiles: [], // Akan menyimpan base64 data
+      driveSyncListeners: {}, // 🆕 Listener untuk track sync status
+      pollingInterval: null // 🆕 Interval untuk polling
     };
 
     let elements = {};
@@ -1148,7 +1319,12 @@
           editModeContainer: document.getElementById('editModeContainer'),
           uploadArea: document.getElementById('uploadArea'),
           fileListDisplay: document.getElementById('fileListDisplay'),
-          uploadPlaceholder: document.getElementById('uploadPlaceholder')
+          uploadPlaceholder: document.getElementById('uploadPlaceholder'),
+          // 🆕 Elements baru untuk Drive Sync
+          forceSyncBtn: document.getElementById('forceSyncBtn'),
+          driveStatusBanner: document.getElementById('driveStatusBanner'),
+          driveStatusText: document.getElementById('driveStatusText'),
+          driveStatusBadge: document.getElementById('driveStatusBadge')
         };
 
         loadSavedConfigs();
@@ -1167,8 +1343,12 @@
         initConnection();
         generateInvoiceAfterConnection();
 
+        // 🆕 Start polling untuk cek status Drive sync
+        startDriveStatusPolling();
+
         window.addEventListener('beforeunload', function() {
           if (state.unsubscribeListener) state.unsubscribeListener();
+          stopDriveStatusPolling(); // 🆕 Stop polling saat close
         });
       } catch (error) {
         console.error('[Init Error]:', error);
@@ -1260,7 +1440,7 @@
         text.textContent = 'Firestore Connected';
         text.className = 'status-text status-text-success';
         elements.bannerTitle.textContent = '✅ Firebase Terhubung';
-        elements.bannerMessage.textContent = 'Data & File (Base64) akan disimpan ke Firestore.';
+        elements.bannerMessage.textContent = 'Data & File (Base64) akan disimpan ke Firestore. Apps Script akan sync ke Google Drive.';
       } else {
         elements.connectionBanner.className = 'connection-banner error no-print';
         dot.className = 'status-dot error';
@@ -1387,7 +1567,7 @@
     }
 
     // =============================================
-    // 🆕 FILE HANDLING - BASE64 MODE
+    // 🆕 FILE HANDLING - BASE64 MODE (Updated Limit)
     // =============================================
     window.handleFileSelect = function(input) {
       var files = Array.from(input.files);
@@ -1398,12 +1578,12 @@
         return;
       }
       
-      // Validasi ukuran maksimal 5MB per file
-      var maxSize = 5 * 1024 * 1024;
+      // 🆕 Validasi ukuran maksimal 750KB (aman untuk Firestore!)
+      var maxSize = 750 * 1024; // 750KB - aman untuk base64 di Firestore
       var oversized = files.filter(f => f.size > maxSize);
       
       if (oversized.length > 0) {
-        showToast('File ' + oversized[0].name + ' terlalu besar! Maksimal 5MB.', 'error');
+        showToast('File ' + oversized[0].name + ' terlalu besar! Maksimal 750KB per file (limit Firestore).', 'error');
         input.value = '';
         return;
       }
@@ -1746,7 +1926,7 @@
     }
 
     // =============================================
-    // 🎯 MAIN SUBMIT - BASE64 MODE
+    // 🎯 MAIN SUBMIT - BASE64 MODE + DRIVE SYNC TRACKING
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
@@ -1793,7 +1973,9 @@
               size: file.size,
               base64Data: file.base64, // 🔑 DATA BASE64
               uploadedAt: new Date().toISOString(),
-              status: 'pending_drive_upload' // Flag untuk Apps Script
+              status: 'pending_drive_upload', // Flag untuk Apps Script
+              driveUrl: null, // 🆕 Akan diisi oleh Apps Script
+              syncedAt: null // 🆕 Timestamp sync
             };
           });
           
@@ -1820,7 +2002,7 @@
           direktur_utama: data.direktur_utama,
           accounting: data.accounting,
           files: uploadedFiles, // 🔑 SIMPAN BASE64 DI FIRESTORE
-          synced_to_sheets: false,
+          synced_to_sheets: false, // 🆕 False = pending sync
           synced_at: null,
           sheets_error: null
         };
@@ -1836,15 +2018,24 @@
 
         var docRef = await withTimeout(firebasePromise, 15000, 'Firebase write');
 
-        console.log('[Firebase] ✅ ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', isEditMode ? state.editingDocId : docRef.id);
+        var savedDocId = isEditMode ? state.editingDocId : docRef.id;
+        console.log('[Firebase] ✅ ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', savedDocId);
         
-        state.lastFormData = Object.assign({}, data, { id: isEditMode ? state.editingDocId : docRef.id });
+        // 🆕 Simpan ID untuk tracking sync
+        state.lastSavedDocId = savedDocId;
+        state.lastFormData = Object.assign({}, data, { id: savedDocId });
         saveSuccess = true;
 
-        showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan!') + ' File akan otomatis ke Google Drive.', 'drive');
+        showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan!') + ' Menunggu sync ke Google Drive (5-10 menit)...', 'drive');
+        
+        // 🆕 Update Drive Status Banner
+        updateDriveStatusBanner('pending', 'Menunggu sinkronisasi Google Drive... (Apps Script akan proses dalam 5-10 menit)');
         
         populateDocuments(data);
         if (elements.documentModal) elements.documentModal.classList.add('show');
+
+        // 🆕 Mulai listen untuk document ini
+        startDriveSyncListener(savedDocId);
 
       } catch (error) {
         console.error('[Firebase Save Error]:', error);
@@ -1888,6 +2079,266 @@
     }
 
     // =============================================
+    // 🆕 GOOGLE DRIVE SYNC FUNCTIONS
+    // =============================================
+
+    /**
+     * Start real-time listener untuk satu document
+     * Mendeteksi perubahan status sync dari Apps Script
+     */
+    function startDriveSyncListener(docId) {
+      if (!db || !docId) return;
+
+      // Stop existing listener untuk doc ini kalau ada
+      if (state.driveSyncListeners[docId]) {
+        state.driveSyncListeners[docId]();
+      }
+
+      console.log('[Drive Sync] Starting listener for:', docId);
+
+      state.driveSyncListeners[docId] = db.collection('submissions').doc(docId).onSnapshot(
+        function(docSnapshot) {
+          if (!docSnapshot.exists) {
+            console.warn('[Drive Sync] Document not found:', docId);
+            return;
+          }
+
+          var data = docSnapshot.data();
+          var files = data.files || [];
+
+          // Cek apakah ada file yang sudah sync
+          var syncedFiles = files.filter(function(f) {
+            var fData = f.mapValue?.fields || f;
+            return fData.driveUrl?.stringValue || fData.driveUrl;
+          });
+
+          var pendingFiles = files.filter(function(f) {
+            var fData = f.mapValue?.fields || f;
+            return !fData.driveUrl?.stringValue && !fData.driveUrl && fData.status !== 'synced';
+          });
+
+          var errorFiles = files.filter(function(f) {
+            var fData = f.mapValue?.fields || f;
+            return fData.status?.stringValue === 'error' || fData.status === 'error';
+          });
+
+          console.log('[Drive Sync] Doc:', docId, '- Synced:', syncedFiles.length, '- Pending:', pendingFiles.length, '- Error:', errorFiles.length);
+
+          // Update UI berdasarkan status
+          if (syncedFiles.length === files.length && files.length > 0) {
+            // ✅ Semua file sudah sync!
+            updateDriveStatusBanner('synced', '✅ Semua file berhasil disinkronkan ke Google Drive!');
+            showToast('✅ File berhasil sync ke Google Drive!', 'drive');
+            
+            // Update stats
+            updateStats();
+            renderHistory(); // Refresh tampilan
+
+            // Stop listener setelah success (optional)
+            // state.driveSyncListeners[docId]();
+            
+          } else if (errorFiles.length > 0) {
+            // ❌ Ada error
+            var errorMsg = errorFiles[0].mapValue?.fields?.errorMessage?.stringValue || 
+                           errorFiles[0].errorMessage ||
+                           'Unknown error';
+            updateDriveStatusBanner('error', '❌ Error sync: ' + errorMsg);
+            showToast('Error sync Drive: ' + errorMsg, 'error');
+
+          } else if (pendingFiles.length > 0) {
+            // ⏳ Masih pending
+            updateDriveStatusBanner('pending', '⏳ Menunggu ' + pendingFiles.length + ' file untuk sync ke Google Drive...');
+
+          } else if (files.length === 0) {
+            // Tidak ada file
+            hideDriveStatusBanner();
+          }
+        },
+        function(error) {
+          console.error('[Drive Sync Listener Error]:', error);
+          updateDriveStatusBanner('error', '❌ Error monitoring sync status');
+        }
+      );
+    }
+
+    /**
+     * Start polling untuk cek overall status Drive sync
+     * Jalankan setiap 30 detik
+     */
+    function startDriveStatusPolling() {
+      // Polling setiap 30 detik
+      state.pollingInterval = setInterval(function() {
+        if (!db || !state.isConnected) return;
+
+        // Hitung statistik
+        var totalPending = state.history.filter(function(h) {
+          if (!h.files || h.files.length === 0) return false;
+          return h.files.some(function(f) {
+            var fData = f.mapValue?.fields || f;
+            return !fData.driveUrl?.stringValue && !fData.driveUrl;
+          });
+        }).length;
+
+        var totalSynced = state.history.filter(function(h) {
+          if (!h.files || h.files.length === 0) return false;
+          return h.files.every(function(f) {
+            var fData = f.mapValue?.fields || f;
+            return fData.driveUrl?.stringValue || fData.driveUrl;
+          });
+        }).length;
+
+        // Update badge di header jika ada pending
+        if (totalPending > 0 && elements.driveStatusBanner) {
+          if (elements.driveStatusBanner.style.display === 'none') {
+            elements.driveStatusBanner.style.display = 'flex';
+          }
+          elements.driveStatusText.textContent = totalPending + ' file menunggu sync ke Google Drive...';
+        }
+
+      }, 30000); // 30 detik
+
+      console.log('[Drive Sync] Polling started (every 30s)');
+    }
+
+    /**
+     * Stop polling
+     */
+    function stopDriveStatusPolling() {
+      if (state.pollingInterval) {
+        clearInterval(state.pollingInterval);
+        state.pollingInterval = null;
+      }
+
+      // Stop semua listeners
+      Object.keys(state.driveSyncListeners).forEach(function(docId) {
+        if (state.driveSyncListeners[docId]) {
+          state.driveSyncListeners[docId]();
+        }
+      });
+      state.driveSyncListeners = {};
+    }
+
+    /**
+     * Update Drive Status Banner UI
+     */
+    function updateDriveStatusBanner(status, message) {
+      if (!elements.driveStatusBanner) return;
+
+      elements.driveStatusBanner.style.display = 'flex';
+      elements.driveStatusBanner.className = 'drive-status-banner no-print ' + (status === 'synced' ? 'active' : '');
+      elements.driveStatusText.textContent = message;
+
+      if (elements.driveStatusBadge) {
+        elements.driveStatusBadge.className = 'drive-status-badge ' + status;
+        if (status === 'synced') {
+          elements.driveStatusBadge.innerHTML = '✅ Synced';
+        } else if (status === 'pending') {
+          elements.driveStatusBadge.innerHTML = '⏳ Pending';
+        } else if (status === 'error') {
+          elements.driveStatusBadge.innerHTML = '❌ Error';
+        }
+      }
+    }
+
+    /**
+     * Hide Drive Status Banner
+     */
+    function hideDriveStatusBanner() {
+      if (elements.driveStatusBanner) {
+        elements.driveStatusBanner.style.display = 'none';
+      }
+    }
+
+    /**
+     * 🆕 Force Sync Button Handler
+     * Memberikan instruksi manual untuk trigger Apps Script
+     */
+    window.forceSyncToDrive = async function() {
+      if (!db) {
+        showToast('Firebase belum terhubung!', 'error');
+        return;
+      }
+
+      var btn = elements.forceSyncBtn;
+      if (!btn) return;
+
+      // Disable button dan tampilkan loading
+      btn.disabled = true;
+      btn.classList.add('syncing');
+      btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg><span>Checking...</span>';
+
+      try {
+        // Cek document terakhir yang disimpan
+        if (!state.lastSavedDocId) {
+          showToast('Tidak ada data untuk di-sync. Submit form dulu.', 'info');
+          return;
+        }
+
+        // Ambil data terbaru
+        var docSnap = await db.collection('submissions').doc(state.lastSavedDocId).get();
+        
+        if (!docSnap.exists) {
+          showToast('Document tidak ditemukan!', 'error');
+          return;
+        }
+
+        var data = docSnap.data();
+        var files = data.files || [];
+
+        if (files.length === 0) {
+          showToast('Tidak ada file untuk di-sync pada transaksi ini.', 'info');
+          return;
+        }
+
+        // Cek status masing-masing file
+        var syncedCount = 0;
+        var pendingCount = 0;
+        var errorCount = 0;
+
+        files.forEach(function(f) {
+          var fData = f.mapValue?.fields || f;
+          if (fData.driveUrl?.stringValue || fData.driveUrl) {
+            syncedCount++;
+          } else if (fData.status?.stringValue === 'error' || fData.status === 'error') {
+            errorCount++;
+          } else {
+            pendingCount++;
+          }
+        });
+
+        // Tampilkan hasil
+        if (syncedCount === files.length) {
+          showToast('✅ Semua file (' + syncedCount + ') sudah tersync ke Google Drive!', 'drive');
+          btn.classList.remove('syncing');
+          btn.classList.add('synced');
+          btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span>All Synced ✓</span>';
+        } else if (errorCount > 0) {
+          showToast('❌ ' + errorCount + ' file error. Cek log Apps Script.', 'error');
+          btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Error - Retry</span>';
+        } else {
+          showToast('⏳ ' + pendingCount + '/' + files.length + ' file masih pending. Apps Script akan proses otomatis.', 'info');
+          btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Pending (' + pendingCount + ')';
+        }
+
+        // Re-enable button setelah 3 detik
+        setTimeout(function() {
+          btn.disabled = false;
+          btn.classList.remove('syncing');
+          if (syncedCount !== files.length) {
+            btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>Force Sync Drive</span>';
+          }
+        }, 3000);
+
+      } catch (error) {
+        console.error('[Force Sync Error]:', error);
+        showToast('Error: ' + error.message, 'error');
+        btn.disabled = false;
+        btn.classList.remove('syncing');
+        btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>Force Sync Drive</span>';
+      }
+    };
+
+    // =============================================
     // DATE FILTER & LISTENER
     // =============================================
     function applyDateFilter() {
@@ -1907,6 +2358,8 @@
           state.history = snapshot.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
           renderHistory();
           updateStats();
+          // 🆕 Update drive status banner berdasarkan data
+          updateOverallDriveStatus();
         },
         function(error) { console.error('[Listener] Error:', error); showToast('Filter error: ' + error.message, 'error'); }
       );
@@ -1927,13 +2380,55 @@
           state.history = snapshot.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
           renderHistory();
           updateStats();
+          // 🆕 Update drive status banner
+          updateOverallDriveStatus();
         },
         function(error) { console.error('[Listener] Error:', error); }
       );
     }
 
+    /**
+     * 🆕 Update overall Drive sync status berdasarkan semua data
+     */
+    function updateOverallDriveStatus() {
+      if (!state.history || state.history.length === 0) {
+        hideDriveStatusBanner();
+        return;
+      }
+
+      var totalPendingDocs = 0;
+      var totalSyncedDocs = 0;
+
+      state.history.forEach(function(item) {
+        var files = item.files || [];
+        if (files.length === 0) return;
+
+        var hasPending = files.some(function(f) {
+          var fData = f.mapValue?.fields || f;
+          return !fData.driveUrl?.stringValue && !fData.driveUrl && fData.status !== 'synced';
+        });
+
+        if (hasPending) {
+          totalPendingDocs++;
+        } else {
+          totalSyncedDocs++;
+        }
+      });
+
+      if (totalPendingDocs > 0) {
+        updateDriveStatusBanner('pending', totalPendingDocs + ' transaksi dengan file menunggu sync ke Google Drive...');
+      } else if (totalSyncedDocs > 0) {
+        updateDriveStatusBanner('synced', '✅ Semua file (' + totalSyncedDocs + ' transaksi) sudah sync ke Google Drive!');
+        
+        // Auto-hide setelah 5 detik
+        setTimeout(hideDriveStatusBanner, 5000);
+      } else {
+        hideDriveStatusBanner();
+      }
+    }
+
     // =============================================
-    // RENDER HISTORY
+    // RENDER HISTORY (Enhanced with Drive Status)
     // =============================================
     function renderHistory() {
       if (!elements.historyList) return;
@@ -1954,174 +2449,67 @@
         var dateStr = formatDate(item.tanggal);
         var itemsSummary = (item.items||[]).map(i=>i.ket).filter(k=>k).join(', ');
         var displayItems = itemsSummary.length > 50 ? itemsSummary.substring(0,50)+'...' : itemsSummary||'-';
-        var safeId = item.id||'', safeKode = (item.keyCode||'').replace(/"/g,'\\"'), safeLabel = (item.no_invoice||item.kode||'-').replace(/'/g,"\\'");
+        var safeId = item.id||'', safeKode = (item.kode||'').replace(/"/g,'\\"'), safeLabel = (item.no_invoice||item.kode||'-').replace(/'/g,"\\'");
         
         var isLunas = item.status==='Lunas';
         var statusBadge = isLunas ? '<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>' : '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Belum Lunas</span>';
 
-        var syncIndicator = item.synced_to_sheets===true ? '<span class="sync-indicator synced" title="Synced">✅</span>' :
-                             item.sheets_error ? '<span class="sync-indicator error" title="'+item.sheets_error+'">❌</span>' :
-                             '<span class="sync-indicator pending" title="Pending sync">⏳</span>';
-        var syncClass = item.synced_to_sheets===true ? 'synced' : item.sheets_error ? 'sync-error' : 'pending-sync';
+        // 🆕 Enhanced Sync Indicator dengan detail
+        var syncIndicator = '';
+        var syncClass = '';
+        
+        if (item.files && item.files.length > 0) {
+          var syncedCount = item.files.filter(function(f) {
+            var fData = f.mapValue?.fields || f;
+            return fData.driveUrl?.stringValue || fData.driveUrl;
+          }).length;
+          
+          var pendingCount = item.files.length - syncedCount;
+          var hasError = item.files.some(function(f) {
+            var fData = f.mapValue?.fields || f;
+            return fData.status?.stringValue === 'error' || fData.status === 'error';
+          });
 
-        // File info
+          if (syncedCount === item.files.length) {
+            syncIndicator = '<span class="sync-indicator synced" title="Semua file synced ke Drive">✅</span>';
+            syncClass = 'synced';
+          } else if (hasError) {
+            syncIndicator = '<span class="sync-indicator error" title="Sync error">❌</span>';
+            syncClass = 'sync-error';
+          } else if (pendingCount > 0) {
+            syncIndicator = '<span class="sync-indicator pending" title="' + pendingCount + ' file pending">⏳ ' + pendingCount + '</span>';
+            syncClass = 'pending-sync';
+          }
+        } else {
+          syncIndicator = '';
+          syncClass = '';
+        }
+
+        // 🆕 Enhanced File Info dengan Drive Link
         var filesHtml = '';
         if (item.files && item.files.length > 0) {
           filesHtml = '<div class="mt-2 space-y-1">';
-          item.files.forEach(function(f) {
-            var fFields = f.mapValue?.fields || f;
-            var fName = fFields.name?.stringValue || fFields.name || 'File';
-            var hasDriveUrl = fFields.driveUrl?.stringValue;
+          item.files.forEach(function(f, idx) {
+            var fData = f.mapValue?.fields || f;
+            var fName = fData.name?.stringValue || fData.name || ('File ' + (idx+1));
+            var driveUrl = fData.driveUrl?.stringValue || fData.driveUrl;
+            var fileStatus = fData.status?.stringValue || fData.status || 'pending_drive_upload';
             
-            if (hasDriveUrl) {
-              filesHtml += '<a href="' + hasDriveUrl + '" target="_blank" class="file-link flex items-center gap-1">' +
-                '<svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>' +
-                '📁 ' + fName + '</a>';
-            } else {
-              filesHtml += '<div class="flex items-center gap-1 text-xs text-yellow-400">' +
-                '<span>⏳ ' + fName + '</span>' +
-                '<span class="drive-badge" style="font-size:8px;padding:1px 4px;">Pending</span>' +
-                '</div>';
+            var fileClass = 'pending';
+            var statusIcon = '⏳';
+            var statusText = 'Pending';
+
+            if (driveUrl) {
+              fileClass = 'synced';
+              statusIcon = '✅';
+              statusText = 'Synced';
+            } else if (fileStatus === 'error') {
+              fileClass = 'error';
+              statusIcon = '❌';
+              statusText = 'Error';
             }
-          });
-          filesHtml += '</div>';
-        }
 
-        return '<div class="history-item cursor-pointer '+syncClass+'" onclick="loadHistoryItem(\''+safeId+'\')">' +
-          '<div class="flex flex-col gap-1">' +
-            '<div class="flex items-center justify-between mb-1">' +
-              '<span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">'+dateStr+'</span>' +
-              '<div class="flex items-center gap-1">'+statusBadge+syncIndicator+'</div>' +
-            '</div>' +
-            '<div class="text-sm font-bold text-white mb-0.5">'+escapeHtml(item.no_invoice||item.kode||'-')+'</div>' +
-            '<div class="text-xs text-gray-400 truncate mb-1" style="max-width:200px;">'+escapeHtml(displayItems)+'</div>' +
-            '<div class="flex items-center justify-between mt-1">' +
-              '<span class="text-sm text-blue-400 font-medium">Rp '+formatNumber(item.total_nominal||0)+'</span>' +
-              '<button onclick="event.stopPropagation();toggleActionMenu(event,\''+safeId+'\',\''+safeKode+'\',\''+safeLabel+'\','+(item.total_nominal||0)+')" class="btn-action-menu" title="Aksi"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>' +
-            '</div>' +
-            filesHtml +
-          '</div></div>';
-      }).join('');
-    }
-
-    // =============================================
-    // ACTION MENU
-    // =============================================
-    var activeActionMenu = null;
-
-    window.toggleActionMenu = function(e, id, kode, label, amount) {
-      e.stopPropagation();
-      closeAllActionMenus();
-      var btn = e.currentTarget, dropdown = document.createElement('div');
-      dropdown.className = 'action-dropdown';
-      dropdown.innerHTML =
-        '<button class="action-edit" onclick="event.stopPropagation();closeAllActionMenus();editHistoryItem(\''+id+'\')"><svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Edit</button>' +
-        '<div class="dropdown-divider"></div>' +
-        '<button class="action-delete" onclick="event.stopPropagation();closeAllActionMenus();showDeleteModal(\''+id+'\',\''+kode+'\',\''+label+'\','+amount+')"><svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Hapus</button>';
-
-      document.body.appendChild(dropdown);
-      var rect = btn.getBoundingClientRect();
-      dropdown.style.top = (rect.bottom+5)+'px'; dropdown.style.right = (window.innerWidth-rect.right)+'px';
-      activeActionMenu = dropdown;
-    };
-
-    function closeAllActionMenus() {
-      document.querySelectorAll('.action-dropdown').forEach(function(m){m.remove()});
-      activeActionMenu=null;
-    }
-    document.addEventListener('click', closeAllActionMenus);
-
-    // =============================================
-    // DELETE
-    // =============================================
-    window.showDeleteModal = function(id, kode, label, amount) {
-      state.pendingDeleteId=id; state.pendingDeleteKode=kode;
-      var el=document.getElementById('deleteItemInfo');
-      if(el) el.textContent='Kode: '+kode+' • '+label+' • Rp '+formatNumber(amount);
-      if(elements.deleteConfirmModal) elements.deleteConfirmModal.classList.add('show');
-    };
-    window.closeDeleteModal=function(){
-      if(elements.deleteConfirmModal) elements.deleteConfirmModal.classList.remove('show');
-      state.pendingDeleteId=null;
-    };
-    window.confirmDelete=async function(){
-      if(!state.pendingDeleteId||!db)return;
-      try{
-        await db.collection('submissions').doc(state.pendingDeleteId).delete();
-        showToast('Data berhasil dihapus!','success'); closeDeleteModal();
-      }catch(error){ showToast('Gagal menghapus: '+error.message,'error'); closeDeleteModal();}
-    };
-
-    // =============================================
-    // EDIT
-    // =============================================
-    window.editHistoryItem=function(id){
-      var item=state.history.find(function(h){return h.id===id});
-      if(!item)return;
-      state.editingDocId=id;
-      ['tanggal','lokasi','jenis_pengajuan','kode','no_invoice','status','dibayarkan_kepada','catatan_tambahan','tanggal_pembayaran'].forEach(function(field){
-        var el=document.getElementById(field); if(el) el.value=item[field]||'';
-      });
-      if(item.status==='Lunas'&&elements.paymentDateContainer) elements.paymentDateContainer.style.display='block';
-      else if(elements.paymentDateContainer) elements.paymentDateContainer.style.display='none';
-
-      state.items=(item.items||[]).map(function(i){return{ket:i.ket||'',qty:i.qty||'',nominal:i.nominal||0,keterangan:i.keterangan||''}});
-      state.selectedFiles=[]; updateFileDisplay(); renderFormItems();
-
-      if(elements.submitBtn){
-        elements.submitBtn.innerHTML='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
-      }
-      if(elements.editModeContainer){
-        elements.editModeContainer.innerHTML='<div class="edit-banner"><div style="display:flex;align-items:center;gap:8px;"><svg style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span style="font-size:13px;color:#fbbf24;font-weight:600;">MODE EDIT</span></div><button onclick="cancelEdit()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fbbf24;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Space Grotesk,sans-serif;">Batal</button></div>';
-      }
-      var fe=document.getElementById('dataForm'); if(fe) fe.scrollIntoView({behavior:'smooth',block:'start'});
-      showToast('Mode edit aktif.','firebase');
-    };
-
-    window.loadHistoryItem=function(id){
-      var item=state.history.find(function(h){return h.id===id});
-      if(item){
-        state.items=(item.items||[]).map(function(i){return{ket:i.ket||'',qty:i.qty||'',nominal:i.nominal||0,keterangan:i.keterangan||''}});
-        renderFormItems(); populateDocuments(item);
-        if(elements.documentModal) elements.documentModal.classList.add('show');
-      }
-    };
-
-    // =============================================
-    // STATS
-    // =============================================
-    function updateStats(){
-      var total=state.history.length, synced=state.history.filter(function(h){return h.synced_to_sheets===true}).length, pending=state.history.filter(function(h){return h.synced_to_sheets===false}).length;
-      animateCounter(elements.totalData,total); animateCounter(elements.sentData,total);
-      animateCounter(elements.sheetsData,synced); animateCounter(elements.pendingData,pending);
-    }
-    function animateCounter(el,target){
-      if(!el)return; var current=parseInt(el.textContent)||0; if(current===target)return;
-      var start=performance.now(), dur=400;
-      function update(now){var prog=Math.min((now-start)/dur,1), eased=1-Math.pow(1-prog,3); el.textContent=Math.round(current+(target-current)*eased); if(prog<1) requestAnimationFrame(update);}
-      requestAnimationFrame(update);
-    }
-
-    // =============================================
-    // UTILITIES
-    // =============================================
-    function showToast(message,type){
-      if(!elements.toast)return;
-      elements.toast.textContent=message; elements.toast.className='toast '+type+' show';
-      setTimeout(function(){if(elements.toast) elements.toast.classList.remove('show');},4000);
-    }
-    function formatDate(ds){
-      if(!ds)return '-';
-      var d=new Date(ds+'T00:00:00');
-      return isNaN(d.getTime())?ds:d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-    }
-    function formatNumber(num){return(num||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
-    function escapeHtml(text){var div=document.createElement('div'); div.textContent=text||'';return div.innerHTML;}
-
-    // =============================================
-    // INIT
-    // =============================================
-    document.addEventListener('DOMContentLoaded',init);
-  </script>
-</body>
-</html>
+            if (driveUrl) {
+              // Tampilkan link ke Google Drive
+              filesHtml += '<div class="file-item-drive ' + fileClass + '">' +
+                '<span class="file-action-drive">' + statusIcon + '</span>'
