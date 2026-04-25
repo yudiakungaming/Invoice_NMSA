@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceSync Pro v3.2 - Document Support</title>
+  <title>FinanceSync Pro v3.3 - Google Drive Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK (Hanya Firestore, TANPA Storage!) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <!-- SDK Baru untuk Storage -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   
   <!-- html2pdf.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -33,6 +31,7 @@
       --error: #ef4444;
       --firebase: #ffca28;
       --firebase-orange: #ffa726;
+      --drive: #4285f4;
       --sheets: #10b981;
     }
 
@@ -63,7 +62,7 @@
       background:
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.15), transparent),
         radial-gradient(ellipse 60% 40% at 50% 100%, rgba(16, 185, 129, 0.1), transparent),
-        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 202, 40, 0.08), transparent);
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(66, 133, 244, 0.08));
       pointer-events: none;
       z-index: 0;
     }
@@ -72,6 +71,7 @@
     @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes firebase-glow { 0%, 100% { box-shadow: 0 0 20px rgba(255, 202, 40, 0.3); } 50% { box-shadow: 0 0 30px rgba(255, 202, 40, 0.6); } }
+    @keyframes drive-glow { 0%, 100% { box-shadow: 0 0 20px rgba(66, 133, 244, 0.3); } 50% { box-shadow: 0 0 30px rgba(66, 133, 244, 0.5); } }
     @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
     @keyframes sync-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
@@ -126,7 +126,7 @@
     .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 202, 40, 0.45); }
     .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; animation: none; }
 
-    /* 🔧 PERBAIKAN: Tombol Setup yang diperbaiki */
+    /* Tombol Setup */
     .btn-setup {
       background: linear-gradient(135deg, rgba(255, 202, 40, 0.15), rgba(255, 167, 38, 0.1));
       border: 1px solid var(--firebase);
@@ -147,10 +147,6 @@
       background: linear-gradient(135deg, rgba(255, 202, 40, 0.25), rgba(255, 167, 38, 0.2));
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(255, 202, 40, 0.3);
-    }
-
-    .btn-setup:active {
-      transform: scale(0.97);
     }
 
     .btn-secondary {
@@ -233,7 +229,6 @@
 
     .btn-remove-item:hover { background: rgba(239, 68, 68, 0.2); }
 
-    /* Action Menu Button */
     .btn-action-menu {
       color: var(--muted);
       background: rgba(255, 255, 255, 0.05);
@@ -255,7 +250,6 @@
     .history-item:hover .btn-action-menu { opacity: 1; }
     .btn-action-menu:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--fg); }
 
-    /* Dropdown Styling */
     .action-dropdown {
       position: fixed;
       background: var(--card);
@@ -292,7 +286,6 @@
     .action-dropdown button.action-delete:hover { background: rgba(239, 68, 68, 0.1); }
     .action-dropdown .dropdown-divider { height: 1px; background: var(--border); margin: 2px 0; }
 
-    /* Cards */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -300,7 +293,6 @@
       padding: 24px;
     }
 
-    /* Status Dots */
     .status-dot {
       width: 8px;
       height: 8px;
@@ -315,7 +307,6 @@
     .status-dot.error { background: var(--error); }
     .status-dot.connecting { background: var(--firebase); animation: pulse-ring 1s ease-out infinite; }
 
-    /* History Item */
     .history-item {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
@@ -328,15 +319,13 @@
 
     .history-item:hover { border-color: var(--firebase); transform: translateX(4px); }
     
-    /* Sync Status Border Colors */
     .history-item.synced { border-left-color: var(--success); }
     .history-item.pending-sync { border-left-color: var(--warning); }
     .history-item.sync-error { border-left-color: var(--error); }
 
-    /* Banners */
     .connection-banner {
-      background: linear-gradient(135deg, rgba(255, 202, 40, 0.15), rgba(255, 167, 38, 0.08));
-      border: 1px solid rgba(255, 202, 40, 0.3);
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.15), rgba(66, 133, 244, 0.08));
+      border: 1px solid rgba(66, 133, 244, 0.3);
       border-radius: 12px;
       padding: 16px 20px;
       display: flex;
@@ -355,13 +344,12 @@
       border-color: rgba(239, 68, 68, 0.3);
     }
 
-    /* Modals - PERBAIKAN UTAMA */
     .modal-overlay {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(8px);
-      z-index: 9999; /* Ditingkatkan z-index */
+      z-index: 9999;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -369,13 +357,13 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
-      pointer-events: none; /* Default tidak bisa diklik */
+      pointer-events: none;
     }
 
     .modal-overlay.show { 
       opacity: 1; 
       visibility: visible; 
-      pointer-events: auto; /* Bisa diklik saat show */
+      pointer-events: auto; 
     }
 
     .modal-content {
@@ -407,7 +395,6 @@
       flex-direction: column;
     }
 
-    /* Toast */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -416,7 +403,7 @@
       border-radius: 10px;
       font-weight: 500;
       font-size: 14px;
-      z-index: 20000; /* Ditingkatkan */
+      z-index: 20000;
       transform: translateY(80px);
       opacity: 0;
       transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -429,7 +416,7 @@
     .toast.error { background: var(--error); color: white; }
     .toast.info { background: var(--accent); color: white; }
     .toast.firebase { background: linear-gradient(135deg, var(--firebase), var(--firebase-orange)); color: #000; }
-    .toast.sheets { background: linear-gradient(135deg, var(--sheets), #059669); color: white; }
+    .toast.drive { background: linear-gradient(135deg, var(--drive), #34a853); color: white; }
 
     .spinner {
       width: 18px;
@@ -459,7 +446,6 @@
     .tab-btn:hover { color: var(--fg); background: rgba(255, 255, 255, 0.05); }
     .tab-btn.active { color: var(--firebase); background: rgba(255, 202, 40, 0.15); }
 
-    /* Document Styles */
     .documents-container {
       background: #e2e8f0;
       flex: 1;
@@ -526,7 +512,6 @@
 
     .btn-print-doc:hover { background: #475569; }
 
-    /* Document Content Styles */
     .doc-header-center { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
     .doc-company-name { font-size: 18px; font-weight: 700; color: #000; letter-spacing: 0.5px; line-height: 1.3; }
     .doc-company-logo { height: 91px; width: auto; object-fit: contain; margin-bottom: 4px; }
@@ -597,7 +582,6 @@
     ::-webkit-scrollbar-track { background: var(--bg-secondary); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* Setup Steps */
     .setup-step { background: var(--bg-secondary); border-left: 4px solid var(--firebase); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
     .step-number { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--firebase), var(--firebase-orange)); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
     .config-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; color: var(--firebase); }
@@ -614,30 +598,6 @@
     .validation-error li { color: #fca5a5; font-size: 13px; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
     .validation-error li::before { content: "\26A0"; flex-shrink: 0; }
 
-    /* Sync Status Indicators */
-    .sync-status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .sync-status-badge.firebase {
-      background: rgba(255, 202, 40, 0.2);
-      color: #000;
-      border: 1px solid rgba(255, 202, 40, 0.4);
-    }
-
-    .sync-status-badge.sheets {
-      background: rgba(16, 185, 129, 0.2);
-      color: #fff;
-      border: 1px solid rgba(16, 185, 129, 0.4);
-    }
-
-    /* Sync indicator in history items */
     .sync-indicator {
       display: inline-flex;
       align-items: center;
@@ -648,23 +608,10 @@
       font-weight: 600;
     }
     
-    .sync-indicator.synced {
-      background: rgba(16, 185, 129, 0.2);
-      color: var(--success);
-    }
-    
-    .sync-indicator.pending {
-      background: rgba(245, 158, 11, 0.2);
-      color: var(--warning);
-      animation: sync-pulse 2s ease-in-out infinite;
-    }
-    
-    .sync-indicator.error {
-      background: rgba(239, 68, 68, 0.2);
-      color: var(--error);
-    }
+    .sync-indicator.synced { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    .sync-indicator.pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); animation: sync-pulse 2s ease-in-out infinite; }
+    .sync-indicator.error { background: rgba(239, 68, 68, 0.2); color: var(--error); }
 
-    /* Edit Mode Banner */
     .edit-banner {
       background: rgba(255, 202, 40, 0.15);
       border: 1px solid rgba(255, 202, 40, 0.4);
@@ -677,7 +624,6 @@
       gap: 12px;
     }
 
-    /* Utility classes */
     .status-text { font-size: 14px; }
     .status-text-success { color: var(--success); font-weight: 600; }
     .status-text-default-success { color: var(--success); }
@@ -686,9 +632,10 @@
     .status-text-muted { color: var(--muted); }
     .color-muted { color: var(--muted); }
     .color-firebase { color: var(--firebase); }
+    .color-drive { color: var(--drive); }
     .color-sheets { color: var(--sheets); }
 
-    /* Custom Styles for File Upload */
+    /* Upload Area - Updated for Base64 mode */
     .upload-area {
       border: 2px dashed var(--border);
       border-radius: 10px;
@@ -698,7 +645,7 @@
       transition: all 0.2s;
       background: rgba(255,255,255,0.02);
     }
-    .upload-area:hover { border-color: var(--firebase); background: rgba(255, 202, 40, 0.05); }
+    .upload-area:hover { border-color: var(--drive); background: rgba(66, 133, 244, 0.05); }
     .upload-area.has-file { border-color: var(--success); background: rgba(16, 185, 129, 0.05); }
     .file-item {
       display: flex;
@@ -715,7 +662,21 @@
       font-size: 12px;
       word-break: break-all;
     }
-    .file-link:hover { color: var(--firebase); }
+    .file-link:hover { color: var(--drive); }
+
+    /* Drive Badge */
+    .drive-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(66, 133, 244, 0.2);
+      color: var(--drive);
+      border: 1px solid rgba(66, 133, 244, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -728,12 +689,12 @@
     <header class="border-b border-[--border] bg-[--bg]/90 backdrop-blur-lg sticky top-0 z-50 no-print">
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3 animate-in">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--firebase] to-[--firebase-orange] flex items-center justify-center">
-            <svg class="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 19h20L12 2zm0 3.84L18.92 17H5.08L12 5.84z"/><circle cx="12" cy="14" r="2"/></svg>
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--drive] to-[--sheets] flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 6.53 6.06 9.61L4.09 8.44C3.39 9.93 3 11.58 3 13.32c0 4.03 2.87 7.43 6.67 8.21l-.02.22c-.07.42-.07.85-.07 1.25 0 3.31 2.69 6 6 6h.02c.01 0 .02 0 .03-.01 3.59-.17 6.47-3.12 6.47-6.76 0-3.86-3.13-7-7-7z"/></svg>
           </div>
           <div>
-            <h1 class="text-lg font-semibold">FinanceSync Pro v3.2</h1>
-            <p class="text-xs text-[--muted]">With Document Support</p>
+            <h1 class="text-lg font-semibold">FinanceSync Pro v3.3</h1>
+            <p class="text-xs text-[--muted]">Google Drive Edition</p>
           </div>
         </div>
         <div class="flex items-center gap-3 animate-in delay-1">
@@ -742,7 +703,6 @@
             <span class="status-text status-text-muted" id="statusText">Menghubungkan...</span>
           </div>
           
-          <!-- 🔧 PERBAIKAN: Tombol Setup dengan ID jelas dan onclick langsung -->
           <button id="setupBtn" class="btn-setup" onclick="openSetupModal()" aria-label="Pengaturan Firebase">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 00-1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572 1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <span>Setup Firebase</span>
@@ -756,7 +716,7 @@
 
       <!-- Connection Banner -->
       <div id="connectionBanner" class="connection-banner no-print" style="display: none;">
-        <svg class="w-6 h-6 text-yellow-400 flex-shrink-0 firebase-logo" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 19h20L12 2zm0 3.84L18.92 17H5.08L12 5.84z"/><circle cx="12" cy="14" r="2"/></svg>
+        <svg class="w-6 h-6 text-blue-400 flex-shrink-0 firebase-logo" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 6.53 6.06 9.61L4.09 8.44C3.39 9.93 3 11.58 3 13.32c0 4.03 2.87 7.43 6.67 8.21l-.02.22c-.07.42-.07.85-.07 1.25 0 3.31 2.69 6 6 6h.02c.01 0 .02 0 .03-.01 3.59-.17 6.47-3.12 6.47-6.76 0-3.86-3.13-7-7-7z"/></svg>
         <div class="flex-1">
           <div class="font-semibold text-sm text-white" id="bannerTitle">Menyiapkan...</div>
           <div class="text-xs text-gray-300 mt-1" id="bannerMessage">Mohon tunggu sebentar</div>
@@ -769,8 +729,8 @@
         <div class="flex items-start gap-3">
           <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <div>
-            <h3 class="font-semibold text-sm text-blue-300 mb-1">🏗️ Arsitektur Firebase-Centric</h3>
-            <p class="text-xs text-gray-400">Data disimpan ke <strong class="text-yellow-300">Firebase</strong> terlebih dahulu, kemudian <strong class="text-green-300">Spreadsheet</strong> akan menarik data otomatis.</p>
+            <h3 class="font-semibold text-sm text-blue-300 mb-1">🏗️ Arsitektur Firebase → Google Drive</h3>
+            <p class="text-xs text-gray-400">Data disimpan ke <strong class="text-yellow-300">Firebase</strong>, File dikonversi ke Base64, kemudian <strong class="text-green-300">Apps Script</strong> membuat file di <strong class="text-blue-300">Google Drive</strong>.</p>
           </div>
         </div>
       </div>
@@ -778,7 +738,7 @@
       <!-- Statistics -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
         <div class="card animate-in delay-1"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Data</div><div class="text-2xl font-bold" id="totalData">0</div></div>
-        <div class="card animate-in delay-2"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">✅ Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
+        <div class="card animate-in delay-2"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">🔥 Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
         <div class="card animate-in delay-3"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">📊 Spreadsheet</div><div class="text-2xl font-bold text-[--sheets]" id="sheetsData">0</div></div>
         <div class="card animate-in delay-4"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">⏳ Pending Sync</div><div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div></div>
       </div>
@@ -789,16 +749,15 @@
         <!-- FORM INPUT -->
         <div class="lg:col-span-3 no-print">
           <div class="card animate-in delay-3">
-            <!-- Edit Mode Banner Container -->
             <div id="editModeContainer"></div>
             
             <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--firebase]/20 to-[--firebase-orange]/20 flex items-center justify-center">
-                <svg class="w-5 h-5 text-[--firebase]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--drive]/20 to-[--sheets]/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-[--drive]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
               </div>
               <div>
                 <h2 class="text-lg font-semibold">Form Pengajuan</h2>
-                <p class="text-sm text-[--muted]">Simpan ke Firebase → Auto-sync ke Spreadsheet</p>
+                <p class="text-sm text-[--muted]">Simpan ke Firebase → File otomatis ke Google Drive</p>
               </div>
             </div>
 
@@ -834,15 +793,19 @@
 
               <div><label class="field-label" for="dibayarkan_kepada">Dibayarkan Kepada<span class="required-star">*</span></label><input type="text" id="dibayarkan_kepada" name="dibayarkan_kepada" class="input-field" placeholder="Nama penerima pembayaran" required></div>
 
-              <!-- UPLOAD FILE -->
+              <!-- UPLOAD FILE - BASE64 MODE -->
               <div>
-                <label class="field-label">Upload Bukti Dokumen</label>
+                <div class="flex items-center justify-between mb-2">
+                  <label class="field-label">Upload Bukti Dokumen</label>
+                  <span class="drive-badge">📁 Google Drive</span>
+                </div>
                 <div id="uploadArea" class="upload-area" onclick="document.getElementById('fileInput').click()">
                   <input type="file" id="fileInput" accept="image/*,.pdf" multiple hidden onchange="handleFileSelect(this)">
                   <div id="uploadPlaceholder">
                     <svg class="w-8 h-8 mx-auto mb-2 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                     <p class="text-sm text-[--muted]">Klik untuk upload bukti invoice/foto</p>
-                    <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, PDF (Maks 5MB)</p>
+                    <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, PDF (Maks 5MB per file)</p>
+                    <p class="text-xs text-blue-400 mt-1">File akan disimpan ke Google Drive via sync</p>
                   </div>
                   <div id="fileListDisplay" class="text-left mt-2 space-y-1"></div>
                 </div>
@@ -850,7 +813,6 @@
 
               <div><label class="field-label" for="catatan_tambahan">Catatan Tambahan <span class="text-[--muted] font-normal">(opsional)</span></label><textarea id="catatan_tambahan" name="catatan_tambahan" rows="2" class="input-field resize-none" placeholder="Tambahkan catatan khusus..."></textarea></div>
 
-              <!-- Validation Error Box -->
               <div id="validationError" class="validation-error">
                 <strong style="color:#fca5a5;font-size:14px;margin-bottom:8px;display:block;">Mohon lengkapi field berikut:</strong>
                 <ul id="validationErrorList"></ul>
@@ -879,13 +841,11 @@
               <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
             </div>
 
-            <!-- Tab Filter -->
             <div class="flex gap-1 mb-3 p-1 bg-[--bg-secondary] rounded-lg">
               <button class="tab-btn active flex-1" data-tab="Lunas">Lunas</button>
               <button class="tab-btn flex-1" data-tab="Belum Lunas">Belum Lunas</button>
             </div>
 
-            <!-- Date Filter -->
             <div class="mb-3 p-3 bg-[--bg-secondary] rounded-lg" id="dateFilterSection">
               <div class="flex items-center gap-2 mb-2">
                 <svg class="w-4 h-4 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -908,7 +868,7 @@
               <div class="text-center py-10 text-[--muted]">
                 <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 <p class="text-sm">Belum ada data</p>
-                <p class="text-xs mt-2 text-[--firebase]">Data akan tersimpan di Firebase & sync ke Spreadsheet</p>
+                <p class="text-xs mt-2 text-[--drive]">File otomatis tersimpan ke Google Drive</p>
               </div>
             </div>
           </div>
@@ -922,19 +882,18 @@
   <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content">
       <div class="flex items-center justify-between mb-5">
-        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">⚙️</span> Konfigurasi Sistem</h2>
-        <button id="closeModal" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup" onclick="closeSetupModal()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">⚙️</span> Konfigurasi Firebase</h2>
+        <button onclick="closeSetupModal()" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
 
       <div class="space-y-6">
         
-        <!-- Step 1: Firebase Config -->
         <div class="setup-step">
           <div class="flex items-start gap-3">
             <div class="step-number">1</div>
             <div class="flex-1">
               <h3 class="font-semibold text-base mb-2">🔥 Firebase Configuration</h3>
-              <p class="text-sm text-[--muted] mb-3">Input sekali, tersimpan permanen di browser ini.</p>
+              <p class="text-sm text-[--muted] mb-3">Hanya butuh Firestore (Gratis, tanpa kartu kredit).</p>
               
               <div class="example-config-box wrong-example">
                 <div class="flex items-center gap-2 mb-2"><span class="text-lg">❌</span><strong class="text-red-400 text-sm">Jangan copy ini:</strong></div>
@@ -943,7 +902,7 @@
 
               <div class="example-config-box">
                 <div class="flex items-center gap-2 mb-2"><span class="text-lg">✅</span><strong class="text-green-400 text-sm">Copy HANYA ini:</strong></div>
-                <div class="config-box">{<br>&nbsp;&nbsp;"apiKey": "AIzaSy...",<br>&nbsp;&nbsp;"authDomain": "...",<br>&nbsp;&nbsp;"projectId": "...",<br>&nbsp;&nbsp;"storageBucket": "...",<br>&nbsp;&nbsp;...<br>}</div>
+                <div class="config-box">{<br>&nbsp;&nbsp;"apiKey": "AIzaSy...",<br>&nbsp;&nbsp;"authDomain": "...",<br>&nbsp;&nbsp;"projectId": "...",<br>&nbsp;&nbsp;...<br>}</div>
               </div>
 
               <div class="mt-3">
@@ -957,37 +916,35 @@
           </div>
         </div>
 
-        <!-- Step 2: Info Arsitektur -->
         <div class="setup-step">
           <div class="flex items-start gap-3">
             <div class="step-number">2</div>
             <div class="flex-1">
-              <h3 class="font-semibold text-base mb-2">📖 Cara Kerja (PENTING!)</h3>
+              <h3 class="font-semibold text-base mb-2">📖 Cara Kerja File</h3>
               
               <div class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30">
                 <div class="space-y-3 text-sm text-gray-300">
                   <div class="flex items-start gap-2">
                     <span class="text-yellow-300 font-bold">1️⃣</span>
-                    <div><strong>User isi form</strong> → Data disimpan ke <span class="text-yellow-300">Firebase</span></div>
+                    <div>User upload file → Dikonversi jadi <strong class="text-blue-300">Base64</strong></div>
                   </div>
                   <div class="flex items-start gap-2">
                     <span class="text-green-300 font-bold">2️⃣</span>
-                    <div><strong>Spreadsheet</strong> (Google Apps Script) akan <em>menarik data</em> dari Firebase secara otomatis</div>
+                    <div>Data + Base64 disimpan ke <strong class="text-yellow-300">Firebase Firestore</strong></div>
                   </div>
                   <div class="flex items-start gap-2">
                     <span class="text-blue-300 font-bold">3️⃣</span>
-                    <div>Status sync ditandai di setiap data (<span class="text-green-300">✅ Synced</span> / <span class="text-yellow-300">⏳ Pending</span>)</div>
+                    <div><strong>Apps Script</strong> membuat file di <strong class="text-blue-300">Google Drive</strong> & dapat link shareable</div>
                   </div>
                 </div>
               </div>
 
               <div class="mt-3 p-3 bg-[--bg] rounded-lg border border-[--border]">
-                <p class="text-xs text-[--muted] mb-2 font-semibold">⚠️ PERHATIAN UNTUK SPREADSHEET:</p>
-                <p class="text-xs text-gray-400">Anda perlu setup <strong class="text-green-300">Google Apps Script</strong> yang menjalankan fungsi <code class="text-blue-400 bg-[--bg-secondary] px-1 rounded">pullFromFirebase()</code>. Script ini akan:</p>
-                <ul class="text-xs text-gray-400 mt-2 space-y-1 list-disc list-inside ml-4">
-                  <li>Membaca data dari Firebase (where <code class="text-green-400">synced_to_sheets == false</code>)</li>
-                  <li>Menulis ke Spreadsheet</li>
-                  <li>Update Firebase: <code class="text-green-400">synced_to_sheets = true</code></li>
+                <p class="text-xs text-[--muted] mb-2 font-semibold">⚠️ BATASAN:</p>
+                <ul class="text-xs text-gray-400 space-y-1 list-disc list-inside ml-4">
+                  <li>Maksimal <strong class="text-white">5MB per file</strong></li>
+                  <li>File muncul di Drive setelah <strong class="text-white">sync (max 1 jam)</strong></li>
+                  <li>Tidak perlu kartu kredit!</li>
                 </ul>
               </div>
             </div>
@@ -1013,7 +970,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             Print
           </button>
-          <button id="closeDocModal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup" onclick="closeDocumentModal()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+          <button onclick="closeDocumentModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
       </div>
 
@@ -1101,18 +1058,16 @@
   <!-- Toast -->
   <div id="toast" class="toast" role="alert"></div>
 
-  <!-- JAVASCRIPT -->
+  <!-- JAVASCRIPT - BASE64 MODE (TANPA FIREBASE STORAGE) -->
   <script>
     // =============================================
     // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v32',
-      WEBHOOK_URL: 'financesync_webhook_url_v11'
+      FIREBASE_CONFIG: 'financesync_firebase_config_v33'
     };
 
     let db = null;
-    let storage = null;
     let state = {
       isConnected: false,
       isConnecting: true,
@@ -1126,43 +1081,31 @@
       filterDateFrom: '',
       filterDateTo: '',
       editingDocId: null,
-      selectedFiles: []
+      selectedFiles: [] // Akan menyimpan base64 data
     };
 
     let elements = {};
 
     // =============================================
-    // 🔧 PERBAIKAN UTAMA: Fungsi Modal Setup
+    // MODAL FUNCTIONS
     // =============================================
-    
     function openSetupModal() {
       console.log('[Setup] Opening modal...');
       var modal = document.getElementById('setupModal');
       if (modal) {
         modal.classList.add('show');
-        console.log('[Setup] Modal opened successfully!');
-        
-        // Load saved config if exists
         var savedConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
         if (savedConfig && elements.firebaseConfigInput) {
           elements.firebaseConfigInput.value = savedConfig;
         }
-      } else {
-        console.error('[Setup] Modal element not found!');
-        alert('Error: Modal tidak ditemukan!');
       }
     }
 
     function closeSetupModal() {
-      console.log('[Setup] Closing modal...');
       var modal = document.getElementById('setupModal');
-      if (modal) {
-        modal.classList.remove('show');
-        console.log('[Setup] Modal closed.');
-      }
+      if (modal) modal.classList.remove('show');
     }
 
-    // Make functions globally accessible
     window.openSetupModal = openSetupModal;
     window.closeSetupModal = closeSetupModal;
 
@@ -1170,8 +1113,6 @@
     // INITIALIZATION
     // =============================================
     function init() {
-      console.log('[Init] Starting initialization...');
-      
       try {
         elements = {
           form: document.getElementById('dataForm'),
@@ -1210,35 +1151,25 @@
           uploadPlaceholder: document.getElementById('uploadPlaceholder')
         };
 
-        console.log('[Init] Elements initialized:', Object.keys(elements).length);
-
         loadSavedConfigs();
         document.getElementById('tanggal').valueAsDate = new Date();
 
         var now = new Date();
         var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
         var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        var fromStr = firstDay.getFullYear() + '-' + String(firstDay.getMonth() + 1).padStart(2, '0') + '-' + String(firstDay.getDate()).padStart(2, '0');
-        var toStr = lastDay.getFullYear() + '-' + String(lastDay.getMonth() + 1).padStart(2, '0') + '-' + String(lastDay.getDate()).padStart(2, '0');
-        state.filterDateFrom = fromStr;
-        state.filterDateTo = toStr;
-        document.getElementById('filterDateFrom').value = fromStr;
-        document.getElementById('filterDateTo').value = toStr;
+        state.filterDateFrom = firstDay.toISOString().split('T')[0];
+        state.filterDateTo = lastDay.toISOString().split('T')[0];
+        document.getElementById('filterDateFrom').value = state.filterDateFrom;
+        document.getElementById('filterDateTo').value = state.filterDateTo;
 
         renderFormItems();
         setupEventListeners();
-        
         initConnection();
         generateInvoiceAfterConnection();
 
         window.addEventListener('beforeunload', function() {
-          if (state.unsubscribeListener) {
-            state.unsubscribeListener();
-          }
+          if (state.unsubscribeListener) state.unsubscribeListener();
         });
-
-        console.log('[Init] Initialization complete!');
-        
       } catch (error) {
         console.error('[Init Error]:', error);
         showToast('Error saat inisialisasi: ' + error.message, 'error');
@@ -1247,11 +1178,8 @@
 
     async function generateInvoiceAfterConnection() {
       var attempts = 0;
-      var maxAttempts = 20;
-      
       var checkInterval = setInterval(async function() {
         attempts++;
-        
         if (db && state.isConnected) {
           clearInterval(checkInterval);
           try {
@@ -1259,49 +1187,36 @@
             if (inv && !document.getElementById('no_invoice').value) {
               document.getElementById('no_invoice').value = inv;
             }
-          } catch (e) {
-            console.warn('[Auto Invoice] Failed:', e.message);
-          }
-        } else if (attempts >= maxAttempts) {
+          } catch (e) { console.warn('[Auto Invoice] Failed:', e.message); }
+        } else if (attempts >= 20) {
           clearInterval(checkInterval);
-          console.warn('[Auto Invoice] Timeout');
         }
       }, 500);
     }
 
-    // =============================================
-    // LOAD SAVED CONFIGURATIONS
-    // =============================================
     function loadSavedConfigs() {
-      const savedFirebaseConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
-      if (savedFirebaseConfig && elements.firebaseConfigInput) {
-        elements.firebaseConfigInput.value = savedFirebaseConfig;
-      }
+      const saved = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
+      if (saved && elements.firebaseConfigInput) elements.firebaseConfigInput.value = saved;
     }
 
-    // =============================================
-    // showBanner function
-    // =============================================
     function showBanner(type, title, message) {
       const banner = elements.connectionBanner;
       if (!banner) return;
-      
       banner.style.display = 'flex';
       banner.className = 'connection-banner no-print ' + type;
-      
       if (elements.bannerTitle) elements.bannerTitle.textContent = title;
       if (elements.bannerMessage) elements.bannerMessage.textContent = message;
     }
 
     // =============================================
-    // CONNECTION INITIALIZER (WITH STORAGE)
+    // CONNECTION (Firestore Only - No Storage!)
     // =============================================
     async function initConnection() {
-      showBanner('connecting', 'Menyiapkan Koneksi...', 'Menghubungkan Firebase...');
+      showBanner('connecting', 'Menyiapkan Koneksi...', 'Menghubungkan Firebase Firestore...');
       
-      const hasFirebaseConfig = !!localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
+      const hasConfig = !!localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
 
-      if (!hasFirebaseConfig) {
+      if (!hasConfig) {
         setTimeout(function() { 
           openSetupModal(); 
           showBanner('error', 'Belum Terkonfigurasi', 'Klik Setup untuk konfigurasi Firebase');
@@ -1312,23 +1227,17 @@
       try {
         const config = JSON.parse(localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG));
         
-        if (!firebase.apps.length) {
-          firebase.initializeApp(config);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(config);
         
         db = firebase.firestore();
-        storage = firebase.storage();
+        // ❌ TIDAK PAKE STORAGE: storage = firebase.storage();
         
         await db.collection('submissions').limit(1).get();
         
         state.isConnected = true;
-        
-        console.log('[Firebase] ✅ Connected (DB & Storage)!');
-        
-        if (elements.archBanner) {
-          elements.archBanner.style.display = 'block';
-        }
-        
+        console.log('[Firebase] ✅ Connected (Firestore Only - No Storage)!');
+
+        if (elements.archBanner) elements.archBanner.style.display = 'block';
         updateConnectionUI(true);
         applyDateFilter();
         
@@ -1340,25 +1249,20 @@
       }
     }
 
-    // =============================================
-    // UPDATE CONNECTION UI
-    // =============================================
     function updateConnectionUI(connected) {
-      const banner = elements.connectionBanner;
       const dot = elements.statusDot;
       const text = elements.statusText;
-      
-      if (!banner || !dot || !text) return;
+      if (!dot || !text) return;
       
       if (connected) {
-        banner.className = 'connection-banner connected no-print';
+        elements.connectionBanner.className = 'connection-banner connected no-print';
         dot.className = 'status-dot success';
-        text.textContent = 'Firebase Connected';
+        text.textContent = 'Firestore Connected';
         text.className = 'status-text status-text-success';
         elements.bannerTitle.textContent = '✅ Firebase Terhubung';
-        elements.bannerMessage.textContent = 'Data akan disimpan ke Firebase dan di-sync ke Spreadsheet.';
+        elements.bannerMessage.textContent = 'Data & File (Base64) akan disimpan ke Firestore.';
       } else {
-        banner.className = 'connection-banner error no-print';
+        elements.connectionBanner.className = 'connection-banner error no-print';
         dot.className = 'status-dot error';
         text.textContent = 'Tidak Terhubung';
         text.className = 'status-text status-text-error';
@@ -1368,7 +1272,7 @@
     }
 
     // =============================================
-    // SAVE FIREBASE CONFIG
+    // SAVE CONFIG
     // =============================================
     window.saveFirebaseConfig = async function() {
       try {
@@ -1376,36 +1280,19 @@
         const inputStr = inputEl ? inputEl.value.trim() : '';
         const errorEl = document.getElementById('configError');
         
-        if (errorEl) {
-          errorEl.classList.add('hidden');
-          errorEl.textContent = '';
-        }
-        
-        if (!inputStr) { 
-          showError('Paste Firebase config!'); 
-          return; 
-        }
+        if (errorEl) { errorEl.classList.add('hidden'); errorEl.textContent = ''; }
+        if (!inputStr) { showError('Paste Firebase config!'); return; }
         
         let config;
-        try {
-          config = JSON.parse(inputStr);
-        } catch (parseErr) {
-          showError('Format JSON tidak valid!');
-          return;
-        }
+        try { config = JSON.parse(inputStr); }
+        catch (parseErr) { showError('Format JSON tidak valid!'); return; }
         
-        if (!config.apiKey || !config.projectId) { 
-          showError('Config tidak lengkap (apiKey & projectId wajib)'); 
-          return; 
-        }
+        if (!config.apiKey || !config.projectId) { showError('Config tidak lengkap!'); return; }
         
         localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
-        
         showToast('Config tersimpan! Menghubungkan...', 'info');
         closeSetupModal();
-        
         await initConnection();
-        
       } catch (error) {
         console.error('[Save Config Error]:', error);
         showError('Gagal menyimpan: ' + error.message);
@@ -1413,11 +1300,8 @@
     };
 
     function showError(msg) {
-      const errorEl = document.getElementById('configError');
-      if (errorEl) {
-        errorEl.textContent = msg;
-        errorEl.classList.remove('hidden');
-      }
+      const el = document.getElementById('configError');
+      if (el) { el.textContent = msg; el.classList.remove('hidden'); }
       showToast(msg, 'error');
     }
 
@@ -1425,24 +1309,13 @@
     // EVENT LISTENERS
     // =============================================
     function setupEventListeners() {
-      console.log('[Events] Setting up event listeners...');
-      
-      if (elements.form) {
-        elements.form.addEventListener('submit', handleSubmit);
-      }
-      
-      if (elements.previewBtn) {
-        elements.previewBtn.addEventListener('click', handlePreview);
-      }
+      if (elements.form) elements.form.addEventListener('submit', handleSubmit);
+      if (elements.previewBtn) elements.previewBtn.addEventListener('click', handlePreview);
       
       if (elements.statusInput) {
         elements.statusInput.addEventListener('change', function(e) {
           if (elements.paymentDateContainer) {
             elements.paymentDateContainer.style.display = e.target.value === 'Lunas' ? 'block' : 'none';
-          }
-          if (e.target.value !== 'Lunas') {
-            var payDateInput = document.getElementById('tanggal_pembayaran');
-            if (payDateInput) payDateInput.value = '';
           }
         });
         if (elements.statusInput.value !== 'Lunas' && elements.paymentDateContainer) {
@@ -1450,28 +1323,20 @@
         }
       }
 
-      // 🔧 PERBAIKAN: Event listener untuk tombol setup (backup)
       if (elements.setupBtn) {
         elements.setupBtn.addEventListener('click', function(e) {
           e.preventDefault();
-          console.log('[Setup Button] Clicked via addEventListener');
           openSetupModal();
         });
       }
 
-      if (elements.closeModal) {
-        elements.closeModal.addEventListener('click', closeSetupModal);
-      }
-      
+      if (elements.closeModal) elements.closeModal.addEventListener('click', closeSetupModal);
       if (elements.setupModal) {
         elements.setupModal.addEventListener('click', function(e) {
           if (e.target === elements.setupModal) closeSetupModal();
         });
       }
-      
-      if (elements.closeDocModal) {
-        elements.closeDocModal.addEventListener('click', closeDocumentModal);
-      }
+      if (elements.closeDocModal) elements.closeDocModal.addEventListener('click', closeDocumentModal);
       
       if (elements.clearHistory) {
         elements.clearHistory.addEventListener('click', function() {
@@ -1481,9 +1346,8 @@
                 var batch = db.batch();
                 snapshot.docs.forEach(function(doc) { batch.delete(doc.ref); });
                 return batch.commit();
-              }).then(function() {
-                showToast('Semua data dihapus', 'success');
-              }).catch(function(err) { showToast('Error: ' + err.message, 'error'); });
+              }).then(function() { showToast('Semua data dihapus', 'success'); })
+               .catch(function(err) { showToast('Error: ' + err.message, 'error'); });
             }
           }
         });
@@ -1502,27 +1366,11 @@
 
       var filterFrom = document.getElementById('filterDateFrom');
       var filterTo = document.getElementById('filterDateTo');
-      
-      if (filterFrom) {
-        filterFrom.addEventListener('change', function() {
-          state.filterDateFrom = this.value;
-          applyDateFilter();
-        });
-      }
-      
-      if (filterTo) {
-        filterTo.addEventListener('change', function() {
-          state.filterDateTo = this.value;
-          applyDateFilter();
-        });
-      }
+      if (filterFrom) filterFrom.addEventListener('change', function() { state.filterDateFrom = this.value; applyDateFilter(); });
+      if (filterTo) filterTo.addEventListener('change', function() { state.filterDateTo = this.value; applyDateFilter(); });
 
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-          closeSetupModal();
-          closeDocumentModal();
-          closeDeleteModal();
-        }
+        if (e.key === 'Escape') { closeSetupModal(); closeDocumentModal(); closeDeleteModal(); }
       });
 
       if (elements.form) {
@@ -1536,17 +1384,60 @@
           }, 10);
         });
       }
-
-      console.log('[Events] Event listeners set up complete!');
     }
 
     // =============================================
-    // FILE HANDLING FUNCTIONS
+    // 🆕 FILE HANDLING - BASE64 MODE
     // =============================================
-    
     window.handleFileSelect = function(input) {
-      state.selectedFiles = Array.from(input.files);
-      updateFileDisplay();
+      var files = Array.from(input.files);
+      
+      if (files.length === 0) {
+        state.selectedFiles = [];
+        updateFileDisplay();
+        return;
+      }
+      
+      // Validasi ukuran maksimal 5MB per file
+      var maxSize = 5 * 1024 * 1024;
+      var oversized = files.filter(f => f.size > maxSize);
+      
+      if (oversized.length > 0) {
+        showToast('File ' + oversized[0].name + ' terlalu besar! Maksimal 5MB.', 'error');
+        input.value = '';
+        return;
+      }
+      
+      state.selectedFiles = [];
+      var processed = 0;
+      
+      files.forEach(function(file, index) {
+        var reader = new FileReader();
+        
+        reader.onload = function(e) {
+          // Konversi ke Base64 dan simpan
+          state.selectedFiles.push({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            base64: e.target.result.split(',')[1], // Hapus prefix "data:xxx;base64,"
+            lastModified: file.lastModified
+          });
+          
+          processed++;
+          if (processed === files.length) {
+            updateFileDisplay();
+            console.log('[Files] Ready:', state.selectedFiles.length, 'files (~' + 
+              Math.round(state.selectedFiles.reduce((acc, f) => acc + (f.base64?.length || 0), 0) / 1024 / 1024 * 0.75).toFixed(2) + 'MB)');
+          }
+        };
+        
+        reader.onerror = function() {
+          showToast('Gagal membaca file: ' + file.name, 'error');
+        };
+        
+        reader.readAsDataURL(file);
+      });
     };
 
     function updateFileDisplay() {
@@ -1560,11 +1451,16 @@
         placeholder.style.display = 'none';
         area.classList.add('has-file');
         
-        display.innerHTML = state.selectedFiles.map(function(file, idx) {
+        display.innerHTML = state.selectedFiles.map(function(file) {
+          var sizeKB = (file.size / 1024).toFixed(1);
+          var icon = file.type.startsWith('image/') ? '🖼️' : '📄';
+          var base64SizeKB = Math.round((file.base64?.length || 0) * 0.75 / 1024);
+          
           return '<div class="file-item">' +
-            '<svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' +
-            '<span class="text-green-400 text-xs truncate">' + file.name + '</span>' +
-            '<span class="text-gray-500 text-xs ml-auto">' + (file.size / 1024).toFixed(1) + ' KB</span>' +
+            '<span style="font-size:16px">' + icon + '</span>' +
+            '<span class="text-green-400 text-xs truncate flex-1">' + escapeHtml(file.name) + '</span>' +
+            '<span class="text-gray-500 text-xs">' + sizeKB + ' KB</span>' +
+            '<span class="drive-badge">' + base64SizeKB + 'KB</span>' +
           '</div>';
         }).join('');
       } else {
@@ -1619,14 +1515,12 @@
 
     function calculateTotal() {
       var total = state.items.reduce(function(acc, curr) { return acc + (parseInt(curr.nominal) || 0); }, 0);
-      if (elements.grandTotalDisplay) {
-        elements.grandTotalDisplay.value = formatNumber(total);
-      }
+      if (elements.grandTotalDisplay) elements.grandTotalDisplay.value = formatNumber(total);
       return total;
     }
 
     // =============================================
-    // FORM VALIDATION
+    // VALIDATION
     // =============================================
     function validateForm() {
       var errors = [];
@@ -1653,9 +1547,7 @@
         return false;
       }
 
-      if (elements.validationError) {
-        elements.validationError.classList.remove('show');
-      }
+      if (elements.validationError) elements.validationError.classList.remove('show');
       return true;
     }
 
@@ -1676,7 +1568,7 @@
         tanggal_pembayaran: fd.get('tanggal_pembayaran') || '',
         dibayarkan_kepada: fd.get('dibayarkan_kepada') || '',
         catatan_tambahan: fd.get('catatan_tambahan') || '',
-        source: 'FinanceSync Pro v3.2',
+        source: 'FinanceSync Pro v3.3 (Drive Edition)',
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         dibuat_oleh: 'Nur Wahyudi',
         disetujui_oleh: 'Harijon',
@@ -1691,104 +1583,75 @@
     }
 
     // =============================================
-    // PREVIEW & DOCUMENT FUNCTIONS
+    // DOCUMENT FUNCTIONS
     // =============================================
     function handlePreview() {
       var data = getFormData();
       if (data.items.length === 0 || data.items.every(function(i) { return !i.ket; })) { showToast('Lengkapi minimal 1 item', 'error'); return; }
       state.lastFormData = data;
       populateDocuments(data);
-      if (elements.documentModal) {
-        elements.documentModal.classList.add('show');
-      }
+      if (elements.documentModal) elements.documentModal.classList.add('show');
     }
 
     function populateDocuments(data) {
       var ft = 'Rp ' + formatNumber(data.total_nominal);
       
-      var p1_lokasi = document.getElementById('p1_lokasi');
-      var p1_tanggal = document.getElementById('p1_tanggal');
-      var p1_kode = document.getElementById('p1_kode');
-      var p1_jenis = document.getElementById('p1_jenis');
-      var p1_total = document.getElementById('p1_total');
-      var p1_dibuat = document.getElementById('p1_dibuat');
-      var p1_disetujui = document.getElementById('p1_disetujui');
-
-      if (p1_lokasi) p1_lokasi.textContent = data.lokasi || '-';
-      if (p1_tanggal) p1_tanggal.textContent = formatDate(data.tanggal);
-      if (p1_kode) p1_kode.textContent = data.kode || '-';
-      if (p1_jenis) p1_jenis.textContent = data.jenis_pengajuan || '-';
-      if (p1_total) p1_total.textContent = ft;
-      if (p1_dibuat) p1_dibuat.textContent = data.dibuat_oleh;
-      if (p1_disetujui) p1_disetujui.textContent = data.disetujui_oleh;
-
-      var p2_tanggal = document.getElementById('p2_tanggal');
-      var p2_kode = document.getElementById('p2_kode');
-      var p2_dibayarkan = document.getElementById('p2_dibayarkan');
-      var p2_jenis = document.getElementById('p2_jenis');
-      var p2_total = document.getElementById('p2_total');
-      var p2_name_keuangan = document.getElementById('p2_name_keuangan');
-      var p2_name_dirkeuangan = document.getElementById('p2_name_dirkeuangan');
-      var p2_name_direktur = document.getElementById('p2_name_direktur');
-      var p2_name_accounting = document.getElementById('p2_name_accounting');
-
-      if (p2_tanggal) p2_tanggal.textContent = formatDate(data.tanggal);
-      if (p2_kode) p2_kode.textContent = data.kode || '-';
-      if (p2_dibayarkan) p2_dibayarkan.textContent = data.dibayarkan_kepada || '-';
-      if (p2_jenis) p2_jenis.textContent = data.jenis_pengajuan || '-';
-      if (p2_total) p2_total.textContent = ft;
-      if (p2_name_keuangan) p2_name_keuangan.textContent = data.keuangan;
-      if (p2_name_dirkeuangan) p2_name_dirkeuangan.textContent = data.dir_keuangan;
-      if (p2_name_direktur) p2_name_direktur.textContent = data.direktur_utama;
-      if (p2_name_accounting) p2_name_accounting.textContent = data.accounting;
-
-      var p1_table_body = document.getElementById('p1_table_body');
-      var p2_table_body = document.getElementById('p2_table_body');
+      var setVal = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || '-'; };
+      setVal('p1_lokasi', data.lokasi);
+      setVal('p1_tanggal', formatDate(data.tanggal));
+      setVal('p1_kode', data.kode);
+      setVal('p1_jenis', data.jenis_pengajuan);
+      setVal('p1_total', ft);
+      setVal('p1_dibuat', data.dibuat_oleh);
+      setVal('p1_disetujui', data.disetujui_oleh);
       
-      if (p1_table_body) {
-        p1_table_body.innerHTML = data.items.map(function(item, idx) {
-          return '<tr><td class="col-no">' + (idx + 1) + '</td><td class="col-item">' + escapeHtml(item.ket) + '</td><td class="col-vol">' + escapeHtml(item.qty) + '</td><td class="col-nominal">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td><td class="col-ket">' + escapeHtml(item.keterangan || '-') + '</td></tr>';
-        }).join('');
-      }
+      setVal('p2_tanggal', formatDate(data.tanggal));
+      setVal('p2_kode', data.kode);
+      setVal('p2_dibayarkan', data.dibayarkan_kepada);
+      setVal('p2_jenis', data.jenis_pengajuan);
+      setVal('p2_total', ft);
+      setVal('p2_name_keuangan', data.keuangan);
+      setVal('p2_name_dirkeuangan', data.dir_keuangan);
+      setVal('p2_name_direktur', data.direktur_utama);
+      setVal('p2_name_accounting', data.accounting);
+
+      var p1_body = document.getElementById('p1_table_body');
+      var p2_body = document.getElementById('p2_table_body');
       
-      if (p2_table_body) {
-        p2_table_body.innerHTML = data.items.map(function(item, idx) {
-          return '<tr><td style="text-align:center">' + (idx + 1) + '</td><td>' + escapeHtml(item.ket) + '</td><td style="text-align:center">' + escapeHtml(item.qty) + '</td><td style="text-align:right">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td></tr>';
-        }).join('');
-      }
+      if (p1_body) p1_body.innerHTML = data.items.map(function(item, idx) {
+        return '<tr><td class="col-no">' + (idx+1) + '</td><td class="col-item">' + escapeHtml(item.ket) + '</td><td class="col-vol">' + escapeHtml(item.qty) + '</td><td class="col-nominal">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td><td class="col-ket">' + escapeHtml(item.keterangan || '-') + '</td></tr>';
+      }).join('');
+      
+      if (p2_body) p2_body.innerHTML = data.items.map(function(item, idx) {
+        return '<tr><td style="text-align:center">' + (idx+1) + '</td><td>' + escapeHtml(item.ket) + '</td><td style="text-align:center">' + escapeHtml(item.qty) + '</td><td style="text-align:right">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td></tr>';
+      }).join('');
 
       var hasNote = data.catatan_tambahan && data.catatan_tambahan.trim();
-      var p1_notes_wrapper = document.getElementById('p1_notes_manual_wrapper');
-      var p2_notes_wrapper = document.getElementById('p2_notes_manual_wrapper');
-      var p1_notes = document.getElementById('p1_notes_manual');
-      var p2_notes = document.getElementById('p2_notes_manual');
+      ['p1_notes_manual_wrapper', 'p2_notes_manual_wrapper'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = hasNote ? 'block' : 'none';
+      });
       
-      if (p1_notes_wrapper) p1_notes_wrapper.style.display = hasNote ? 'block' : 'none';
-      if (p2_notes_wrapper) p2_notes_wrapper.style.display = hasNote ? 'block' : 'none';
       if (hasNote) {
-        if (p1_notes) p1_notes.textContent = data.catatan_tambahan.trim();
-        if (p2_notes) p2_notes.textContent = data.catatan_tambahan.trim();
+        var p1n = document.getElementById('p1_notes_manual');
+        var p2n = document.getElementById('p2_notes_manual');
+        if (p1n) p1n.textContent = data.catatan_tambahan.trim();
+        if (p2n) p2n.textContent = data.catatan_tambahan.trim();
       }
     }
 
     function closeDocumentModal() {
-      if (elements.documentModal) {
-        elements.documentModal.classList.remove('show');
-      }
+      if (elements.documentModal) elements.documentModal.classList.remove('show');
     }
-
     window.closeDocumentModal = closeDocumentModal;
 
-    // =============================================
-    // DOWNLOAD PDF
-    // =============================================
     async function downloadAsPDF() {
       var element = document.getElementById('pdf-wrapper');
       if (!element) return;
       
       var opt = {
         margin: 0,
-        filename: 'Invoice_' + (state.lastFormData && state.lastFormData.kode ? state.lastFormData.kode : 'FinanceSync') + '_' + new Date().toISOString().split('T')[0] + '.pdf',
+        filename: 'Invoice_' + (state.lastFormData?.kode || 'FinanceSync') + '_' + new Date().toISOString().split('T')[0] + '.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, letterRendering: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -1803,30 +1666,23 @@
         showToast('Gagal membuat PDF: ' + error.message, 'error');
       }
     }
-
     window.downloadAsPDF = downloadAsPDF;
 
     // =============================================
-    // HELPER FUNCTIONS
+    // HELPERS
     // =============================================
     function toRoman(num) {
-      var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
-      var syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
-      var result = '';
-      for (var i = 0; i < vals.length; i++) {
-        while (num >= vals[i]) { result += syms[i]; num -= vals[i]; }
-      }
+      var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1], syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'], result = '';
+      for (var i = 0; i < vals.length; i++) { while (num >= vals[i]) { result += syms[i]; num -= vals[i]; } }
       return result;
     }
 
     async function autoGenerateInvoice() {
       if (!db) return null;
       try {
-        var now = new Date();
-        var month = now.getMonth(); 
-        var year = now.getFullYear();
-        var startDate = year + '-' + String(month + 1).padStart(2, '0') + '-01';
-        var endDate = year + '-' + String(month + 1).padStart(2, '0') + '-31';
+        var now = new Date(), month = now.getMonth(), year = now.getFullYear();
+        var startDate = year + '-' + String(month+1).padStart(2,'0') + '-01';
+        var endDate = year + '-' + String(month+1).padStart(2,'0') + '-31';
 
         var snapshot = await db.collection('submissions')
           .where('tanggal', '>=', startDate)
@@ -1836,23 +1692,15 @@
 
         var maxNum = 0;
         snapshot.forEach(function(doc) {
-          var noInv = doc.data().no_invoice || '';
-          var parts = noInv.split('/');
-          var lastPart = parts[parts.length - 1];
-          var match = lastPart.match(/^(\d+)$/);
-          if (match) {
-            var n = parseInt(match[1]);
-            if (n > maxNum) maxNum = n;
-          }
+          var parts = (doc.data().no_invoice || '').split('/');
+          var match = parts[parts.length-1]?.match(/^(\d+)$/);
+          if (match) { var n = parseInt(match[1]); if (n > maxNum) maxNum = n; }
         });
 
-        var nextNum = maxNum + 1;
-        var romanMonth = toRoman(month + 1);
-        return 'BKK-NMSA/' + romanMonth + '/' + year + '/' + String(nextNum).padStart(4, '0');
-
+        return 'BKK-NMSA/' + toRoman(month+1) + '/' + year + '/' + String(maxNum+1).padStart(4,'0');
       } catch (error) {
         console.warn('[Auto Invoice Error]:', error.message);
-        return 'BKK-NMSA/' + toRoman(new Date().getMonth() + 1) + '/' + new Date().getFullYear() + '/0001';
+        return 'BKK-NMSA/' + toRoman(new Date().getMonth()+1) + '/' + new Date().getFullYear() + '/0001';
       }
     }
 
@@ -1865,29 +1713,18 @@
           .where('dibayarkan_kepada', '==', data.dibayarkan_kepada)
           .get();
 
-        var duplicate = false;
+        var dup = false;
         snapshot.forEach(function(doc) {
-          var existing = doc.data();
-          if (existing.lokasi === data.lokasi &&
-              existing.kode === data.kode &&
-              existing.jenis_pengajuan === data.jenis_pengajuan &&
-              existing.status === data.status &&
-              JSON.stringify(existing.items || []) === JSON.stringify(data.items)) {
-            duplicate = true;
-          }
+          var e = doc.data();
+          if (e.lokasi === data.lokasi && e.kode === data.kode && e.jenis_pengajuan === data.jenis_pengajuan && e.status === data.status && JSON.stringify(e.items||[]) === JSON.stringify(data.items)) dup = true;
         });
-        return duplicate;
-      } catch (error) {
-        console.warn('[Duplicate Check Error]:', error.message);
-        return false;
-      }
+        return dup;
+      } catch (e) { return false; }
     }
 
     function clearEditMode() {
       state.editingDocId = null;
-      if (elements.editModeContainer) {
-        elements.editModeContainer.innerHTML = '';
-      }
+      if (elements.editModeContainer) elements.editModeContainer.innerHTML = '';
     }
 
     window.cancelEdit = function() {
@@ -1897,40 +1734,25 @@
       state.selectedFiles = [];
       updateFileDisplay();
       renderFormItems();
-      var tanggalInput = document.getElementById('tanggal');
-      if (tanggalInput) tanggalInput.valueAsDate = new Date();
-      if (elements.statusInput && elements.statusInput.value !== 'Lunas' && elements.paymentDateContainer) {
-        elements.paymentDateContainer.style.display = 'none';
-      }
+      var t = document.getElementById('tanggal');
+      if (t) t.valueAsDate = new Date();
+      if (elements.statusInput?.value !== 'Lunas' && elements.paymentDateContainer) elements.paymentDateContainer.style.display = 'none';
       resetSubmitButton();
       showToast('Mode edit dibatalkan', 'info');
     };
 
     function withTimeout(promise, ms, label) {
-      return Promise.race([
-        promise,
-        new Promise(function(_, reject) {
-          setTimeout(function() { reject(new Error(label + ' timeout (' + ms / 1000 + 's)')); }, ms);
-        })
-      ]);
+      return Promise.race([promise, new Promise(function(_, reject) { setTimeout(function() { reject(new Error(label + ' timeout')); }, ms); })]);
     }
 
     // =============================================
-    // MAIN SUBMIT HANDLER
+    // 🎯 MAIN SUBMIT - BASE64 MODE
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
 
-      if (!validateForm()) {
-        showToast('Mohon lengkapi semua field yang ditandai *', 'error');
-        return;
-      }
-
-      if (!db) {
-        showToast('Firebase belum terhubung. Setup dulu.', 'error');
-        openSetupModal();
-        return;
-      }
+      if (!validateForm()) { showToast('Mohon lengkapi semua field yang ditandai *', 'error'); return; }
+      if (!db) { showToast('Firebase belum terhubung. Setup dulu.', 'error'); openSetupModal(); return; }
 
       var data = getFormData();
       var isEditMode = !!state.editingDocId;
@@ -1940,8 +1762,7 @@
         elements.submitBtn.disabled = true;
         elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengecek duplikat...</span>';
 
-        var isDuplicate = await checkDuplicate(data);
-        if (isDuplicate) {
+        if (await checkDuplicate(data)) {
           showToast('Transaksi duplikat!', 'error');
           elements.submitBtn.disabled = false;
           resetSubmitButton();
@@ -1951,29 +1772,32 @@
         if (!data.no_invoice.trim()) {
           elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Generate No Invoice...</span>';
           data.no_invoice = await autoGenerateInvoice();
-          var noInvInput = document.getElementById('no_invoice');
-          if (noInvInput) noInvInput.value = data.no_invoice;
+          var ni = document.getElementById('no_invoice');
+          if (ni) ni.value = data.no_invoice;
         }
       }
 
       elements.submitBtn.disabled = true;
-      elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan ke Firebase...</span>';
+      elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan...</span>';
 
       try {
+        // 🆕 PROSES FILE KE BASE64
         var uploadedFiles = [];
-        if (state.selectedFiles.length > 0 && storage) {
-          elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengupload ' + state.selectedFiles.length + ' file...</span>';
+        if (state.selectedFiles.length > 0) {
+          elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengkonversi ' + state.selectedFiles.length + ' file ke Base64...</span>';
           
-          for (var i = 0; i < state.selectedFiles.length; i++) {
-            var file = state.selectedFiles[i];
-            var fileName = 'invoices/' + Date.now() + '_' + file.name;
-            var storageRef = storage.ref(fileName);
-            
-            await storageRef.put(file);
-            var downloadURL = await storageRef.getDownloadURL();
-            uploadedFiles.push({ name: file.name, url: downloadURL });
-          }
-          console.log('[Storage] Files uploaded:', uploadedFiles.length);
+          uploadedFiles = state.selectedFiles.map(function(file) {
+            return {
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              base64Data: file.base64, // 🔑 DATA BASE64
+              uploadedAt: new Date().toISOString(),
+              status: 'pending_drive_upload' // Flag untuk Apps Script
+            };
+          });
+          
+          console.log('[Submit] Files converted to Base64:', uploadedFiles.length, 'files');
         }
 
         var firebaseData = {
@@ -1995,7 +1819,7 @@
           dir_keuangan: data.dir_keuangan,
           direktur_utama: data.direktur_utama,
           accounting: data.accounting,
-          files: uploadedFiles,
+          files: uploadedFiles, // 🔑 SIMPAN BASE64 DI FIRESTORE
           synced_to_sheets: false,
           synced_at: null,
           sheets_error: null
@@ -2015,26 +1839,19 @@
         console.log('[Firebase] ✅ ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', isEditMode ? state.editingDocId : docRef.id);
         
         state.lastFormData = Object.assign({}, data, { id: isEditMode ? state.editingDocId : docRef.id });
-
         saveSuccess = true;
 
-        showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan!') + ' File bukti tersimpan di Cloud.', 'firebase');
+        showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan!') + ' File akan otomatis ke Google Drive.', 'drive');
         
         populateDocuments(data);
-        if (elements.documentModal) {
-          elements.documentModal.classList.add('show');
-        }
+        if (elements.documentModal) elements.documentModal.classList.add('show');
 
       } catch (error) {
         console.error('[Firebase Save Error]:', error);
-        
         let errorMsg = error.message || 'Unknown error';
         if (errorMsg.indexOf('PERMISSION_DENIED') > -1 || errorMsg.indexOf('Missing or insufficient permissions') > -1) {
-          errorMsg = 'Permission denied! Ubah Security Rules Firebase & Storage.';
-        } else if (errorMsg.indexOf('timeout') > -1) {
-          errorMsg = 'Firebase tidak merespon. Cek koneksi internet.';
+          errorMsg = 'Permission denied! Cek Firestore Rules.';
         }
-        
         showToast('Gagal menyimpan: ' + errorMsg, 'error');
       }
 
@@ -2047,18 +1864,14 @@
         state.selectedFiles = [];
         updateFileDisplay();
         renderFormItems();
-        var tanggalInput = document.getElementById('tanggal');
-        if (tanggalInput) tanggalInput.valueAsDate = new Date();
-        if (elements.statusInput && elements.statusInput.value !== 'Lunas' && elements.paymentDateContainer) {
-          elements.paymentDateContainer.style.display = 'none';
-        }
+        var t = document.getElementById('tanggal');
+        if (t) t.valueAsDate = new Date();
+        if (elements.statusInput?.value !== 'Lunas' && elements.paymentDateContainer) elements.paymentDateContainer.style.display = 'none';
         resetSubmitButton();
         
         autoGenerateInvoice().then(function(inv) {
-          if (inv) {
-            var noInvInput = document.getElementById('no_invoice');
-            if (noInvInput) noInvInput.value = inv;
-          }
+          var ni = document.getElementById('no_invoice');
+          if (inv && ni) ni.value = inv;
         });
       } else {
         resetSubmitButton(isEditMode);
@@ -2067,7 +1880,6 @@
 
     function resetSubmitButton(isEdit) {
       if (!elements.submitBtn) return;
-      
       if (isEdit) {
         elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
       } else {
@@ -2076,82 +1888,48 @@
     }
 
     // =============================================
-    // DATE FILTER FUNCTIONS
+    // DATE FILTER & LISTENER
     // =============================================
     function applyDateFilter() {
       if (!db) return;
+      var from = state.filterDateFrom, to = state.filterDateTo;
 
-      var from = state.filterDateFrom;
-      var to = state.filterDateTo;
-
-      if (!from && !to) {
-        startRealtimeListener();
-        return;
-      }
+      if (!from && !to) { startRealtimeListener(); return; }
 
       var query = db.collection('submissions').orderBy('tanggal', 'desc');
-
-      if (from) {
-        query = query.where('tanggal', '>=', from);
-      }
-      if (to) {
-        query = query.where('tanggal', '<=', to);
-      }
+      if (from) query = query.where('tanggal', '>=', from);
+      if (to) query = query.where('tanggal', '<=', to);
 
       if (state.unsubscribeListener) state.unsubscribeListener();
 
       state.unsubscribeListener = query.limit(100).onSnapshot(
         function(snapshot) {
-          state.history = snapshot.docs.map(function(doc) { 
-            return Object.assign({ id: doc.id }, doc.data()); 
-          });
-          console.log('[Query] Loaded', state.history.length, 'records');
+          state.history = snapshot.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
           renderHistory();
           updateStats();
         },
-        function(error) {
-          console.error('[Filter Listener] Error:', error);
-          showToast('Filter error: ' + error.message, 'error');
-        }
+        function(error) { console.error('[Listener] Error:', error); showToast('Filter error: ' + error.message, 'error'); }
       );
     }
 
     window.clearDateFilter = function() {
-      state.filterDateFrom = '';
-      state.filterDateTo = '';
-      var filterFrom = document.getElementById('filterDateFrom');
-      var filterTo = document.getElementById('filterDateTo');
-      if (filterFrom) filterFrom.value = '';
-      if (filterTo) filterTo.value = '';
-
+      state.filterDateFrom = ''; state.filterDateTo = '';
+      var f = document.getElementById('filterDateFrom'), t = document.getElementById('filterDateTo');
+      if (f) f.value = ''; if (t) t.value = '';
       startRealtimeListener();
       showToast('Filter tanggal direset', 'info');
     };
 
-    // =============================================
-    // REALTIME LISTENER
-    // =============================================
     function startRealtimeListener() {
       if (state.unsubscribeListener) state.unsubscribeListener();
-
-      state.unsubscribeListener = db
-        .collection('submissions')
-        .orderBy('timestamp', 'desc')
-        .limit(50)
-        .onSnapshot(
-          function(snapshot) {
-            state.history = snapshot.docs.map(function(doc) { 
-              return Object.assign({ id: doc.id }, doc.data()); 
-            });
-            console.log('[Listener] Updated:', state.history.length, 'records');
-            renderHistory();
-            updateStats();
-          },
-          function(error) {
-            console.error('[Listener] Error:', error);
-            showToast('Realtime listener error', 'error');
-          }
-        );
+      state.unsubscribeListener = db.collection('submissions').orderBy('timestamp', 'desc').limit(50).onSnapshot(
+        function(snapshot) {
+          state.history = snapshot.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+          renderHistory();
+          updateStats();
+        },
+        function(error) { console.error('[Listener] Error:', error); }
+      );
     }
 
     // =============================================
@@ -2160,78 +1938,66 @@
     function renderHistory() {
       if (!elements.historyList) return;
       
-      var filtered = [];
-      if (state.currentTab === 'Lunas') {
-        filtered = state.history.filter(function(h) { return h.status === 'Lunas'; });
-      } else if (state.currentTab === 'Belum Lunas') {
-        filtered = state.history.filter(function(h) { return h.status !== 'Lunas'; });
-      } else {
-        filtered = state.history;
-      }
+      var filtered = state.currentTab === 'Lunas' ? state.history.filter(h => h.status === 'Lunas') :
+                     state.currentTab === 'Belum Lunas' ? state.history.filter(h => h.status !== 'Lunas') :
+                     state.history;
 
       if (filtered.length === 0) {
         elements.historyList.innerHTML = '<div class="text-center py-10 color-muted">' +
           '<svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' +
           '<p class="text-sm">Tidak ada data ' + state.currentTab + '</p>' +
-          '<p class="text-xs mt-2 color-firebase">Data tersimpan di Firebase & sync ke Spreadsheet</p></div>';
+          '<p class="text-xs mt-2 color-drive">File otomatis tersimpan ke Google Drive</p></div>';
         return;
       }
 
       elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item) {
         var dateStr = formatDate(item.tanggal);
-        var itemsSummary = (item.items || []).map(function(i) { return i.ket; }).filter(function(k) { return k; }).join(', ');
-        var displayItems = itemsSummary.length > 50 ? itemsSummary.substring(0, 50) + '...' : itemsSummary || '-';
+        var itemsSummary = (item.items||[]).map(i=>i.ket).filter(k=>k).join(', ');
+        var displayItems = itemsSummary.length > 50 ? itemsSummary.substring(0,50)+'...' : itemsSummary||'-';
+        var safeId = item.id||'', safeKode = (item.keyCode||'').replace(/"/g,'\\"'), safeLabel = (item.no_invoice||item.kode||'-').replace(/'/g,"\\'");
         
-        var safeId = item.id || '';
-        var safeKode = (item.kode || '').replace(/"/g, '\\"');
-        var safeLabel = (item.no_invoice || item.kode || '-').replace(/'/g, "\\'");
-        
-        var isLunas = item.status === 'Lunas';
-        var statusBadge = isLunas 
-          ? '<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>'
-          : '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Belum Lunas</span>';
+        var isLunas = item.status==='Lunas';
+        var statusBadge = isLunas ? '<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>' : '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Belum Lunas</span>';
 
-        var syncIndicator = '';
-        var syncClass = 'pending-sync';
-        
-        if (item.synced_to_sheets === true) {
-          syncIndicator = '<span class="sync-indicator synced" title="✅ Sudah sync ke Spreadsheet">✅</span>';
-          syncClass = 'synced';
-        } else if (item.sheets_error) {
-          syncIndicator = '<span class="sync-indicator error" title="Error: ' + escapeHtml(item.sheets_error) + '">❌</span>';
-          syncClass = 'sync-error';
-        } else {
-          syncIndicator = '<span class="sync-indicator pending" title="⏳ Menunggu sync ke Spreadsheet...">⏳</span>';
-          syncClass = 'pending-sync';
-        }
+        var syncIndicator = item.synced_to_sheets===true ? '<span class="sync-indicator synced" title="Synced">✅</span>' :
+                             item.sheets_error ? '<span class="sync-indicator error" title="'+item.sheets_error+'">❌</span>' :
+                             '<span class="sync-indicator pending" title="Pending sync">⏳</span>';
+        var syncClass = item.synced_to_sheets===true ? 'synced' : item.sheets_error ? 'sync-error' : 'pending-sync';
 
+        // File info
         var filesHtml = '';
         if (item.files && item.files.length > 0) {
           filesHtml = '<div class="mt-2 space-y-1">';
           item.files.forEach(function(f) {
-            filesHtml += '<a href="' + f.url + '" target="_blank" class="file-link flex items-center gap-1">' +
-              '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>' +
-              f.name + '</a>';
+            var fFields = f.mapValue?.fields || f;
+            var fName = fFields.name?.stringValue || fFields.name || 'File';
+            var hasDriveUrl = fFields.driveUrl?.stringValue;
+            
+            if (hasDriveUrl) {
+              filesHtml += '<a href="' + hasDriveUrl + '" target="_blank" class="file-link flex items-center gap-1">' +
+                '<svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>' +
+                '📁 ' + fName + '</a>';
+            } else {
+              filesHtml += '<div class="flex items-center gap-1 text-xs text-yellow-400">' +
+                '<span>⏳ ' + fName + '</span>' +
+                '<span class="drive-badge" style="font-size:8px;padding:1px 4px;">Pending</span>' +
+                '</div>';
+            }
           });
           filesHtml += '</div>';
         }
 
-        return '<div class="history-item cursor-pointer ' + syncClass + '" onclick="loadHistoryItem(\'' + safeId + '\')">' +
+        return '<div class="history-item cursor-pointer '+syncClass+'" onclick="loadHistoryItem(\''+safeId+'\')">' +
           '<div class="flex flex-col gap-1">' +
             '<div class="flex items-center justify-between mb-1">' +
-              '<span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">' + dateStr + '</span>' +
-              '<div class="flex items-center gap-1">' +
-                statusBadge +
-                syncIndicator +
-              '</div>' +
+              '<span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">'+dateStr+'</span>' +
+              '<div class="flex items-center gap-1">'+statusBadge+syncIndicator+'</div>' +
             '</div>' +
-            '<div class="text-sm font-bold text-white mb-0.5">' + escapeHtml(item.no_invoice || item.kode || '-') + '</div>' +
-            '<div class="text-xs text-gray-400 truncate mb-1" style="max-width:200px;">' + escapeHtml(displayItems) + '</div>' +
+            '<div class="text-sm font-bold text-white mb-0.5">'+escapeHtml(item.no_invoice||item.kode||'-')+'</div>' +
+            '<div class="text-xs text-gray-400 truncate mb-1" style="max-width:200px;">'+escapeHtml(displayItems)+'</div>' +
             '<div class="flex items-center justify-between mt-1">' +
-              '<span class="text-sm text-blue-400 font-medium">Rp ' + formatNumber(item.total_nominal || 0) + '</span>' +
-              '<button onclick="event.stopPropagation();toggleActionMenu(event, \'' + safeId + '\', \'' + safeKode + '\', \'' + safeLabel + '\', ' + (item.total_nominal || 0) + ')" class="btn-action-menu" title="Aksi">' +
-                '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>' +
-              '</button>' +
+              '<span class="text-sm text-blue-400 font-medium">Rp '+formatNumber(item.total_nominal||0)+'</span>' +
+              '<button onclick="event.stopPropagation();toggleActionMenu(event,\''+safeId+'\',\''+safeKode+'\',\''+safeLabel+'\','+(item.total_nominal||0)+')" class="btn-action-menu" title="Aksi"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>' +
             '</div>' +
             filesHtml +
           '</div></div>';
@@ -2246,186 +2012,116 @@
     window.toggleActionMenu = function(e, id, kode, label, amount) {
       e.stopPropagation();
       closeAllActionMenus();
-
-      var btn = e.currentTarget;
-      var dropdown = document.createElement('div');
+      var btn = e.currentTarget, dropdown = document.createElement('div');
       dropdown.className = 'action-dropdown';
       dropdown.innerHTML =
-        '<button class="action-edit" onclick="event.stopPropagation();closeAllActionMenus();editHistoryItem(\'' + id + '\')">' +
-        '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
-        'Edit</button>' +
+        '<button class="action-edit" onclick="event.stopPropagation();closeAllActionMenus();editHistoryItem(\''+id+'\')"><svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Edit</button>' +
         '<div class="dropdown-divider"></div>' +
-        '<button class="action-delete" onclick="event.stopPropagation();closeAllActionMenus();showDeleteModal(\'' + id + '\', \'' + kode + '\', \'' + label + '\', ' + amount + ')">' +
-        '<svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
-        'Hapus</button>';
+        '<button class="action-delete" onclick="event.stopPropagation();closeAllActionMenus();showDeleteModal(\''+id+'\',\''+kode+'\',\''+label+'\','+amount+')"><svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Hapus</button>';
 
       document.body.appendChild(dropdown);
-
-      const rect = btn.getBoundingClientRect();
-      dropdown.style.top = (rect.bottom + 5) + 'px';
-      dropdown.style.right = (window.innerWidth - rect.right) + 'px';
-
+      var rect = btn.getBoundingClientRect();
+      dropdown.style.top = (rect.bottom+5)+'px'; dropdown.style.right = (window.innerWidth-rect.right)+'px';
       activeActionMenu = dropdown;
     };
 
     function closeAllActionMenus() {
-      var menus = document.querySelectorAll('.action-dropdown');
-      menus.forEach(function(m) { m.remove(); });
-      activeActionMenu = null;
+      document.querySelectorAll('.action-dropdown').forEach(function(m){m.remove()});
+      activeActionMenu=null;
     }
-
-    document.addEventListener('click', function() {
-      closeAllActionMenus();
-    });
+    document.addEventListener('click', closeAllActionMenus);
 
     // =============================================
-    // DELETE FUNCTIONALITY
+    // DELETE
     // =============================================
     window.showDeleteModal = function(id, kode, label, amount) {
-      state.pendingDeleteId = id;
-      state.pendingDeleteKode = kode;
-      var deleteInfo = document.getElementById('deleteItemInfo');
-      if (deleteInfo) deleteInfo.textContent = 'Kode: ' + kode + ' • ' + label + ' • Rp ' + formatNumber(amount);
-      if (elements.deleteConfirmModal) elements.deleteConfirmModal.classList.add('show');
+      state.pendingDeleteId=id; state.pendingDeleteKode=kode;
+      var el=document.getElementById('deleteItemInfo');
+      if(el) el.textContent='Kode: '+kode+' • '+label+' • Rp '+formatNumber(amount);
+      if(elements.deleteConfirmModal) elements.deleteConfirmModal.classList.add('show');
     };
-
-    window.closeDeleteModal = function() {
-      if (elements.deleteConfirmModal) elements.deleteConfirmModal.classList.remove('show');
-      state.pendingDeleteId = null;
-      state.pendingDeleteKode = null;
+    window.closeDeleteModal=function(){
+      if(elements.deleteConfirmModal) elements.deleteConfirmModal.classList.remove('show');
+      state.pendingDeleteId=null;
     };
-
-    window.confirmDelete = async function() {
-      if (!state.pendingDeleteId || !db) return;
-
-      try {
+    window.confirmDelete=async function(){
+      if(!state.pendingDeleteId||!db)return;
+      try{
         await db.collection('submissions').doc(state.pendingDeleteId).delete();
-        console.log('[Firebase] Data dihapus:', state.pendingDeleteId);
-
-        showToast('Data berhasil dihapus dari Firebase!', 'success');
-        closeDeleteModal();
-      } catch (error) {
-        console.error('[Delete] Error:', error);
-        showToast('Gagal menghapus: ' + error.message, 'error');
-        closeDeleteModal();
-      }
+        showToast('Data berhasil dihapus!','success'); closeDeleteModal();
+      }catch(error){ showToast('Gagal menghapus: '+error.message,'error'); closeDeleteModal();}
     };
 
     // =============================================
-    // EDIT TRANSACTION
+    // EDIT
     // =============================================
-    window.editHistoryItem = function(id) {
-      var item = state.history.find(function(h) { return h.id === id; });
-      if (!item) return;
-
-      state.editingDocId = id;
-
-      var fields = ['tanggal', 'lokasi', 'jenis_pengajuan', 'kode', 'no_invoice', 'status', 'dibayarkan_kepada', 'catatan_tambahan', 'tanggal_pembayaran'];
-      fields.forEach(function(field) {
-        var el = document.getElementById(field);
-        if (el) el.value = item[field] || '';
+    window.editHistoryItem=function(id){
+      var item=state.history.find(function(h){return h.id===id});
+      if(!item)return;
+      state.editingDocId=id;
+      ['tanggal','lokasi','jenis_pengajuan','kode','no_invoice','status','dibayarkan_kepada','catatan_tambahan','tanggal_pembayaran'].forEach(function(field){
+        var el=document.getElementById(field); if(el) el.value=item[field]||'';
       });
+      if(item.status==='Lunas'&&elements.paymentDateContainer) elements.paymentDateContainer.style.display='block';
+      else if(elements.paymentDateContainer) elements.paymentDateContainer.style.display='none';
 
-      if (item.status === 'Lunas' && elements.paymentDateContainer) {
-        elements.paymentDateContainer.style.display = 'block';
-      } else if (elements.paymentDateContainer) {
-        elements.paymentDateContainer.style.display = 'none';
+      state.items=(item.items||[]).map(function(i){return{ket:i.ket||'',qty:i.qty||'',nominal:i.nominal||0,keterangan:i.keterangan||''}});
+      state.selectedFiles=[]; updateFileDisplay(); renderFormItems();
+
+      if(elements.submitBtn){
+        elements.submitBtn.innerHTML='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
       }
-
-      state.items = (item.items || []).map(function(i) {
-        return { ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' };
-      });
-      
-      state.selectedFiles = [];
-      updateFileDisplay();
-      
-      renderFormItems();
-
-      if (elements.submitBtn) {
-        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
+      if(elements.editModeContainer){
+        elements.editModeContainer.innerHTML='<div class="edit-banner"><div style="display:flex;align-items:center;gap:8px;"><svg style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span style="font-size:13px;color:#fbbf24;font-weight:600;">MODE EDIT</span></div><button onclick="cancelEdit()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fbbf24;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Space Grotesk,sans-serif;">Batal</button></div>';
       }
-
-      if (elements.editModeContainer) {
-        elements.editModeContainer.innerHTML = '<div class="edit-banner">' +
-          '<div style="display:flex;align-items:center;gap:8px;">' +
-            '<svg style="width:18px;height:18px;color:#fbbf24;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
-            '<span style="font-size:13px;color:#fbbf24;font-weight:600;">MODE EDIT — Sedang mengubah transaksi</span>' +
-          '</div>' +
-          '<button onclick="cancelEdit()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fbbf24;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Space Grotesk,sans-serif;">Batal</button>' +
-        '</div>';
-      }
-
-      var formEl = document.getElementById('dataForm');
-      if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      showToast('Mode edit aktif. Ubah data lalu klik "Update".', 'firebase');
+      var fe=document.getElementById('dataForm'); if(fe) fe.scrollIntoView({behavior:'smooth',block:'start'});
+      showToast('Mode edit aktif.','firebase');
     };
 
-    window.loadHistoryItem = function(id) {
-      var item = state.history.find(function(h) { return h.id === id; });
-      if (item) {
-        state.items = (item.items || []).map(function(i) {
-          return { ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' };
-        });
-        renderFormItems();
-        populateDocuments(item);
-        if (elements.documentModal) elements.documentModal.classList.add('show');
+    window.loadHistoryItem=function(id){
+      var item=state.history.find(function(h){return h.id===id});
+      if(item){
+        state.items=(item.items||[]).map(function(i){return{ket:i.ket||'',qty:i.qty||'',nominal:i.nominal||0,keterangan:i.keterangan||''}});
+        renderFormItems(); populateDocuments(item);
+        if(elements.documentModal) elements.documentModal.classList.add('show');
       }
     };
 
     // =============================================
     // STATS
     // =============================================
-    function updateStats() {
-      var total = state.history.length;
-      var syncedCount = state.history.filter(function(h) { return h.synced_to_sheets === true; }).length;
-      var pendingCount = state.history.filter(function(h) { return h.synced_to_sheets === false; }).length;
-      
-      animateCounter(elements.totalData, total);
-      animateCounter(elements.sentData, total);
-      animateCounter(elements.sheetsData, syncedCount);
-      animateCounter(elements.pendingData, pendingCount);
+    function updateStats(){
+      var total=state.history.length, synced=state.history.filter(function(h){return h.synced_to_sheets===true}).length, pending=state.history.filter(function(h){return h.synced_to_sheets===false}).length;
+      animateCounter(elements.totalData,total); animateCounter(elements.sentData,total);
+      animateCounter(elements.sheetsData,synced); animateCounter(elements.pendingData,pending);
     }
-
-    function animateCounter(el, target) {
-      if (!el) return;
-      var current = parseInt(el.textContent) || 0;
-      if (current === target) return;
-      var startTime = performance.now();
-      var duration = 400;
-      function update(currentTime) {
-        var progress = Math.min((currentTime - startTime) / duration, 1);
-        var eased = 1 - Math.pow(1 - progress, 3);
-        el.textContent = Math.round(current + (target - current) * eased);
-        if (progress < 1) requestAnimationFrame(update);
-      }
+    function animateCounter(el,target){
+      if(!el)return; var current=parseInt(el.textContent)||0; if(current===target)return;
+      var start=performance.now(), dur=400;
+      function update(now){var prog=Math.min((now-start)/dur,1), eased=1-Math.pow(1-prog,3); el.textContent=Math.round(current+(target-current)*eased); if(prog<1) requestAnimationFrame(update);}
       requestAnimationFrame(update);
     }
 
     // =============================================
     // UTILITIES
     // =============================================
-    function showToast(message, type) {
-      if (!elements.toast) return;
-      elements.toast.textContent = message;
-      elements.toast.className = 'toast ' + type + ' show';
-      setTimeout(function() { 
-        if (elements.toast) elements.toast.classList.remove('show'); 
-      }, 4000);
+    function showToast(message,type){
+      if(!elements.toast)return;
+      elements.toast.textContent=message; elements.toast.className='toast '+type+' show';
+      setTimeout(function(){if(elements.toast) elements.toast.classList.remove('show');},4000);
     }
-
-    function formatDate(dateStr) {
-      if (!dateStr) return '-';
-      var date = new Date(dateStr + 'T00:00:00');
-      return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    function formatDate(ds){
+      if(!ds)return '-';
+      var d=new Date(ds+'T00:00:00');
+      return isNaN(d.getTime())?ds:d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
     }
-
-    function formatNumber(num) { return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
-    function escapeHtml(text) { var div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+    function formatNumber(num){return(num||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+    function escapeHtml(text){var div=document.createElement('div'); div.textContent=text||'';return div.innerHTML;}
 
     // =============================================
-    // INIT ON LOAD
+    // INIT
     // =============================================
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded',init);
   </script>
 </body>
 </html>
