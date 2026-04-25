@@ -126,6 +126,33 @@
     .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 202, 40, 0.45); }
     .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; animation: none; }
 
+    /* 🔧 PERBAIKAN: Tombol Setup yang diperbaiki */
+    .btn-setup {
+      background: linear-gradient(135deg, rgba(255, 202, 40, 0.15), rgba(255, 167, 38, 0.1));
+      border: 1px solid var(--firebase);
+      color: var(--firebase);
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-setup:hover {
+      background: linear-gradient(135deg, rgba(255, 202, 40, 0.25), rgba(255, 167, 38, 0.2));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 202, 40, 0.3);
+    }
+
+    .btn-setup:active {
+      transform: scale(0.97);
+    }
+
     .btn-secondary {
       background: transparent;
       border: 1px solid var(--border);
@@ -328,13 +355,13 @@
       border-color: rgba(239, 68, 68, 0.3);
     }
 
-    /* Modals */
+    /* Modals - PERBAIKAN UTAMA */
     .modal-overlay {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(8px);
-      z-index: 100;
+      z-index: 9999; /* Ditingkatkan z-index */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -342,9 +369,14 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
+      pointer-events: none; /* Default tidak bisa diklik */
     }
 
-    .modal-overlay.show { opacity: 1; visibility: visible; }
+    .modal-overlay.show { 
+      opacity: 1; 
+      visibility: visible; 
+      pointer-events: auto; /* Bisa diklik saat show */
+    }
 
     .modal-content {
       background: var(--card);
@@ -355,11 +387,13 @@
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
-      transform: scale(0.95);
+      transform: scale(0.95) translateY(20px);
       transition: transform 0.3s ease;
     }
 
-    .modal-overlay.show .modal-content { transform: scale(1); }
+    .modal-overlay.show .modal-content { 
+      transform: scale(1) translateY(0); 
+    }
 
     .modal-document {
       max-width: 100%;
@@ -382,7 +416,7 @@
       border-radius: 10px;
       font-weight: 500;
       font-size: 14px;
-      z-index: 200;
+      z-index: 20000; /* Ditingkatkan */
       transform: translateY(80px);
       opacity: 0;
       transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -551,7 +585,7 @@
     @media print {
       body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .no-print, .bg-pattern, .bg-gradient, header, main > div:first-child, .page-toolbar { display: none !important; }
-      #documentModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: block !important; opacity: 1 !important; visibility: visible !important; overflow: visible !important; }
+      #documentModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; display: block !important; opacity: 1 !important; visibility: visible !important; overflow: visible !important; }
       .modal-document { max-height: none; overflow: visible; border-radius: 0; display: block; background: white; }
       .documents-container { background: white; padding: 0; overflow: visible; display: block; width: 100%; }
       .pdf-wrapper { max-width: none; width: 210mm; box-shadow: none; margin: 0; }
@@ -707,8 +741,11 @@
             <div class="status-dot connecting" id="statusDot"></div>
             <span class="status-text status-text-muted" id="statusText">Menghubungkan...</span>
           </div>
-          <button id="setupBtn" class="btn-secondary" aria-label="Pengaturan">
+          
+          <!-- 🔧 PERBAIKAN: Tombol Setup dengan ID jelas dan onclick langsung -->
+          <button id="setupBtn" class="btn-setup" onclick="openSetupModal()" aria-label="Pengaturan Firebase">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 00-1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572 1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>Setup Firebase</span>
           </button>
         </div>
       </div>
@@ -724,7 +761,7 @@
           <div class="font-semibold text-sm text-white" id="bannerTitle">Menyiapkan...</div>
           <div class="text-xs text-gray-300 mt-1" id="bannerMessage">Mohon tunggu sebentar</div>
         </div>
-        <button onclick="showSetupModal()" class="copy-btn">Setup</button>
+        <button onclick="openSetupModal()" class="copy-btn">Setup</button>
       </div>
 
       <!-- Architecture Info Banner -->
@@ -797,7 +834,7 @@
 
               <div><label class="field-label" for="dibayarkan_kepada">Dibayarkan Kepada<span class="required-star">*</span></label><input type="text" id="dibayarkan_kepada" name="dibayarkan_kepada" class="input-field" placeholder="Nama penerima pembayaran" required></div>
 
-              <!-- 🔥 TAMBAHAN: UPLOAD FILE -->
+              <!-- UPLOAD FILE -->
               <div>
                 <label class="field-label">Upload Bukti Dokumen</label>
                 <div id="uploadArea" class="upload-area" onclick="document.getElementById('fileInput').click()">
@@ -810,7 +847,6 @@
                   <div id="fileListDisplay" class="text-left mt-2 space-y-1"></div>
                 </div>
               </div>
-              <!-- AKHIR UPLOAD FILE -->
 
               <div><label class="field-label" for="catatan_tambahan">Catatan Tambahan <span class="text-[--muted] font-normal">(opsional)</span></label><textarea id="catatan_tambahan" name="catatan_tambahan" rows="2" class="input-field resize-none" placeholder="Tambahkan catatan khusus..."></textarea></div>
 
@@ -887,7 +923,7 @@
     <div class="modal-content">
       <div class="flex items-center justify-between mb-5">
         <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">⚙️</span> Konfigurasi Sistem</h2>
-        <button id="closeModal" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        <button id="closeModal" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup" onclick="closeSetupModal()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
 
       <div class="space-y-6">
@@ -977,7 +1013,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             Print
           </button>
-          <button id="closeDocModal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+          <button id="closeDocModal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup" onclick="closeDocumentModal()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
       </div>
 
@@ -1071,12 +1107,12 @@
     // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v32', // Updated version key
+      FIREBASE_CONFIG: 'financesync_firebase_config_v32',
       WEBHOOK_URL: 'financesync_webhook_url_v11'
     };
 
     let db = null;
-    let storage = null; // New storage variable
+    let storage = null;
     let state = {
       isConnected: false,
       isConnecting: true,
@@ -1090,76 +1126,123 @@
       filterDateFrom: '',
       filterDateTo: '',
       editingDocId: null,
-      selectedFiles: [] // New state for files
+      selectedFiles: []
     };
 
     let elements = {};
 
     // =============================================
+    // 🔧 PERBAIKAN UTAMA: Fungsi Modal Setup
+    // =============================================
+    
+    function openSetupModal() {
+      console.log('[Setup] Opening modal...');
+      var modal = document.getElementById('setupModal');
+      if (modal) {
+        modal.classList.add('show');
+        console.log('[Setup] Modal opened successfully!');
+        
+        // Load saved config if exists
+        var savedConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
+        if (savedConfig && elements.firebaseConfigInput) {
+          elements.firebaseConfigInput.value = savedConfig;
+        }
+      } else {
+        console.error('[Setup] Modal element not found!');
+        alert('Error: Modal tidak ditemukan!');
+      }
+    }
+
+    function closeSetupModal() {
+      console.log('[Setup] Closing modal...');
+      var modal = document.getElementById('setupModal');
+      if (modal) {
+        modal.classList.remove('show');
+        console.log('[Setup] Modal closed.');
+      }
+    }
+
+    // Make functions globally accessible
+    window.openSetupModal = openSetupModal;
+    window.closeSetupModal = closeSetupModal;
+
+    // =============================================
     // INITIALIZATION
     // =============================================
     function init() {
-      elements = {
-        form: document.getElementById('dataForm'),
-        submitBtn: document.getElementById('submitBtn'),
-        previewBtn: document.getElementById('previewBtn'),
-        historyList: document.getElementById('historyList'),
-        setupModal: document.getElementById('setupModal'),
-        documentModal: document.getElementById('documentModal'),
-        deleteConfirmModal: document.getElementById('deleteConfirmModal'),
-        setupBtn: document.getElementById('setupBtn'),
-        closeModal: document.getElementById('closeModal'),
-        closeDocModal: document.getElementById('closeDocModal'),
-        clearHistory: document.getElementById('clearHistory'),
-        toast: document.getElementById('toast'),
-        totalData: document.getElementById('totalData'),
-        sentData: document.getElementById('sentData'),
-        sheetsData: document.getElementById('sheetsData'),
-        pendingData: document.getElementById('pendingData'),
-        tabBtns: document.querySelectorAll('.tab-btn'),
-        grandTotalDisplay: document.getElementById('grandTotalDisplay'),
-        statusInput: document.getElementById('status'),
-        paymentDateContainer: document.getElementById('paymentDateContainer'),
-        connectionBanner: document.getElementById('connectionBanner'),
-        bannerTitle: document.getElementById('bannerTitle'),
-        bannerMessage: document.getElementById('bannerMessage'),
-        statusDot: document.getElementById('statusDot'),
-        statusText: document.getElementById('statusText'),
-        firebaseConfigInput: document.getElementById('firebaseConfigInput'),
-        configError: document.getElementById('configError'),
-        validationError: document.getElementById('validationError'),
-        validationErrorList: document.getElementById('validationErrorList'),
-        archBanner: document.getElementById('archBanner'),
-        editModeContainer: document.getElementById('editModeContainer'),
-        uploadArea: document.getElementById('uploadArea'),
-        fileListDisplay: document.getElementById('fileListDisplay'),
-        uploadPlaceholder: document.getElementById('uploadPlaceholder')
-      };
-
-      loadSavedConfigs();
-      document.getElementById('tanggal').valueAsDate = new Date();
-
-      var now = new Date();
-      var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      var fromStr = firstDay.getFullYear() + '-' + String(firstDay.getMonth() + 1).padStart(2, '0') + '-' + String(firstDay.getDate()).padStart(2, '0');
-      var toStr = lastDay.getFullYear() + '-' + String(lastDay.getMonth() + 1).padStart(2, '0') + '-' + String(lastDay.getDate()).padStart(2, '0');
-      state.filterDateFrom = fromStr;
-      state.filterDateTo = toStr;
-      document.getElementById('filterDateFrom').value = fromStr;
-      document.getElementById('filterDateTo').value = toStr;
-
-      renderFormItems();
-      setupEventListeners();
+      console.log('[Init] Starting initialization...');
       
-      initConnection();
-      generateInvoiceAfterConnection();
+      try {
+        elements = {
+          form: document.getElementById('dataForm'),
+          submitBtn: document.getElementById('submitBtn'),
+          previewBtn: document.getElementById('previewBtn'),
+          historyList: document.getElementById('historyList'),
+          setupModal: document.getElementById('setupModal'),
+          documentModal: document.getElementById('documentModal'),
+          deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+          setupBtn: document.getElementById('setupBtn'),
+          closeModal: document.getElementById('closeModal'),
+          closeDocModal: document.getElementById('closeDocModal'),
+          clearHistory: document.getElementById('clearHistory'),
+          toast: document.getElementById('toast'),
+          totalData: document.getElementById('totalData'),
+          sentData: document.getElementById('sentData'),
+          sheetsData: document.getElementById('sheetsData'),
+          pendingData: document.getElementById('pendingData'),
+          tabBtns: document.querySelectorAll('.tab-btn'),
+          grandTotalDisplay: document.getElementById('grandTotalDisplay'),
+          statusInput: document.getElementById('status'),
+          paymentDateContainer: document.getElementById('paymentDateContainer'),
+          connectionBanner: document.getElementById('connectionBanner'),
+          bannerTitle: document.getElementById('bannerTitle'),
+          bannerMessage: document.getElementById('bannerMessage'),
+          statusDot: document.getElementById('statusDot'),
+          statusText: document.getElementById('statusText'),
+          firebaseConfigInput: document.getElementById('firebaseConfigInput'),
+          configError: document.getElementById('configError'),
+          validationError: document.getElementById('validationError'),
+          validationErrorList: document.getElementById('validationErrorList'),
+          archBanner: document.getElementById('archBanner'),
+          editModeContainer: document.getElementById('editModeContainer'),
+          uploadArea: document.getElementById('uploadArea'),
+          fileListDisplay: document.getElementById('fileListDisplay'),
+          uploadPlaceholder: document.getElementById('uploadPlaceholder')
+        };
 
-      window.addEventListener('beforeunload', function() {
-        if (state.unsubscribeListener) {
-          state.unsubscribeListener();
-        }
-      });
+        console.log('[Init] Elements initialized:', Object.keys(elements).length);
+
+        loadSavedConfigs();
+        document.getElementById('tanggal').valueAsDate = new Date();
+
+        var now = new Date();
+        var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        var fromStr = firstDay.getFullYear() + '-' + String(firstDay.getMonth() + 1).padStart(2, '0') + '-' + String(firstDay.getDate()).padStart(2, '0');
+        var toStr = lastDay.getFullYear() + '-' + String(lastDay.getMonth() + 1).padStart(2, '0') + '-' + String(lastDay.getDate()).padStart(2, '0');
+        state.filterDateFrom = fromStr;
+        state.filterDateTo = toStr;
+        document.getElementById('filterDateFrom').value = fromStr;
+        document.getElementById('filterDateTo').value = toStr;
+
+        renderFormItems();
+        setupEventListeners();
+        
+        initConnection();
+        generateInvoiceAfterConnection();
+
+        window.addEventListener('beforeunload', function() {
+          if (state.unsubscribeListener) {
+            state.unsubscribeListener();
+          }
+        });
+
+        console.log('[Init] Initialization complete!');
+        
+      } catch (error) {
+        console.error('[Init Error]:', error);
+        showToast('Error saat inisialisasi: ' + error.message, 'error');
+      }
     }
 
     async function generateInvoiceAfterConnection() {
@@ -1191,7 +1274,7 @@
     // =============================================
     function loadSavedConfigs() {
       const savedFirebaseConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
-      if (savedFirebaseConfig) {
+      if (savedFirebaseConfig && elements.firebaseConfigInput) {
         elements.firebaseConfigInput.value = savedFirebaseConfig;
       }
     }
@@ -1220,9 +1303,9 @@
 
       if (!hasFirebaseConfig) {
         setTimeout(function() { 
-          showSetupModal(); 
+          openSetupModal(); 
           showBanner('error', 'Belum Terkonfigurasi', 'Klik Setup untuk konfigurasi Firebase');
-        }, 1000);
+        }, 1500);
         return;
       }
 
@@ -1234,7 +1317,7 @@
         }
         
         db = firebase.firestore();
-        storage = firebase.storage(); // Initialize Storage
+        storage = firebase.storage();
         
         await db.collection('submissions').limit(1).get();
         
@@ -1265,6 +1348,8 @@
       const dot = elements.statusDot;
       const text = elements.statusText;
       
+      if (!banner || !dot || !text) return;
+      
       if (connected) {
         banner.className = 'connection-banner connected no-print';
         dot.className = 'status-dot success';
@@ -1283,22 +1368,18 @@
     }
 
     // =============================================
-    // SETUP MODAL FUNCTIONS
+    // SAVE FIREBASE CONFIG
     // =============================================
-    window.showSetupModal = function() { 
-      elements.setupModal.classList.add('show'); 
-    };
-    
-    window.closeSetupModal = function() { 
-      elements.setupModal.classList.remove('show'); 
-    };
-
     window.saveFirebaseConfig = async function() {
       try {
-        const inputStr = elements.firebaseConfigInput.value.trim();
-        const errorEl = elements.configError;
-        errorEl.classList.add('hidden');
-        errorEl.textContent = '';
+        const inputEl = document.getElementById('firebaseConfigInput');
+        const inputStr = inputEl ? inputEl.value.trim() : '';
+        const errorEl = document.getElementById('configError');
+        
+        if (errorEl) {
+          errorEl.classList.add('hidden');
+          errorEl.textContent = '';
+        }
         
         if (!inputStr) { 
           showError('Paste Firebase config!'); 
@@ -1318,11 +1399,6 @@
           return; 
         }
         
-        if (!config.storageBucket) {
-          showError('Config storageBucket wajib diisi untuk upload file!');
-          return;
-        }
-        
         localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
         
         showToast('Config tersimpan! Menghubungkan...', 'info');
@@ -1337,8 +1413,11 @@
     };
 
     function showError(msg) {
-      elements.configError.textContent = msg;
-      elements.configError.classList.remove('hidden');
+      const errorEl = document.getElementById('configError');
+      if (errorEl) {
+        errorEl.textContent = msg;
+        errorEl.classList.remove('hidden');
+      }
       showToast(msg, 'error');
     }
 
@@ -1346,74 +1425,123 @@
     // EVENT LISTENERS
     // =============================================
     function setupEventListeners() {
-      elements.form.addEventListener('submit', handleSubmit);
-      elements.previewBtn.addEventListener('click', handlePreview);
+      console.log('[Events] Setting up event listeners...');
       
-      elements.statusInput.addEventListener('change', function(e) {
-        elements.paymentDateContainer.style.display = e.target.value === 'Lunas' ? 'block' : 'none';
-        if (e.target.value !== 'Lunas') document.getElementById('tanggal_pembayaran').value = '';
-      });
-      if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
-
-      elements.setupBtn.addEventListener('click', function() { showSetupModal(); });
-      elements.closeModal.addEventListener('click', function() { elements.setupModal.classList.remove('show'); });
-      elements.setupModal.addEventListener('click', function(e) { if (e.target === elements.setupModal) elements.setupModal.classList.remove('show'); });
-      elements.closeDocModal.addEventListener('click', function() { elements.documentModal.classList.remove('show'); });
-      elements.clearHistory.addEventListener('click', function() {
-        if (confirm('Hapus SEMUA data dari Firebase?')) {
-          if (db) {
-            db.collection('submissions').get().then(function(snapshot) {
-              var batch = db.batch();
-              snapshot.docs.forEach(function(doc) { batch.delete(doc.ref); });
-              return batch.commit();
-            }).then(function() {
-              showToast('Semua data dihapus', 'success');
-            }).catch(function(err) { showToast('Error: ' + err.message, 'error'); });
+      if (elements.form) {
+        elements.form.addEventListener('submit', handleSubmit);
+      }
+      
+      if (elements.previewBtn) {
+        elements.previewBtn.addEventListener('click', handlePreview);
+      }
+      
+      if (elements.statusInput) {
+        elements.statusInput.addEventListener('change', function(e) {
+          if (elements.paymentDateContainer) {
+            elements.paymentDateContainer.style.display = e.target.value === 'Lunas' ? 'block' : 'none';
           }
-        }
-      });
-
-      elements.tabBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          elements.tabBtns.forEach(function(b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-          state.currentTab = btn.dataset.tab;
-          renderHistory();
+          if (e.target.value !== 'Lunas') {
+            var payDateInput = document.getElementById('tanggal_pembayaran');
+            if (payDateInput) payDateInput.value = '';
+          }
         });
-      });
+        if (elements.statusInput.value !== 'Lunas' && elements.paymentDateContainer) {
+          elements.paymentDateContainer.style.display = 'none';
+        }
+      }
+
+      // 🔧 PERBAIKAN: Event listener untuk tombol setup (backup)
+      if (elements.setupBtn) {
+        elements.setupBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('[Setup Button] Clicked via addEventListener');
+          openSetupModal();
+        });
+      }
+
+      if (elements.closeModal) {
+        elements.closeModal.addEventListener('click', closeSetupModal);
+      }
+      
+      if (elements.setupModal) {
+        elements.setupModal.addEventListener('click', function(e) {
+          if (e.target === elements.setupModal) closeSetupModal();
+        });
+      }
+      
+      if (elements.closeDocModal) {
+        elements.closeDocModal.addEventListener('click', closeDocumentModal);
+      }
+      
+      if (elements.clearHistory) {
+        elements.clearHistory.addEventListener('click', function() {
+          if (confirm('Hapus SEMUA data dari Firebase?')) {
+            if (db) {
+              db.collection('submissions').get().then(function(snapshot) {
+                var batch = db.batch();
+                snapshot.docs.forEach(function(doc) { batch.delete(doc.ref); });
+                return batch.commit();
+              }).then(function() {
+                showToast('Semua data dihapus', 'success');
+              }).catch(function(err) { showToast('Error: ' + err.message, 'error'); });
+            }
+          }
+        });
+      }
+
+      if (elements.tabBtns) {
+        elements.tabBtns.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            elements.tabBtns.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            state.currentTab = btn.dataset.tab;
+            renderHistory();
+          });
+        });
+      }
 
       var filterFrom = document.getElementById('filterDateFrom');
       var filterTo = document.getElementById('filterDateTo');
-      filterFrom.addEventListener('change', function() {
-        state.filterDateFrom = this.value;
-        applyDateFilter();
-      });
-      filterTo.addEventListener('change', function() {
-        state.filterDateTo = this.value;
-        applyDateFilter();
-      });
+      
+      if (filterFrom) {
+        filterFrom.addEventListener('change', function() {
+          state.filterDateFrom = this.value;
+          applyDateFilter();
+        });
+      }
+      
+      if (filterTo) {
+        filterTo.addEventListener('change', function() {
+          state.filterDateTo = this.value;
+          applyDateFilter();
+        });
+      }
 
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-          elements.setupModal.classList.remove('show');
-          elements.documentModal.classList.remove('show');
-          elements.deleteConfirmModal.classList.remove('show');
+          closeSetupModal();
+          closeDocumentModal();
+          closeDeleteModal();
         }
       });
 
-      elements.form.addEventListener('reset', function() {
-        setTimeout(function() {
-          state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
-          state.selectedFiles = [];
-          updateFileDisplay();
-          renderFormItems();
-          clearEditMode();
-        }, 10);
-      });
+      if (elements.form) {
+        elements.form.addEventListener('reset', function() {
+          setTimeout(function() {
+            state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+            state.selectedFiles = [];
+            updateFileDisplay();
+            renderFormItems();
+            clearEditMode();
+          }, 10);
+        });
+      }
+
+      console.log('[Events] Event listeners set up complete!');
     }
 
     // =============================================
-    // 🆕 FILE HANDLING FUNCTIONS
+    // FILE HANDLING FUNCTIONS
     // =============================================
     
     window.handleFileSelect = function(input) {
@@ -1425,6 +1553,8 @@
       const display = elements.fileListDisplay;
       const placeholder = elements.uploadPlaceholder;
       const area = elements.uploadArea;
+      
+      if (!display || !placeholder || !area) return;
       
       if (state.selectedFiles.length > 0) {
         placeholder.style.display = 'none';
@@ -1449,6 +1579,8 @@
     // =============================================
     function renderFormItems() {
       var container = document.getElementById('itemsContainer');
+      if (!container) return;
+      
       container.innerHTML = '';
       state.items.forEach(function(item, index) {
         var row = document.createElement('div');
@@ -1487,7 +1619,9 @@
 
     function calculateTotal() {
       var total = state.items.reduce(function(acc, curr) { return acc + (parseInt(curr.nominal) || 0); }, 0);
-      elements.grandTotalDisplay.value = formatNumber(total);
+      if (elements.grandTotalDisplay) {
+        elements.grandTotalDisplay.value = formatNumber(total);
+      }
       return total;
     }
 
@@ -1513,13 +1647,15 @@
         });
       }
 
-      if (errors.length > 0) {
+      if (errors.length > 0 && elements.validationErrorList && elements.validationError) {
         elements.validationErrorList.innerHTML = errors.map(function(e) { return '<li>' + escapeHtml(e) + '</li>'; }).join('');
         elements.validationError.classList.add('show');
         return false;
       }
 
-      elements.validationError.classList.remove('show');
+      if (elements.validationError) {
+        elements.validationError.classList.remove('show');
+      }
       return true;
     }
 
@@ -1555,58 +1691,101 @@
     }
 
     // =============================================
-    // PREVIEW DOCUMENT
+    // PREVIEW & DOCUMENT FUNCTIONS
     // =============================================
     function handlePreview() {
       var data = getFormData();
       if (data.items.length === 0 || data.items.every(function(i) { return !i.ket; })) { showToast('Lengkapi minimal 1 item', 'error'); return; }
       state.lastFormData = data;
       populateDocuments(data);
-      elements.documentModal.classList.add('show');
+      if (elements.documentModal) {
+        elements.documentModal.classList.add('show');
+      }
     }
 
     function populateDocuments(data) {
       var ft = 'Rp ' + formatNumber(data.total_nominal);
-      document.getElementById('p1_lokasi').textContent = data.lokasi || '-';
-      document.getElementById('p1_tanggal').textContent = formatDate(data.tanggal);
-      document.getElementById('p1_kode').textContent = data.kode || '-';
-      document.getElementById('p1_jenis').textContent = data.jenis_pengajuan || '-';
-      document.getElementById('p1_total').textContent = ft;
-      document.getElementById('p1_dibuat').textContent = data.dibuat_oleh;
-      document.getElementById('p1_disetujui').textContent = data.disetujui_oleh;
-
-      document.getElementById('p2_tanggal').textContent = formatDate(data.tanggal);
-      document.getElementById('p2_kode').textContent = data.kode || '-';
-      document.getElementById('p2_dibayarkan').textContent = data.dibayarkan_kepada || '-';
-      document.getElementById('p2_jenis').textContent = data.jenis_pengajuan || '-';
-      document.getElementById('p2_total').textContent = ft;
-      document.getElementById('p2_name_keuangan').textContent = data.keuangan;
-      document.getElementById('p2_name_dirkeuangan').textContent = data.dir_keuangan;
-      document.getElementById('p2_name_direktur').textContent = data.direktur_utama;
-      document.getElementById('p2_name_accounting').textContent = data.accounting;
-
-      document.getElementById('p1_table_body').innerHTML = data.items.map(function(item, idx) {
-        return '<tr><td class="col-no">' + (idx + 1) + '</td><td class="col-item">' + escapeHtml(item.ket) + '</td><td class="col-vol">' + escapeHtml(item.qty) + '</td><td class="col-nominal">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td><td class="col-ket">' + escapeHtml(item.keterangan || '-') + '</td></tr>';
-      }).join('');
       
-      document.getElementById('p2_table_body').innerHTML = data.items.map(function(item, idx) {
-        return '<tr><td style="text-align:center">' + (idx + 1) + '</td><td>' + escapeHtml(item.ket) + '</td><td style="text-align:center">' + escapeHtml(item.qty) + '</td><td style="text-align:right">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td></tr>';
-      }).join('');
+      var p1_lokasi = document.getElementById('p1_lokasi');
+      var p1_tanggal = document.getElementById('p1_tanggal');
+      var p1_kode = document.getElementById('p1_kode');
+      var p1_jenis = document.getElementById('p1_jenis');
+      var p1_total = document.getElementById('p1_total');
+      var p1_dibuat = document.getElementById('p1_dibuat');
+      var p1_disetujui = document.getElementById('p1_disetujui');
+
+      if (p1_lokasi) p1_lokasi.textContent = data.lokasi || '-';
+      if (p1_tanggal) p1_tanggal.textContent = formatDate(data.tanggal);
+      if (p1_kode) p1_kode.textContent = data.kode || '-';
+      if (p1_jenis) p1_jenis.textContent = data.jenis_pengajuan || '-';
+      if (p1_total) p1_total.textContent = ft;
+      if (p1_dibuat) p1_dibuat.textContent = data.dibuat_oleh;
+      if (p1_disetujui) p1_disetujui.textContent = data.disetujui_oleh;
+
+      var p2_tanggal = document.getElementById('p2_tanggal');
+      var p2_kode = document.getElementById('p2_kode');
+      var p2_dibayarkan = document.getElementById('p2_dibayarkan');
+      var p2_jenis = document.getElementById('p2_jenis');
+      var p2_total = document.getElementById('p2_total');
+      var p2_name_keuangan = document.getElementById('p2_name_keuangan');
+      var p2_name_dirkeuangan = document.getElementById('p2_name_dirkeuangan');
+      var p2_name_direktur = document.getElementById('p2_name_direktur');
+      var p2_name_accounting = document.getElementById('p2_name_accounting');
+
+      if (p2_tanggal) p2_tanggal.textContent = formatDate(data.tanggal);
+      if (p2_kode) p2_kode.textContent = data.kode || '-';
+      if (p2_dibayarkan) p2_dibayarkan.textContent = data.dibayarkan_kepada || '-';
+      if (p2_jenis) p2_jenis.textContent = data.jenis_pengajuan || '-';
+      if (p2_total) p2_total.textContent = ft;
+      if (p2_name_keuangan) p2_name_keuangan.textContent = data.keuangan;
+      if (p2_name_dirkeuangan) p2_name_dirkeuangan.textContent = data.dir_keuangan;
+      if (p2_name_direktur) p2_name_direktur.textContent = data.direktur_utama;
+      if (p2_name_accounting) p2_name_accounting.textContent = data.accounting;
+
+      var p1_table_body = document.getElementById('p1_table_body');
+      var p2_table_body = document.getElementById('p2_table_body');
+      
+      if (p1_table_body) {
+        p1_table_body.innerHTML = data.items.map(function(item, idx) {
+          return '<tr><td class="col-no">' + (idx + 1) + '</td><td class="col-item">' + escapeHtml(item.ket) + '</td><td class="col-vol">' + escapeHtml(item.qty) + '</td><td class="col-nominal">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td><td class="col-ket">' + escapeHtml(item.keterangan || '-') + '</td></tr>';
+        }).join('');
+      }
+      
+      if (p2_table_body) {
+        p2_table_body.innerHTML = data.items.map(function(item, idx) {
+          return '<tr><td style="text-align:center">' + (idx + 1) + '</td><td>' + escapeHtml(item.ket) + '</td><td style="text-align:center">' + escapeHtml(item.qty) + '</td><td style="text-align:right">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td></tr>';
+        }).join('');
+      }
 
       var hasNote = data.catatan_tambahan && data.catatan_tambahan.trim();
-      document.getElementById('p1_notes_manual_wrapper').style.display = hasNote ? 'block' : 'none';
-      document.getElementById('p2_notes_manual_wrapper').style.display = hasNote ? 'block' : 'none';
+      var p1_notes_wrapper = document.getElementById('p1_notes_manual_wrapper');
+      var p2_notes_wrapper = document.getElementById('p2_notes_manual_wrapper');
+      var p1_notes = document.getElementById('p1_notes_manual');
+      var p2_notes = document.getElementById('p2_notes_manual');
+      
+      if (p1_notes_wrapper) p1_notes_wrapper.style.display = hasNote ? 'block' : 'none';
+      if (p2_notes_wrapper) p2_notes_wrapper.style.display = hasNote ? 'block' : 'none';
       if (hasNote) {
-        document.getElementById('p1_notes_manual').textContent = data.catatan_tambahan.trim();
-        document.getElementById('p2_notes_manual').textContent = data.catatan_tambahan.trim();
+        if (p1_notes) p1_notes.textContent = data.catatan_tambahan.trim();
+        if (p2_notes) p2_notes.textContent = data.catatan_tambahan.trim();
       }
     }
+
+    function closeDocumentModal() {
+      if (elements.documentModal) {
+        elements.documentModal.classList.remove('show');
+      }
+    }
+
+    window.closeDocumentModal = closeDocumentModal;
 
     // =============================================
     // DOWNLOAD PDF
     // =============================================
     async function downloadAsPDF() {
       var element = document.getElementById('pdf-wrapper');
+      if (!element) return;
+      
       var opt = {
         margin: 0,
         filename: 'Invoice_' + (state.lastFormData && state.lastFormData.kode ? state.lastFormData.kode : 'FinanceSync') + '_' + new Date().toISOString().split('T')[0] + '.pdf',
@@ -1628,7 +1807,7 @@
     window.downloadAsPDF = downloadAsPDF;
 
     // =============================================
-    // HELPER: Roman Numeral
+    // HELPER FUNCTIONS
     // =============================================
     function toRoman(num) {
       var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
@@ -1640,9 +1819,6 @@
       return result;
     }
 
-    // =============================================
-    // HELPER: Auto-generate No Invoice
-    // =============================================
     async function autoGenerateInvoice() {
       if (!db) return null;
       try {
@@ -1680,16 +1856,13 @@
       }
     }
 
-    // =============================================
-    // HELPER: Check Duplicate Transaction
-    // =============================================
     async function checkDuplicate(data) {
       if (!db) return false;
       try {
         var snapshot = await db.collection('submissions')
           .where('tanggal', '==', data.tanggal)
           .where('total_nominal', '==', data.total_nominal)
-          .where('dibayarkan_kepada', '==', data.dibayarkan_kepada')
+          .where('dibayarkan_kepada', '==', data.dibayarkan_kepada)
           .get();
 
         var duplicate = false;
@@ -1710,9 +1883,6 @@
       }
     }
 
-    // =============================================
-    // HELPER: Clear Edit Mode UI
-    // =============================================
     function clearEditMode() {
       state.editingDocId = null;
       if (elements.editModeContainer) {
@@ -1720,25 +1890,22 @@
       }
     }
 
-    // =============================================
-    // HELPER: Cancel Edit Mode
-    // =============================================
     window.cancelEdit = function() {
       clearEditMode();
-      elements.form.reset();
+      if (elements.form) elements.form.reset();
       state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
       state.selectedFiles = [];
       updateFileDisplay();
       renderFormItems();
-      document.getElementById('tanggal').valueAsDate = new Date();
-      if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
+      var tanggalInput = document.getElementById('tanggal');
+      if (tanggalInput) tanggalInput.valueAsDate = new Date();
+      if (elements.statusInput && elements.statusInput.value !== 'Lunas' && elements.paymentDateContainer) {
+        elements.paymentDateContainer.style.display = 'none';
+      }
       resetSubmitButton();
       showToast('Mode edit dibatalkan', 'info');
     };
 
-    // =============================================
-    // HELPER: Promise with timeout
-    // =============================================
     function withTimeout(promise, ms, label) {
       return Promise.race([
         promise,
@@ -1749,7 +1916,7 @@
     }
 
     // =============================================
-    // 🎯 MAIN SUBMIT HANDLER (UPDATED FOR FILES)
+    // MAIN SUBMIT HANDLER
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
@@ -1761,7 +1928,7 @@
 
       if (!db) {
         showToast('Firebase belum terhubung. Setup dulu.', 'error');
-        showSetupModal();
+        openSetupModal();
         return;
       }
 
@@ -1784,7 +1951,8 @@
         if (!data.no_invoice.trim()) {
           elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Generate No Invoice...</span>';
           data.no_invoice = await autoGenerateInvoice();
-          document.getElementById('no_invoice').value = data.no_invoice;
+          var noInvInput = document.getElementById('no_invoice');
+          if (noInvInput) noInvInput.value = data.no_invoice;
         }
       }
 
@@ -1792,7 +1960,6 @@
       elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan ke Firebase...</span>';
 
       try {
-        // 🔥 UPLOAD FILES IF ANY
         var uploadedFiles = [];
         if (state.selectedFiles.length > 0 && storage) {
           elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengupload ' + state.selectedFiles.length + ' file...</span>';
@@ -1802,9 +1969,7 @@
             var fileName = 'invoices/' + Date.now() + '_' + file.name;
             var storageRef = storage.ref(fileName);
             
-            // Upload file
             await storageRef.put(file);
-            // Get download URL
             var downloadURL = await storageRef.getDownloadURL();
             uploadedFiles.push({ name: file.name, url: downloadURL });
           }
@@ -1830,7 +1995,7 @@
           dir_keuangan: data.dir_keuangan,
           direktur_utama: data.direktur_utama,
           accounting: data.accounting,
-          files: uploadedFiles, // Save file references
+          files: uploadedFiles,
           synced_to_sheets: false,
           synced_at: null,
           sheets_error: null
@@ -1856,7 +2021,9 @@
         showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan!') + ' File bukti tersimpan di Cloud.', 'firebase');
         
         populateDocuments(data);
-        elements.documentModal.classList.add('show');
+        if (elements.documentModal) {
+          elements.documentModal.classList.add('show');
+        }
 
       } catch (error) {
         console.error('[Firebase Save Error]:', error);
@@ -1875,17 +2042,23 @@
 
       if (saveSuccess) {
         clearEditMode();
-        elements.form.reset();
+        if (elements.form) elements.form.reset();
         state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
         state.selectedFiles = [];
         updateFileDisplay();
         renderFormItems();
-        document.getElementById('tanggal').valueAsDate = new Date();
-        if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
+        var tanggalInput = document.getElementById('tanggal');
+        if (tanggalInput) tanggalInput.valueAsDate = new Date();
+        if (elements.statusInput && elements.statusInput.value !== 'Lunas' && elements.paymentDateContainer) {
+          elements.paymentDateContainer.style.display = 'none';
+        }
         resetSubmitButton();
         
         autoGenerateInvoice().then(function(inv) {
-          if (inv) document.getElementById('no_invoice').value = inv;
+          if (inv) {
+            var noInvInput = document.getElementById('no_invoice');
+            if (noInvInput) noInvInput.value = inv;
+          }
         });
       } else {
         resetSubmitButton(isEditMode);
@@ -1893,6 +2066,8 @@
     }
 
     function resetSubmitButton(isEdit) {
+      if (!elements.submitBtn) return;
+      
       if (isEdit) {
         elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
       } else {
@@ -1944,8 +2119,10 @@
     window.clearDateFilter = function() {
       state.filterDateFrom = '';
       state.filterDateTo = '';
-      document.getElementById('filterDateFrom').value = '';
-      document.getElementById('filterDateTo').value = '';
+      var filterFrom = document.getElementById('filterDateFrom');
+      var filterTo = document.getElementById('filterDateTo');
+      if (filterFrom) filterFrom.value = '';
+      if (filterTo) filterTo.value = '';
 
       startRealtimeListener();
       showToast('Filter tanggal direset', 'info');
@@ -1978,9 +2155,11 @@
     }
 
     // =============================================
-    // RENDER HISTORY (WITH FILES)
+    // RENDER HISTORY
     // =============================================
     function renderHistory() {
+      if (!elements.historyList) return;
+      
       var filtered = [];
       if (state.currentTab === 'Lunas') {
         filtered = state.history.filter(function(h) { return h.status === 'Lunas'; });
@@ -2026,7 +2205,6 @@
           syncClass = 'pending-sync';
         }
 
-        // 🆕 File links display
         var filesHtml = '';
         if (item.files && item.files.length > 0) {
           filesHtml = '<div class="mt-2 space-y-1">';
@@ -2106,12 +2284,13 @@
     window.showDeleteModal = function(id, kode, label, amount) {
       state.pendingDeleteId = id;
       state.pendingDeleteKode = kode;
-      document.getElementById('deleteItemInfo').textContent = 'Kode: ' + kode + ' • ' + label + ' • Rp ' + formatNumber(amount);
-      elements.deleteConfirmModal.classList.add('show');
+      var deleteInfo = document.getElementById('deleteItemInfo');
+      if (deleteInfo) deleteInfo.textContent = 'Kode: ' + kode + ' • ' + label + ' • Rp ' + formatNumber(amount);
+      if (elements.deleteConfirmModal) elements.deleteConfirmModal.classList.add('show');
     };
 
     window.closeDeleteModal = function() {
-      elements.deleteConfirmModal.classList.remove('show');
+      if (elements.deleteConfirmModal) elements.deleteConfirmModal.classList.remove('show');
       state.pendingDeleteId = null;
       state.pendingDeleteKode = null;
     };
@@ -2141,19 +2320,15 @@
 
       state.editingDocId = id;
 
-      document.getElementById('tanggal').value = item.tanggal || '';
-      document.getElementById('lokasi').value = item.lokasi || '';
-      document.getElementById('jenis_pengajuan').value = item.jenis_pengajuan || '';
-      document.getElementById('kode').value = item.kode || '';
-      document.getElementById('no_invoice').value = item.no_invoice || '';
-      document.getElementById('status').value = item.status || '';
-      document.getElementById('dibayarkan_kepada').value = item.dibayarkan_kepada || '';
-      document.getElementById('catatan_tambahan').value = item.catatan_tambahan || '';
-      document.getElementById('tanggal_pembayaran').value = item.tanggal_pembayaran || '';
+      var fields = ['tanggal', 'lokasi', 'jenis_pengajuan', 'kode', 'no_invoice', 'status', 'dibayarkan_kepada', 'catatan_tambahan', 'tanggal_pembayaran'];
+      fields.forEach(function(field) {
+        var el = document.getElementById(field);
+        if (el) el.value = item[field] || '';
+      });
 
-      if (item.status === 'Lunas') {
+      if (item.status === 'Lunas' && elements.paymentDateContainer) {
         elements.paymentDateContainer.style.display = 'block';
-      } else {
+      } else if (elements.paymentDateContainer) {
         elements.paymentDateContainer.style.display = 'none';
       }
 
@@ -2161,13 +2336,14 @@
         return { ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' };
       });
       
-      // Clear file selection for edit mode (existing files remain in storage, just not shown as new uploads)
       state.selectedFiles = [];
       updateFileDisplay();
       
       renderFormItems();
 
-      elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
+      if (elements.submitBtn) {
+        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
+      }
 
       if (elements.editModeContainer) {
         elements.editModeContainer.innerHTML = '<div class="edit-banner">' +
@@ -2179,7 +2355,8 @@
         '</div>';
       }
 
-      document.getElementById('dataForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var formEl = document.getElementById('dataForm');
+      if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       showToast('Mode edit aktif. Ubah data lalu klik "Update".', 'firebase');
     };
 
@@ -2191,12 +2368,12 @@
         });
         renderFormItems();
         populateDocuments(item);
-        elements.documentModal.classList.add('show');
+        if (elements.documentModal) elements.documentModal.classList.add('show');
       }
     };
 
     // =============================================
-    // STATS - ACCURATE COUNTING
+    // STATS
     // =============================================
     function updateStats() {
       var total = state.history.length;
@@ -2210,6 +2387,7 @@
     }
 
     function animateCounter(el, target) {
+      if (!el) return;
       var current = parseInt(el.textContent) || 0;
       if (current === target) return;
       var startTime = performance.now();
@@ -2227,9 +2405,12 @@
     // UTILITIES
     // =============================================
     function showToast(message, type) {
+      if (!elements.toast) return;
       elements.toast.textContent = message;
       elements.toast.className = 'toast ' + type + ' show';
-      setTimeout(function() { elements.toast.classList.remove('show'); }, 4000);
+      setTimeout(function() { 
+        if (elements.toast) elements.toast.classList.remove('show'); 
+      }, 4000);
     }
 
     function formatDate(dateStr) {
