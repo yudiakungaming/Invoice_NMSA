@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceSync Pro v3.1 - Firebase Centric Architecture</title>
+  <title>FinanceSync Pro v3.2 - Document Support</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <!-- SDK Baru untuk Storage -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   
   <!-- html2pdf.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -651,6 +653,35 @@
     .color-muted { color: var(--muted); }
     .color-firebase { color: var(--firebase); }
     .color-sheets { color: var(--sheets); }
+
+    /* Custom Styles for File Upload */
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(255,255,255,0.02);
+    }
+    .upload-area:hover { border-color: var(--firebase); background: rgba(255, 202, 40, 0.05); }
+    .upload-area.has-file { border-color: var(--success); background: rgba(16, 185, 129, 0.05); }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.05);
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+    .file-link {
+      color: var(--accent);
+      text-decoration: underline;
+      font-size: 12px;
+      word-break: break-all;
+    }
+    .file-link:hover { color: var(--firebase); }
   </style>
 </head>
 <body>
@@ -667,8 +698,8 @@
             <svg class="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 19h20L12 2zm0 3.84L18.92 17H5.08L12 5.84z"/><circle cx="12" cy="14" r="2"/></svg>
           </div>
           <div>
-            <h1 class="text-lg font-semibold">FinanceSync Pro v3.1</h1>
-            <p class="text-xs text-[--muted]">Firebase-Centric Architecture</p>
+            <h1 class="text-lg font-semibold">FinanceSync Pro v3.2</h1>
+            <p class="text-xs text-[--muted]">With Document Support</p>
           </div>
         </div>
         <div class="flex items-center gap-3 animate-in delay-1">
@@ -766,6 +797,21 @@
 
               <div><label class="field-label" for="dibayarkan_kepada">Dibayarkan Kepada<span class="required-star">*</span></label><input type="text" id="dibayarkan_kepada" name="dibayarkan_kepada" class="input-field" placeholder="Nama penerima pembayaran" required></div>
 
+              <!-- 🔥 TAMBAHAN: UPLOAD FILE -->
+              <div>
+                <label class="field-label">Upload Bukti Dokumen</label>
+                <div id="uploadArea" class="upload-area" onclick="document.getElementById('fileInput').click()">
+                  <input type="file" id="fileInput" accept="image/*,.pdf" multiple hidden onchange="handleFileSelect(this)">
+                  <div id="uploadPlaceholder">
+                    <svg class="w-8 h-8 mx-auto mb-2 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    <p class="text-sm text-[--muted]">Klik untuk upload bukti invoice/foto</p>
+                    <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, PDF (Maks 5MB)</p>
+                  </div>
+                  <div id="fileListDisplay" class="text-left mt-2 space-y-1"></div>
+                </div>
+              </div>
+              <!-- AKHIR UPLOAD FILE -->
+
               <div><label class="field-label" for="catatan_tambahan">Catatan Tambahan <span class="text-[--muted] font-normal">(opsional)</span></label><textarea id="catatan_tambahan" name="catatan_tambahan" rows="2" class="input-field resize-none" placeholder="Tambahkan catatan khusus..."></textarea></div>
 
               <!-- Validation Error Box -->
@@ -861,7 +907,7 @@
 
               <div class="example-config-box">
                 <div class="flex items-center gap-2 mb-2"><span class="text-lg">✅</span><strong class="text-green-400 text-sm">Copy HANYA ini:</strong></div>
-                <div class="config-box">{<br>&nbsp;&nbsp;"apiKey": "AIzaSy...",<br>&nbsp;&nbsp;"authDomain": "...",<br>&nbsp;&nbsp;"projectId": "...",<br>&nbsp;&nbsp;...<br>}</div>
+                <div class="config-box">{<br>&nbsp;&nbsp;"apiKey": "AIzaSy...",<br>&nbsp;&nbsp;"authDomain": "...",<br>&nbsp;&nbsp;"projectId": "...",<br>&nbsp;&nbsp;"storageBucket": "...",<br>&nbsp;&nbsp;...<br>}</div>
               </div>
 
               <div class="mt-3">
@@ -1025,11 +1071,12 @@
     // CONFIGURATION
     // =============================================
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v11',
+      FIREBASE_CONFIG: 'financesync_firebase_config_v32', // Updated version key
       WEBHOOK_URL: 'financesync_webhook_url_v11'
     };
 
     let db = null;
+    let storage = null; // New storage variable
     let state = {
       isConnected: false,
       isConnecting: true,
@@ -1042,7 +1089,8 @@
       pendingDeleteKode: null,
       filterDateFrom: '',
       filterDateTo: '',
-      editingDocId: null
+      editingDocId: null,
+      selectedFiles: [] // New state for files
     };
 
     let elements = {};
@@ -1082,7 +1130,10 @@
         validationError: document.getElementById('validationError'),
         validationErrorList: document.getElementById('validationErrorList'),
         archBanner: document.getElementById('archBanner'),
-        editModeContainer: document.getElementById('editModeContainer')
+        editModeContainer: document.getElementById('editModeContainer'),
+        uploadArea: document.getElementById('uploadArea'),
+        fileListDisplay: document.getElementById('fileListDisplay'),
+        uploadPlaceholder: document.getElementById('uploadPlaceholder')
       };
 
       loadSavedConfigs();
@@ -1102,11 +1153,8 @@
       setupEventListeners();
       
       initConnection();
-
-      // ✅ FIX: Generate invoice setelah connection berhasil (lebih reliable)
       generateInvoiceAfterConnection();
 
-      // ✅ FIX: Cleanup listener saat page unload (prevent memory leak)
       window.addEventListener('beforeunload', function() {
         if (state.unsubscribeListener) {
           state.unsubscribeListener();
@@ -1114,11 +1162,9 @@
       });
     }
 
-    // ✅ FIX: Fungsi baru untuk generate invoice setelah connection stabil
     async function generateInvoiceAfterConnection() {
-      // Poll untuk cek koneksi, max 10 detik
       var attempts = 0;
-      var maxAttempts = 20; // 20 x 500ms = 10 detik
+      var maxAttempts = 20;
       
       var checkInterval = setInterval(async function() {
         attempts++;
@@ -1135,7 +1181,7 @@
           }
         } else if (attempts >= maxAttempts) {
           clearInterval(checkInterval);
-          console.warn('[Auto Invoice] Timeout - Firebase not connected in time');
+          console.warn('[Auto Invoice] Timeout');
         }
       }, 500);
     }
@@ -1165,7 +1211,7 @@
     }
 
     // =============================================
-    // CONNECTION INITIALIZER (SIMPLIFIED)
+    // CONNECTION INITIALIZER (WITH STORAGE)
     // =============================================
     async function initConnection() {
       showBanner('connecting', 'Menyiapkan Koneksi...', 'Menghubungkan Firebase...');
@@ -1188,22 +1234,19 @@
         }
         
         db = firebase.firestore();
+        storage = firebase.storage(); // Initialize Storage
         
-        // Test connection
         await db.collection('submissions').limit(1).get();
         
         state.isConnected = true;
         
-        console.log('[Firebase] ✅ Connected successfully!');
+        console.log('[Firebase] ✅ Connected (DB & Storage)!');
         
-        // Show architecture banner
         if (elements.archBanner) {
           elements.archBanner.style.display = 'block';
         }
         
         updateConnectionUI(true);
-        
-        // Start listening
         applyDateFilter();
         
       } catch (error) {
@@ -1228,7 +1271,7 @@
         text.textContent = 'Firebase Connected';
         text.className = 'status-text status-text-success';
         elements.bannerTitle.textContent = '✅ Firebase Terhubung';
-        elements.bannerMessage.textContent = 'Data akan disimpan ke Firebase dan di-sync ke Spreadsheet oleh Apps Script.';
+        elements.bannerMessage.textContent = 'Data akan disimpan ke Firebase dan di-sync ke Spreadsheet.';
       } else {
         banner.className = 'connection-banner error no-print';
         dot.className = 'status-dot error';
@@ -1275,6 +1318,11 @@
           return; 
         }
         
+        if (!config.storageBucket) {
+          showError('Config storageBucket wajib diisi untuk upload file!');
+          return;
+        }
+        
         localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
         
         showToast('Config tersimpan! Menghubungkan...', 'info');
@@ -1312,14 +1360,14 @@
       elements.setupModal.addEventListener('click', function(e) { if (e.target === elements.setupModal) elements.setupModal.classList.remove('show'); });
       elements.closeDocModal.addEventListener('click', function() { elements.documentModal.classList.remove('show'); });
       elements.clearHistory.addEventListener('click', function() {
-        if (confirm('Hapus SEMUA data dari Firebase? (Spreadsheet akan ter-update otomatis pada sync berikutnya)')) {
+        if (confirm('Hapus SEMUA data dari Firebase?')) {
           if (db) {
             db.collection('submissions').get().then(function(snapshot) {
               var batch = db.batch();
               snapshot.docs.forEach(function(doc) { batch.delete(doc.ref); });
               return batch.commit();
             }).then(function() {
-              showToast('Semua data dihapus dari Firebase', 'success');
+              showToast('Semua data dihapus', 'success');
             }).catch(function(err) { showToast('Error: ' + err.message, 'error'); });
           }
         }
@@ -1353,14 +1401,47 @@
         }
       });
 
-      // ✅ FIX: Handle form reset properly
       elements.form.addEventListener('reset', function() {
         setTimeout(function() {
           state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+          state.selectedFiles = [];
+          updateFileDisplay();
           renderFormItems();
           clearEditMode();
         }, 10);
       });
+    }
+
+    // =============================================
+    // 🆕 FILE HANDLING FUNCTIONS
+    // =============================================
+    
+    window.handleFileSelect = function(input) {
+      state.selectedFiles = Array.from(input.files);
+      updateFileDisplay();
+    };
+
+    function updateFileDisplay() {
+      const display = elements.fileListDisplay;
+      const placeholder = elements.uploadPlaceholder;
+      const area = elements.uploadArea;
+      
+      if (state.selectedFiles.length > 0) {
+        placeholder.style.display = 'none';
+        area.classList.add('has-file');
+        
+        display.innerHTML = state.selectedFiles.map(function(file, idx) {
+          return '<div class="file-item">' +
+            '<svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' +
+            '<span class="text-green-400 text-xs truncate">' + file.name + '</span>' +
+            '<span class="text-gray-500 text-xs ml-auto">' + (file.size / 1024).toFixed(1) + ' KB</span>' +
+          '</div>';
+        }).join('');
+      } else {
+        placeholder.style.display = 'block';
+        area.classList.remove('has-file');
+        display.innerHTML = '';
+      }
     }
 
     // =============================================
@@ -1459,7 +1540,7 @@
         tanggal_pembayaran: fd.get('tanggal_pembayaran') || '',
         dibayarkan_kepada: fd.get('dibayarkan_kepada') || '',
         catatan_tambahan: fd.get('catatan_tambahan') || '',
-        source: 'FinanceSync Pro v3.1',
+        source: 'FinanceSync Pro v3.2',
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         dibuat_oleh: 'Nur Wahyudi',
         disetujui_oleh: 'Harijon',
@@ -1467,7 +1548,6 @@
         dir_keuangan: 'Harijon',
         direktur_utama: 'H. Andi Nursyam Halid',
         accounting: 'Sri Ekowati',
-        // 🔥 Fields for sync tracking
         synced_to_sheets: false,
         synced_at: null,
         sheets_error: null
@@ -1609,7 +1689,7 @@
         var snapshot = await db.collection('submissions')
           .where('tanggal', '==', data.tanggal)
           .where('total_nominal', '==', data.total_nominal)
-          .where('dibayarkan_kepada', '==', data.dibayarkan_kepada)
+          .where('dibayarkan_kepada', '==', data.dibayarkan_kepada')
           .get();
 
         var duplicate = false;
@@ -1647,6 +1727,8 @@
       clearEditMode();
       elements.form.reset();
       state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+      state.selectedFiles = [];
+      updateFileDisplay();
       renderFormItems();
       document.getElementById('tanggal').valueAsDate = new Date();
       if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
@@ -1667,7 +1749,7 @@
     }
 
     // =============================================
-    // 🎯 MAIN SUBMIT HANDLER - FIXED VERSION v3.1
+    // 🎯 MAIN SUBMIT HANDLER (UPDATED FOR FILES)
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
@@ -1685,8 +1767,6 @@
 
       var data = getFormData();
       var isEditMode = !!state.editingDocId;
-      
-      // ✅ FIX: Gunakan flag boolean untuk tracking sukses/gagal
       var saveSuccess = false;
 
       if (!isEditMode) {
@@ -1695,14 +1775,13 @@
 
         var isDuplicate = await checkDuplicate(data);
         if (isDuplicate) {
-          showToast('Transaksi duplikat! Data dengan detail sama sudah pernah diinput.', 'error');
+          showToast('Transaksi duplikat!', 'error');
           elements.submitBtn.disabled = false;
           resetSubmitButton();
           return;
         }
 
         if (!data.no_invoice.trim()) {
-          // ✅ FIX: Tag HTML yang benar (</span>, bukan </div>)
           elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Generate No Invoice...</span>';
           data.no_invoice = await autoGenerateInvoice();
           document.getElementById('no_invoice').value = data.no_invoice;
@@ -1713,6 +1792,25 @@
       elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan ke Firebase...</span>';
 
       try {
+        // 🔥 UPLOAD FILES IF ANY
+        var uploadedFiles = [];
+        if (state.selectedFiles.length > 0 && storage) {
+          elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengupload ' + state.selectedFiles.length + ' file...</span>';
+          
+          for (var i = 0; i < state.selectedFiles.length; i++) {
+            var file = state.selectedFiles[i];
+            var fileName = 'invoices/' + Date.now() + '_' + file.name;
+            var storageRef = storage.ref(fileName);
+            
+            // Upload file
+            await storageRef.put(file);
+            // Get download URL
+            var downloadURL = await storageRef.getDownloadURL();
+            uploadedFiles.push({ name: file.name, url: downloadURL });
+          }
+          console.log('[Storage] Files uploaded:', uploadedFiles.length);
+        }
+
         var firebaseData = {
           tanggal: data.tanggal,
           lokasi: data.lokasi,
@@ -1732,7 +1830,7 @@
           dir_keuangan: data.dir_keuangan,
           direktur_utama: data.direktur_utama,
           accounting: data.accounting,
-          // 🔥 SYNC TRACKING FIELDS
+          files: uploadedFiles, // Save file references
           synced_to_sheets: false,
           synced_at: null,
           sheets_error: null
@@ -1753,11 +1851,9 @@
         
         state.lastFormData = Object.assign({}, data, { id: isEditMode ? state.editingDocId : docRef.id });
 
-        // ✅ FIX: Set flag sukses di dalam try block
         saveSuccess = true;
 
-        // ✅ SUCCESS!
-        showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan ke Firebase!') + ' Spreadsheet akan sync otomatis.', 'firebase');
+        showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan!') + ' File bukti tersimpan di Cloud.', 'firebase');
         
         populateDocuments(data);
         elements.documentModal.classList.add('show');
@@ -1767,35 +1863,31 @@
         
         let errorMsg = error.message || 'Unknown error';
         if (errorMsg.indexOf('PERMISSION_DENIED') > -1 || errorMsg.indexOf('Missing or insufficient permissions') > -1) {
-          errorMsg = 'Permission denied! Ubah Security Rules Firebase Anda.';
+          errorMsg = 'Permission denied! Ubah Security Rules Firebase & Storage.';
         } else if (errorMsg.indexOf('timeout') > -1) {
           errorMsg = 'Firebase tidak merespon. Cek koneksi internet.';
         }
         
         showToast('Gagal menyimpan: ' + errorMsg, 'error');
-        // ❌ Jangan set saveSuccess = true di sini (tetap false)
       }
 
-      // Re-enable button
       elements.submitBtn.disabled = false;
 
-      // ✅ FIX: Pakai flag saveSuccess, bukan variabel error (yang tidak exist di scope ini)
       if (saveSuccess) {
-        // Reset form hanya jika sukses
         clearEditMode();
         elements.form.reset();
         state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+        state.selectedFiles = [];
+        updateFileDisplay();
         renderFormItems();
         document.getElementById('tanggal').valueAsDate = new Date();
         if (elements.statusInput.value !== 'Lunas') elements.paymentDateContainer.style.display = 'none';
         resetSubmitButton();
         
-        // Generate invoice baru untuk transaksi berikutnya
         autoGenerateInvoice().then(function(inv) {
           if (inv) document.getElementById('no_invoice').value = inv;
         });
       } else {
-        // Gagal - restore button ke mode edit atau normal
         resetSubmitButton(isEditMode);
       }
     }
@@ -1886,7 +1978,7 @@
     }
 
     // =============================================
-    // RENDER HISTORY WITH SYNC STATUS
+    // RENDER HISTORY (WITH FILES)
     // =============================================
     function renderHistory() {
       var filtered = [];
@@ -1920,9 +2012,8 @@
           ? '<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>'
           : '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Belum Lunas</span>';
 
-        // 🔥 SYNC STATUS INDICATOR
         var syncIndicator = '';
-        var syncClass = 'pending-sync'; // default
+        var syncClass = 'pending-sync';
         
         if (item.synced_to_sheets === true) {
           syncIndicator = '<span class="sync-indicator synced" title="✅ Sudah sync ke Spreadsheet">✅</span>';
@@ -1933,6 +2024,18 @@
         } else {
           syncIndicator = '<span class="sync-indicator pending" title="⏳ Menunggu sync ke Spreadsheet...">⏳</span>';
           syncClass = 'pending-sync';
+        }
+
+        // 🆕 File links display
+        var filesHtml = '';
+        if (item.files && item.files.length > 0) {
+          filesHtml = '<div class="mt-2 space-y-1">';
+          item.files.forEach(function(f) {
+            filesHtml += '<a href="' + f.url + '" target="_blank" class="file-link flex items-center gap-1">' +
+              '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>' +
+              f.name + '</a>';
+          });
+          filesHtml += '</div>';
         }
 
         return '<div class="history-item cursor-pointer ' + syncClass + '" onclick="loadHistoryItem(\'' + safeId + '\')">' +
@@ -1952,6 +2055,7 @@
                 '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>' +
               '</button>' +
             '</div>' +
+            filesHtml +
           '</div></div>';
       }).join('');
     }
@@ -2056,11 +2160,15 @@
       state.items = (item.items || []).map(function(i) {
         return { ket: i.ket || '', qty: i.qty || '', nominal: i.nominal || 0, keterangan: i.keterangan || '' };
       });
+      
+      // Clear file selection for edit mode (existing files remain in storage, just not shown as new uploads)
+      state.selectedFiles = [];
+      updateFileDisplay();
+      
       renderFormItems();
 
       elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
 
-      // ✅ FIX: Gunakan container yang sudah ada di HTML
       if (elements.editModeContainer) {
         elements.editModeContainer.innerHTML = '<div class="edit-banner">' +
           '<div style="display:flex;align-items:center;gap:8px;">' +
@@ -2096,7 +2204,7 @@
       var pendingCount = state.history.filter(function(h) { return h.synced_to_sheets === false; }).length;
       
       animateCounter(elements.totalData, total);
-      animateCounter(elements.sentData, total); // Semua data ada di Firebase
+      animateCounter(elements.sentData, total);
       animateCounter(elements.sheetsData, syncedCount);
       animateCounter(elements.pendingData, pendingCount);
     }
