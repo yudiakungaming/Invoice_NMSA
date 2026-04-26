@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceSync Pro v3.3 - Google Drive Edition</title>
+  <title>FinanceSync Pro v4.0 - Google Drive Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Firebase SDK -->
@@ -16,23 +16,24 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
   <style>
     :root {
-      --bg: #0c1222;
-      --bg-secondary: #141d2f;
+      --bg: #0a0f1a;
+      --bg-secondary: #111827;
       --fg: #f1f5f9;
       --muted: #64748b;
       --accent: #3b82f6;
       --accent-glow: rgba(59, 130, 246, 0.25);
-      --card: #1a2642;
-      --border: #2a3a5c;
+      --card: #1a2332;
+      --border: #2d3748;
       --success: #10b981;
       --warning: #f59e0b;
       --error: #ef4444;
       --firebase: #ffca28;
       --firebase-orange: #ffa726;
       --drive: #4285f4;
-      --sheets: #10b981;
+      --sheets: #34a853;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -50,8 +51,8 @@
     .bg-pattern {
       position: fixed;
       inset: 0;
-      background-image: radial-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px);
-      background-size: 32px 32px;
+      background-image: radial-gradient(rgba(59, 130, 246, 0.06) 1px, transparent 1px);
+      background-size: 40px 40px;
       pointer-events: none;
       z-index: 0;
     }
@@ -59,24 +60,20 @@
     .bg-gradient {
       position: fixed;
       inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.15), transparent),
-        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(16, 185, 129, 0.1), transparent),
-        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(66, 133, 244, 0.08));
+      background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.12), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(16, 185, 129, 0.08), transparent),
+        radial-gradient(ellipse 50% 30% at 10% 90%, rgba(66, 133, 244, 0.06));
       pointer-events: none;
       z-index: 0;
     }
 
-    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse-ring { 0% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
     @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes firebase-glow { 0%, 100% { box-shadow: 0 0 20px rgba(255, 202, 40, 0.3); } 50% { box-shadow: 0 0 30px rgba(255, 202, 40, 0.6); } }
-    @keyframes drive-glow { 0%, 100% { box-shadow: 0 0 20px rgba(66, 133, 244, 0.3); } 50% { box-shadow: 0 0 30px rgba(66, 133, 244, 0.5); } }
-    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-    @keyframes sync-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    @keyframes drive-sync-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 15px rgba(255, 202, 40, 0.3); } 50% { box-shadow: 0 0 25px rgba(255, 202, 40, 0.5); } }
 
-    .animate-in { animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .animate-in { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.2s; }
     .delay-3 { animation-delay: 0.3s; }
@@ -86,7 +83,7 @@
 
     .input-field {
       background: var(--bg-secondary);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: 10px;
       padding: 12px 16px;
       color: var(--fg);
@@ -98,16 +95,13 @@
 
     .input-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
     .input-field::placeholder { color: var(--muted); }
-    .input-field:disabled { opacity: 0.6; cursor: not-allowed; }
-    
-    .input-field.required-empty { border-color: var(--error); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); animation: shake 0.5s ease-in-out; }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    .input-field:disabled { opacity: 0.5; cursor: not-allowed; }
+    .input-field.error { border-color: var(--error); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15); }
 
     .field-label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
     .field-label .required-star { color: var(--error); margin-left: 2px; }
 
-    /* Buttons */
-    .btn-submit {
+    .btn-primary {
       background: linear-gradient(135deg, var(--firebase), var(--firebase-orange));
       color: #000;
       font-weight: 700;
@@ -121,16 +115,30 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      animation: firebase-glow 2s ease-in-out infinite;
+      animation: glow-pulse 2.5s ease-in-out infinite;
     }
 
-    .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 202, 40, 0.45); }
-    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; animation: none; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 202, 40, 0.4); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; animation: none; }
 
-    .btn-setup {
-      background: linear-gradient(135deg, rgba(255, 202, 40, 0.15), rgba(255, 167, 38, 0.1));
-      border: 1px solid var(--firebase);
-      color: var(--firebase);
+    .btn-secondary {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover { border-color: var(--firebase); color: var(--firebase); background: rgba(255, 202, 40, 0.05); }
+
+    .btn-outline-drive {
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.12), rgba(52, 168, 83, 0.08));
+      border: 1.5px solid var(--drive);
+      color: var(--drive);
       padding: 10px 18px;
       border-radius: 10px;
       cursor: pointer;
@@ -143,43 +151,11 @@
       gap: 8px;
     }
 
-    .btn-setup:hover {
-      background: linear-gradient(135deg, rgba(255, 202, 40, 0.25), rgba(255, 167, 38, 0.2));
+    .btn-outline-drive:hover {
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.22), rgba(52, 168, 83, 0.15));
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 202, 40, 0.3);
+      box-shadow: 0 6px 20px rgba(66, 133, 244, 0.25);
     }
-
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 12px 20px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 13px;
-      font-family: 'Space Grotesk', sans-serif;
-      transition: all 0.2s ease;
-    }
-
-    .btn-secondary:hover { border-color: var(--firebase); color: var(--firebase); }
-
-    .btn-print {
-      background: #334155;
-      color: white;
-      font-weight: 600;
-      padding: 14px 28px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-      font-family: 'Space Grotesk', sans-serif;
-      transition: all 0.25s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-print:hover { background: #475569; transform: translateY(-2px); }
 
     .btn-pdf {
       background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -200,95 +176,39 @@
     .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35); }
 
     .btn-add-item {
-      background: rgba(255, 202, 40, 0.15);
+      background: rgba(255, 202, 40, 0.08);
       color: var(--firebase);
-      border: 1px dashed var(--firebase);
+      border: 1.5px dashed var(--firebase);
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
-      transition: 0.2s;
+      font-weight: 500;
+      transition: all 0.2s;
     }
 
-    .btn-add-item:hover { background: rgba(255, 202, 40, 0.25); }
+    .btn-add-item:hover { background: rgba(255, 202, 40, 0.15); border-style: solid; }
 
     .btn-remove-item {
       color: var(--error);
-      background: rgba(239, 68, 68, 0.1);
+      background: rgba(239, 68, 68, 0.08);
       border: none;
-      width: 32px;
-      height: 38px;
+      width: 36px;
+      height: 42px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 8px;
       cursor: pointer;
       margin-top: 24px;
-    }
-
-    .btn-remove-item:hover { background: rgba(239, 68, 68, 0.2); }
-
-    .btn-action-menu {
-      color: var(--muted);
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 6px;
-      cursor: pointer;
-      flex-shrink: 0;
       transition: all 0.2s;
-      opacity: 0;
-      position: relative;
-      padding: 0;
     }
 
-    .history-item:hover .btn-action-menu { opacity: 1; }
-    .btn-action-menu:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--fg); }
+    .btn-remove-item:hover { background: rgba(239, 68, 68, 0.18); transform: scale(1.05); }
 
-    .action-dropdown {
-      position: fixed;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      z-index: 9999;
-      min-width: 130px;
-      overflow: hidden;
-      animation: slideUp 0.15s ease-out;
-    }
-
-    .action-dropdown button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      padding: 8px 12px;
-      border: none;
-      background: transparent;
-      color: var(--fg);
-      font-size: 12px;
-      font-family: 'Space Grotesk', sans-serif;
-      cursor: pointer;
-      transition: background 0.15s;
-      white-space: nowrap;
-      text-align: left;
-    }
-
-    .action-dropdown button:hover { background: rgba(255, 255, 255, 0.08); }
-    .action-dropdown button.action-edit { color: var(--firebase); }
-    .action-dropdown button.action-edit:hover { background: rgba(255, 202, 40, 0.1); }
-    .action-dropdown button.action-delete { color: var(--error); }
-    .action-dropdown button.action-delete:hover { background: rgba(239, 68, 68, 0.1); }
-    .action-dropdown .dropdown-divider { height: 1px; background: var(--border); margin: 2px 0; }
-
-    /* 🆕 Google Drive Sync Button */
-    .btn-drive-sync {
-      background: linear-gradient(135deg, var(--drive), #34a853);
+    .btn-sync {
+      background: linear-gradient(135deg, var(--drive), var(--sheets));
       color: white;
       font-weight: 600;
       padding: 8px 16px;
@@ -303,136 +223,115 @@
       gap: 6px;
     }
 
-    .btn-drive-sync:hover:not(:disabled) { 
-      transform: translateY(-2px); 
-      box-shadow: 0 6px 20px rgba(66, 133, 244, 0.35); 
-    }
-    
-    .btn-drive-sync:disabled { 
-      opacity: 0.6; 
-      cursor: not-allowed; 
-    }
-
-    .btn-drive-sync.syncing { 
-      animation: drive-glow 1.5s ease-in-out infinite; 
-    }
-
-    .drive-sync-icon {
-      width: 14px;
-      height: 14px;
-      animation: drive-sync-spin 1s linear infinite;
-    }
-
-    .btn-drive-sync.synced .drive-sync-icon {
-      animation: none;
-    }
+    .btn-sync:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(66, 133, 244, 0.35); }
+    .btn-sync:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-sync.syncing { animation: glow-pulse 1.5s ease-in-out infinite; }
+    .sync-icon-spin { animation: spin 1s linear infinite; }
 
     .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 24px;
+      backdrop-filter: blur(10px);
     }
 
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       position: relative;
       flex-shrink: 0;
     }
 
     .status-dot.success { background: var(--success); animation: pulse-ring 2s ease-out infinite; }
-    .status-dot.success::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--success); animation: pulse-ring 2s ease-out infinite; }
-    .status-dot.pending { background: var(--warning); animation: pulse-ring 1s ease-out infinite; }
+    .status-dot.success::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid var(--success);
+      animation: pulse-ring 2s ease-out infinite;
+    }
+    .status-dot.pending { background: var(--warning); animation: pulse-ring 1.5s ease-out infinite; }
     .status-dot.error { background: var(--error); }
     .status-dot.connecting { background: var(--firebase); animation: pulse-ring 1s ease-out infinite; }
-
-    /* 🆕 Drive Status Badge Enhancement */
-    .drive-status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .drive-status-badge.pending {
-      background: rgba(245, 158, 11, 0.15);
-      color: var(--warning);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-    }
-
-    .drive-status-badge.synced {
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-
-    .drive-status-badge.error {
-      background: rgba(239, 68, 68, 0.15);
-      color: var(--error);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-    }
 
     .history-item {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-left: 3px solid transparent;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 16px;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
       position: relative;
     }
 
-    .history-item:hover { border-color: var(--firebase); transform: translateX(4px); }
+    .history-item:hover {
+      border-color: rgba(255, 202, 40, 0.4);
+      transform: translateX(4px);
+      background: rgba(26, 35, 50, 0.8);
+    }
     
     .history-item.synced { border-left-color: var(--success); }
     .history-item.pending-sync { border-left-color: var(--warning); }
     .history-item.sync-error { border-left-color: var(--error); }
 
     .connection-banner {
-      background: linear-gradient(135deg, rgba(66, 133, 244, 0.15), rgba(66, 133, 244, 0.08));
-      border: 1px solid rgba(66, 133, 244, 0.3);
-      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.12), rgba(66, 133, 244, 0.05));
+      border: 1px solid rgba(66, 133, 244, 0.25);
+      border-radius: 14px;
       padding: 16px 20px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       margin-bottom: 20px;
     }
 
     .connection-banner.connected {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.04));
       border-color: rgba(16, 185, 129, 0.3);
     }
 
     .connection-banner.error {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.04));
       border-color: rgba(239, 68, 68, 0.3);
     }
 
-    /* 🆕 Drive Connection Status Banner */
     .drive-status-banner {
-      background: linear-gradient(135deg, rgba(66, 133, 244, 0.1), rgba(52, 168, 83, 0.08));
-      border: 1px solid rgba(66, 133, 244, 0.25);
-      border-radius: 10px;
-      padding: 12px 16px;
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.08), rgba(52, 168, 83, 0.06));
+      border: 1px solid rgba(66, 133, 244, 0.2);
+      border-radius: 12px;
+      padding: 14px 18px;
       margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 12px;
+      gap: 12px;
+      font-size: 13px;
     }
 
     .drive-status-banner.active {
-      background: linear-gradient(135deg, rgba(52, 168, 83, 0.12), rgba(52, 168, 83, 0.05));
-      border-color: rgba(52, 168, 83, 0.3);
+      background: linear-gradient(135deg, rgba(52, 168, 83, 0.1), rgba(52, 168, 83, 0.04));
+      border-color: rgba(52, 168, 83, 0.25);
     }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.25); }
+    .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.25); }
+    .badge-error { background: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.25); }
+    .badge-info { background: rgba(59, 130, 246, 0.15); color: var(--accent); border: 1px solid rgba(59, 130, 246, 0.25); }
+    .badge-drive { background: rgba(66, 133, 244, 0.15); color: var(--drive); border: 1px solid rgba(66, 133, 244, 0.25); }
 
     .modal-overlay {
       position: fixed;
@@ -450,11 +349,7 @@
       pointer-events: none;
     }
 
-    .modal-overlay.show { 
-      opacity: 1; 
-      visibility: visible; 
-      pointer-events: auto; 
-    }
+    .modal-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
 
     .modal-content {
       background: var(--card);
@@ -469,60 +364,49 @@
       transition: transform 0.3s ease;
     }
 
-    .modal-overlay.show .modal-content { 
-      transform: scale(1) translateY(0); 
-    }
-
-    .modal-document {
-      max-width: 100%;
-      width: 100%;
-      max-height: 95vh;
-      background: #e2e8f0;
-      padding: 0;
-      overflow: hidden;
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-    }
+    .modal-overlay.show .modal-content { transform: scale(1) translateY(0); }
 
     .toast {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      padding: 14px 20px;
-      border-radius: 10px;
+      padding: 14px 22px;
+      border-radius: 12px;
       font-weight: 500;
       font-size: 14px;
       z-index: 20000;
-      transform: translateY(80px);
+      transform: translateX(120%);
       opacity: 0;
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      max-width: 450px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 420px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.show { transform: translateX(0); opacity: 1; }
     .toast.success { background: var(--success); color: white; }
     .toast.error { background: var(--error); color: white; }
     .toast.info { background: var(--accent); color: white; }
+    .toast.drive { background: linear-gradient(135deg, var(--drive), var(--sheets)); color: white; }
     .toast.firebase { background: linear-gradient(135deg, var(--firebase), var(--firebase-orange)); color: #000; }
-    .toast.drive { background: linear-gradient(135deg, var(--drive), #34a853); color: white; }
 
     .spinner {
       width: 18px;
       height: 18px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: 2.5px solid rgba(255, 255, 255, 0.25);
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
 
     .currency-wrapper { position: relative; }
-    .currency-wrapper .prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; }
-    .currency-wrapper input { padding-left: 36px; }
+    .currency-wrapper .prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; font-weight: 500; }
+    .currency-wrapper input { padding-left: 38px; }
 
     .tab-btn {
-      padding: 8px 16px;
+      padding: 10px 18px;
       border-radius: 8px;
       font-size: 13px;
       font-weight: 500;
@@ -534,25 +418,185 @@
     }
 
     .tab-btn:hover { color: var(--fg); background: rgba(255, 255, 255, 0.05); }
-    .tab-btn.active { color: var(--firebase); background: rgba(255, 202, 40, 0.15); }
+    .tab-btn.active { color: var(--firebase); background: rgba(255, 202, 40, 0.12); }
 
-    .documents-container {
-      background: #e2e8f0;
-      flex: 1;
-      overflow-y: auto;
-      padding: 40px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      background: rgba(255,255,255,0.02);
     }
 
-    .pdf-wrapper { background: white; width: 210mm; }
+    .upload-area:hover { border-color: var(--drive); background: rgba(66, 133, 244, 0.05); }
+    .upload-area.has-file { border-color: var(--success); background: rgba(16, 185, 129, 0.04); }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.04);
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-top: 8px;
+      border-left: 3px solid var(--success);
+    }
+
+    .file-item .file-remove {
+      color: var(--error);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .file-item .file-remove:hover { background: rgba(239, 68, 68, 0.15); }
+
+    .setup-step { background: var(--bg-secondary); border-left: 4px solid var(--firebase); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--firebase), var(--firebase-orange));
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .config-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      word-break: break-all;
+      color: var(--firebase);
+    }
+
+    .example-config-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.03));
+      border: 2px dashed var(--success);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 12px 0;
+    }
+
+    .wrong-example { background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.03)); border-color: var(--error); }
+
+    .validation-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .validation-error.show { display: block; animation: slideUp 0.3s ease-out forwards; }
+    .validation-error ul { list-style: none; padding: 0; margin: 0; }
+    .validation-error li { color: #fca5a5; font-size: 13px; padding: 5px 0; display: flex; align-items: center; gap: 8px; }
+    .validation-error li::before { content: "!"; flex-shrink: 0; width: 18px; height: 18px; background: var(--error); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;}
+
+    .edit-banner {
+      background: linear-gradient(135deg, rgba(255, 202, 40, 0.12), rgba(255, 167, 38, 0.06));
+      border: 1px solid rgba(255, 202, 40, 0.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .action-dropdown {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 4px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      min-width: 150px;
+      overflow: hidden;
+      animation: slideUp 0.15s ease-out;
+    }
+
+    .action-dropdown button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      background: transparent;
+      color: var(--fg);
+      font-size: 13px;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s;
+      text-align: left;
+    }
+
+    .action-dropdown button:hover { background: rgba(255, 255, 255, 0.08); }
+    .action-dropdown button.action-edit { color: var(--firebase); }
+    .action-dropdown button.action-delete { color: var(--error); }
+    .action-dropdown .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+    .btn-action-menu {
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      opacity: 0;
+      position: relative;
+      padding: 0;
+    }
+
+    .history-item:hover .btn-action-menu { opacity: 1; }
+    .btn-action-menu:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--fg); }
+
+    .sync-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    
+    .sync-indicator.synced { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .sync-indicator.pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .sync-indicator.error { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+
+    /* Document Styles */
+    .documents-container { background: #e8ecf1; flex: 1; overflow-y: auto; padding: 32px 16px; display: flex; flex-direction: column; align-items: center; gap: 32px; }
+    .pdf-wrapper { background: white; width: 210mm; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
 
     .document-page {
       background: white;
       color: #000;
-      padding: 35px 50px;
+      padding: 32px 45px;
       font-family: 'Space Grotesk', sans-serif;
       width: 100%;
       min-height: 297mm;
@@ -560,10 +604,9 @@
       position: relative;
       overflow: hidden;
       page-break-after: always;
-      break-after: page;
     }
 
-    .document-page:last-child { page-break-after: auto; break-after: auto; }
+    .document-page:last-child { page-break-after: auto; }
 
     .page-toolbar {
       position: sticky;
@@ -575,254 +618,99 @@
       justify-content: flex-end;
       gap: 10px;
       margin-bottom: 20px;
-      padding: 12px 20px;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(5px);
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(8px);
       border-radius: 12px;
-      border: 1px solid #cbd5e1;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       flex-wrap: wrap;
     }
 
-    .btn-print-doc {
-      background: #334155;
-      color: white;
-      font-weight: 600;
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 13px;
-      font-family: 'Space Grotesk', sans-serif;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-print-doc:hover { background: #475569; }
-
-    .doc-header-center { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
+    .doc-header-center { text-align: center; border-bottom: 2px solid #000; padding-bottom: 14px; margin-bottom: 20px; }
     .doc-company-name { font-size: 18px; font-weight: 700; color: #000; letter-spacing: 0.5px; line-height: 1.3; }
-    .doc-company-logo { height: 91px; width: auto; object-fit: contain; margin-bottom: 4px; }
-    .doc-form-title { font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 3px; color: #000; }
+    .doc-company-logo { height: 85px; width: auto; object-fit: contain; margin-bottom: 6px; }
+    .doc-form-title { font-size: 13px; font-weight: 600; margin-top: 8px; text-transform: uppercase; letter-spacing: 3px; color: #000; }
 
-    .doc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 30px; margin-bottom: 20px; }
+    .doc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; margin-bottom: 20px; }
     .doc-info-item { display: flex; gap: 8px; font-size: 13px; color: #000; }
-    .doc-info-label { font-weight: 600; min-width: 80px; color: #000; }
-    .doc-info-value { border-bottom: 1px solid #000; flex: 1; padding-bottom: 1px; min-height: 18px; }
+    .doc-info-label { font-weight: 600; min-width: 85px; color: #000; }
+    .doc-info-value { border-bottom: 1px solid #333; flex: 1; padding-bottom: 2px; min-height: 20px; }
 
-    .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px; color: #000; }
-    .doc-table th { background: transparent; color: #000; padding: 6px 8px; text-align: center; font-weight: 600; font-size: 11px; border: 1px solid #000; }
-    .doc-table td { border: 1px solid #000; padding: 6px 8px; vertical-align: top; color: #000; }
-    .col-no { width: 35px; text-align: center; }
+    .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; color: #000; }
+    .doc-table th { background: #f8fafc; color: #000; padding: 8px 10px; text-align: center; font-weight: 600; font-size: 11px; border: 1px solid #000; }
+    .doc-table td { border: 1px solid #000; padding: 8px 10px; vertical-align: top; color: #000; }
+    .col-no { width: 40px; text-align: center; }
     .col-item { min-width: 140px; }
     .col-vol { width: 90px; text-align: center; }
-    .col-nominal { width: 110px; text-align: right; }
+    .col-nominal { width: 115px; text-align: right; }
     .col-ket { min-width: 100px; }
-    .doc-total-row td { background: transparent; font-weight: 700; font-size: 13px; border: 1px solid #000; }
+    .doc-total-row td { background: #f1f5f9; font-weight: 700; font-size: 13px; border: 1px solid #000; }
 
-    .doc-signatures-p1 { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 20px; text-align: center; page-break-inside: avoid; }
+    .doc-signatures-p1 { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 24px; text-align: center; page-break-inside: avoid; }
     .doc-sig-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 130px; }
-    .doc-sig-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #000; margin-bottom: 5px; letter-spacing: 2px; }
+    .doc-sig-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #000; margin-bottom: 6px; letter-spacing: 2px; }
     .doc-sig-space { flex-grow: 1; width: 100%; }
-    .doc-sig-name { width: 80%; font-weight: 700; font-size: 12px; color: #000; padding-bottom: 3px; border-bottom: 1px solid #000; }
+    .doc-sig-name { width: 80%; font-weight: 700; font-size: 12px; color: #000; padding-bottom: 4px; border-bottom: 1px solid #000; }
 
-    .doc-header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
-    .doc-header-left .doc-company-name { text-align: left; font-size: 16px; }
-    .doc-header-left .doc-company-logo { height: 72px; }
-    .doc-form-title-right { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 5px; color: #000; }
+    .doc-header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 14px; margin-bottom: 20px; }
+    .doc-header-left .doc-company-logo { height: 70px; }
+    .doc-form-title-right { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 6px; color: #000; }
     .doc-tanggal-box { font-size: 12px; color: #000; }
-    .doc-tanggal-box span { border-bottom: 1px solid #000; padding: 0 8px; }
+    .doc-tanggal-box span { border-bottom: 1px solid #000; padding: 0 10px; }
 
-    .doc-payment-info { margin-bottom: 15px; font-size: 13px; color: #000; }
-    .doc-payment-row { display: flex; gap: 10px; margin-bottom: 6px; align-items: center; }
-    .doc-payment-label { min-width: 140px; font-weight: 600; flex-shrink: 0; color: #000; }
-    .doc-payment-value { border-bottom: 1px solid #000; flex: 1; padding-bottom: 1px; }
-    .doc-check { display: inline-block; width: 14px; height: 14px; border: 1.5px solid #000; text-align: center; line-height: 11px; font-size: 9px; font-weight: 800; margin-right: 4px; vertical-align: middle; font-family: 'Space Grotesk', sans-serif; }
+    .doc-payment-info { margin-bottom: 16px; font-size: 13px; color: #000; }
+    .doc-payment-row { display: flex; gap: 12px; margin-bottom: 8px; align-items: center; }
+    .doc-payment-label { min-width: 150px; font-weight: 600; flex-shrink: 0; color: #000; }
+    .doc-payment-value { border-bottom: 1px solid #000; flex: 1; padding-bottom: 2px; }
+    .doc-check { display: inline-block; width: 16px; height: 16px; border: 1.5px solid #000; text-align: center; line-height: 13px; font-size: 10px; font-weight: 800; margin-right: 5px; vertical-align: middle; }
 
-    .doc-notes { margin-top: 20px; padding: 10px 12px; border: 1px solid #000; background: transparent; }
-    .doc-notes-title { font-weight: 700; font-size: 12px; margin-bottom: 4px; color: #000; }
-    .doc-notes-content { font-size: 11px; color: #000; line-height: 1.4; }
-    .doc-notes-manual { margin-top: 8px; font-size: 11px; color: #000; line-height: 1.4; white-space: pre-wrap; }
+    .doc-notes { margin-top: 20px; padding: 12px 14px; border: 1px solid #000; background: #fafafa; }
+    .doc-notes-title { font-weight: 700; font-size: 12px; margin-bottom: 6px; color: #000; }
+    .doc-notes-content { font-size: 11px; color: #333; line-height: 1.5; }
+    .doc-notes-manual { margin-top: 10px; font-size: 11px; color: #333; line-height: 1.5; white-space: pre-wrap; }
 
-    .doc-signatures-2x2 { margin-top: 30px; page-break-inside: avoid; }
+    .doc-signatures-2x2 { margin-top: 32px; page-break-inside: avoid; }
     .doc-sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
-    .doc-sig-row + .doc-sig-row { margin-top: 25px; }
+    .doc-sig-row + .doc-sig-row { margin-top: 28px; }
     .sig-block-page2 { display: flex; flex-direction: column; align-items: center; text-align: center; }
-    .sig-action { font-size: 10px; text-transform: uppercase; font-weight: 600; letter-spacing: 2px; color: #000; margin-bottom: 8px; }
-    .sig-space { min-height: 50px; width: 100%; }
-    .sig-name { font-weight: 700; font-size: 12px; color: #000; margin-bottom: 2px; }
-    .sig-title { font-size: 11px; color: #000; font-weight: 400; }
+    .sig-action { font-size: 10px; text-transform: uppercase; font-weight: 600; letter-spacing: 2px; color: #000; margin-bottom: 10px; }
+    .sig-space { min-height: 55px; width: 100%; }
+    .sig-name { font-weight: 700; font-size: 12px; color: #000; margin-bottom: 3px; }
+    .sig-title { font-size: 11px; color: #555; font-weight: 400; }
 
     @page { size: A4 portrait; margin: 0; }
 
     @media print {
-      body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { background: white !important; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .no-print, .bg-pattern, .bg-gradient, header, main > div:first-child, .page-toolbar { display: none !important; }
-      #documentModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; display: block !important; opacity: 1 !important; visibility: visible !important; overflow: visible !important; }
-      .modal-document { max-height: none; overflow: visible; border-radius: 0; display: block; background: white; }
-      .documents-container { background: white; padding: 0; overflow: visible; display: block; width: 100%; }
+      #documentModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white !important; z-index: 99999; display: block !important; opacity: 1 !important; visibility: visible !important; overflow: visible !important; }
+      .modal-document { max-height: none; overflow: visible; border-radius: 0; display: block; background: white !important; }
+      .documents-container { background: white !important; padding: 0; overflow: visible; display: block; width: 100%; }
       .pdf-wrapper { max-width: none; width: 210mm; box-shadow: none; margin: 0; }
-      .document-page { box-shadow: none; margin: 0; width: 210mm; height: 297mm; overflow: hidden; page-break-after: always; break-after: page; padding: 35px 50px; }
+      .document-page { box-shadow: none; margin: 0; width: 210mm; height: 297mm; overflow: hidden; page-break-after: always; break-after: page; padding: 32px 45px; }
       .document-page:last-child { page-break-after: auto; break-after: auto; }
     }
 
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-secondary); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
-    .setup-step { background: var(--bg-secondary); border-left: 4px solid var(--firebase); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-    .step-number { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--firebase), var(--firebase-orange)); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
-    .config-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; color: var(--firebase); }
-    .copy-btn { background: var(--firebase); color: #000; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Space Grotesk', sans-serif; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-    .copy-btn:hover { background: var(--firebase-orange); transform: scale(1.05); }
-
-    .example-config-box { background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); border: 2px dashed var(--success); border-radius: 10px; padding: 16px; margin: 12px 0; }
-    .wrong-example { background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)); border-color: var(--error); }
-    .firebase-logo { width: 48px; height: 48px; animation: float 3s ease-in-out infinite; }
-
-    .validation-error { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: none; }
-    .validation-error.show { display: block; animation: slideUp 0.3s ease-out forwards; }
-    .validation-error ul { list-style: none; padding: 0; margin: 0; }
-    .validation-error li { color: #fca5a5; font-size: 13px; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
-    .validation-error li::before { content: "\26A0"; flex-shrink: 0; }
-
-    .sync-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-    
-    .sync-indicator.synced { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-    .sync-indicator.pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); animation: sync-pulse 2s ease-in-out infinite; }
-    .sync-indicator.error { background: rgba(239, 68, 68, 0.2); color: var(--error); }
-
-    .edit-banner {
-      background: rgba(255, 202, 40, 0.15);
-      border: 1px solid rgba(255, 202, 40, 0.4);
-      border-radius: 10px;
-      padding: 10px 16px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+    @media (max-width: 1024px) { .grid-form-history { grid-template-columns: 1fr !important; } }
+    @media (max-width: 640px) {
+      .card { padding: 16px; }
+      .doc-signatures-p1 { grid-template-columns: 1fr; gap: 30px; }
+      .doc-sig-row { grid-template-columns: 1fr; gap: 30px; }
+      .connection-banner { flex-direction: column; text-align: center; }
     }
 
-    .status-text { font-size: 14px; }
-    .status-text-success { color: var(--success); font-weight: 600; }
-    .status-text-default-success { color: var(--success); }
-    .status-text-error { color: var(--error); }
-    .status-text-warning { color: var(--warning); }
-    .status-text-muted { color: var(--muted); }
-    .color-muted { color: var(--muted); }
-    .color-firebase { color: var(--firebase); }
-    .color-drive { color: var(--drive); }
-    .color-sheets { color: var(--sheets); }
+    .search-box { position: relative; }
+    .search-box input { padding-left: 40px; }
+    .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); width: 18px; height: 18px; }
 
-    /* Upload Area - Updated for Base64 mode */
-    .upload-area {
-      border: 2px dashed var(--border);
-      border-radius: 10px;
-      padding: 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: rgba(255,255,255,0.02);
-    }
-    .upload-area:hover { border-color: var(--drive); background: rgba(66, 133, 244, 0.05); }
-    .upload-area.has-file { border-color: var(--success); background: rgba(16, 185, 129, 0.05); }
-    .file-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,0.05);
-      padding: 6px 10px;
-      border-radius: 6px;
-      margin-top: 4px;
-    }
-    .file-link {
-      color: var(--accent);
-      text-decoration: underline;
-      font-size: 12px;
-      word-break: break-all;
-    }
-    .file-link:hover { color: var(--drive); }
-
-    /* Drive Badge */
-    .drive-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 600;
-      background: rgba(66, 133, 244, 0.2);
-      color: var(--drive);
-      border: 1px solid rgba(66, 133, 244, 0.3);
-    }
-
-    /* 🆕 File Item with Drive Status */
-    .file-item-drive {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,0.03);
-      padding: 8px 10px;
-      border-radius: 6px;
-      margin-top: 4px;
-      border-left: 2px solid transparent;
-      transition: all 0.2s;
-    }
-
-    .file-item-drive.synced { border-left-color: var(--success); }
-    .file-item-drive.pending { border-left-color: var(--warning); }
-    .file-item-drive.error { border-left-color: var(--error); }
-
-    .file-name-drive {
-      flex: 1;
-      font-size: 12px;
-      color: var(--fg);
-      truncate: true;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .file-size-drive {
-      font-size: 10px;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-
-    .file-action-drive {
-      flex-shrink: 0;
-      font-size: 12px;
-    }
-
-    .file-link-drive {
-      color: var(--drive);
-      text-decoration: none;
-      font-size: 11px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(66, 133, 244, 0.1);
-      transition: all 0.2s;
-    }
-
-    .file-link-drive:hover {
-      background: rgba(66, 133, 244, 0.2);
-      text-decoration: underline;
-    }
+    .stat-card { transition: all 0.25s ease; }
+    .stat-card:hover { transform: translateY(-4px); border-color: rgba(255, 255, 255, 0.15); }
   </style>
 </head>
 <body>
@@ -832,76 +720,95 @@
   <main class="relative z-10 min-h-screen">
 
     <!-- HEADER -->
-    <header class="border-b border-[--border] bg-[--bg]/90 backdrop-blur-lg sticky top-0 z-50 no-print">
-      <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <header class="border-b border-[--border] bg-[--bg]/90 backdrop-blur-xl sticky top-0 z-50 no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3 animate-in">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--drive] to-[--sheets] flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.06 9.61L4.09 8.44C3.39 9.93 3 11.58 3 13.32c0 4.03 2.87 7.43 6.67 8.21l-.02.22c-.07.42-.07.85-.07 1.25 0 3.31 2.69 6 6 6h.02c.01 0 .02 0 .03-.01 3.59-.17 6.47-6.76 0-3.86-3.13-7-7-7z"/></svg>
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[--drive] to-[--sheets] flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
           </div>
           <div>
-            <h1 class="text-lg font-semibold">FinanceSync Pro v3.3</h1>
-            <p class="text-xs text-[--muted]">Google Drive Edition</p>
+            <h1 class="text-lg font-bold tracking-tight">FinanceSync Pro</h1>
+            <p class="text-xs text-[--muted]">v4.0 - Google Drive Edition</p>
           </div>
         </div>
+        
         <div class="flex items-center gap-3 animate-in delay-1">
-          <div id="connectionStatus" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[--bg-secondary]">
+          <div id="connectionStatus" class="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[--bg-secondary] border border-[--border]">
             <div class="status-dot connecting" id="statusDot"></div>
-            <span class="status-text status-text-muted" id="statusText">Menghubungkan...</span>
+            <span class="text-sm status-text-muted" id="statusText">Menghubungkan...</span>
           </div>
           
-          <button id="setupBtn" class="btn-setup" onclick="openSetupModal()" aria-label="Pengaturan Firebase">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31 2.37 2.37a1.724 1.724 0 00-1.065-2.573c-.94-1.543.826-3.31 2.573c-.94-1.543.826-3.31 2.573c-.94-1.543.826-3.31 2.37a1.724 1.724 0 00-1.066-2.573c-.94-1.543.826-3.31 2.37.996.608.608.608.608.608.608Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span>Setup Firebase</span>
+          <button id="setupBtn" class="btn-outline-drive" onclick="openSetupModal()" aria-label="Pengaturan Firebase">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span class="hidden sm:inline">Setup</span>
           </button>
         </div>
       </div>
     </header>
 
     <!-- MAIN CONTENT -->
-    <div class="max-w-6xl mx-auto px-6 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
       <!-- Connection Banner -->
       <div id="connectionBanner" class="connection-banner no-print" style="display: none;">
-        <svg class="w-6 h-6 text-blue-400 flex-shrink-0 firebase-logo" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.06 9.61L4.09 8.44C3.39 9.93 3 11.58 3 13.32c0 4.03 2.87 7.43 6.67 8.21l-.02.22c-.07.42-.07.85-.07 1.25 0 3.31 2.69 6 6 6h.02c.01 0 .02 0 .03-.01 3.59-.17 6.47-6.76 0-3.86-3.13-7-7-7z"/></svg>
+        <svg class="w-7 h-7 text-blue-400 flex-shrink-0" style="animation: float 3s ease-in-out infinite;" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
         <div class="flex-1">
-          <div class="font-semibold text-sm text-white" id="bannerTitle">Menyiapkan...</div>
-          <div class="text-xs text-gray-300 mt-1" id="bannerMessage">Mohon tunggu sebentar</div>
+          <div class="font-semibold text-sm" id="bannerTitle">Menyiapkan...</div>
+          <div class="text-xs text-gray-400 mt-1" id="bannerMessage">Mohon tunggu sebentar</div>
         </div>
-        <button onclick="openSetupModal()" class="copy-btn">Setup</button>
+        <button onclick="openSetupModal()" class="btn-primary py-2 px-4 text-sm">Konfigurasi</button>
       </div>
 
-      <!-- 🆕 Google Drive Sync Status Banner -->
+      <!-- Drive Status Banner -->
       <div id="driveStatusBanner" class="drive-status-banner no-print" style="display:none;">
         <svg class="w-5 h-5 text-blue-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
         <div class="flex-1">
-          <span class="font-medium text-white" id="driveStatusText">Menunggu sinkronisasi Google Drive...</span>
+          <span class="font-medium" id="driveStatusText">Menunggu sinkronisasi...</span>
         </div>
-        <div id="driveStatusBadge" class="drive-status-badge pending">
-          ⏳ Pending
-        </div>
+        <div id="driveStatusBadge" class="badge badge-warning">Pending</div>
       </div>
 
-      <!-- Architecture Info Banner -->
-      <div id="archBanner" class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30 mb-6 no-print" style="display:none;">
+      <!-- Architecture Info -->
+      <div id="archBanner" class="bg-blue-900/20 rounded-xl p-4 border border-blue-700/25 mb-6 no-print" style="display:none;">
         <div class="flex items-start gap-3">
           <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <div>
-            <h3 class="font-semibold text-sm text-blue-300 mb-1">🏗️ Arsitektur Firebase → Google Drive</h3>
-            <p class="text-xs text-gray-400">Data disimpan ke <strong class="text-yellow-300">Firebase</strong>, File dikonversi ke Base64, kemudian <strong class="text-green-300">Apps Script</strong> membuat file di <strong class="text-blue-300">Google Drive</strong>.</p>
+            <h3 class="font-semibold text-sm text-blue-300 mb-1">Arsitektur Firebase + Google Drive</h3>
+            <p class="text-xs text-gray-400">Data disimpan ke <strong class="text-yellow-300">Firebase Firestore</strong>, File dikonversi ke Base64, kemudian <strong class="text-green-300">Apps Script</strong> membuat file di <strong class="text-blue-300">Google Drive</strong>.</p>
           </div>
         </div>
       </div>
 
       <!-- Statistics -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 no-print">
-        <div class="card animate-in delay-1"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">Total Data</div><div class="text-2xl font-bold" id="totalData">0</div></div>
-        <div class="card animate-in delay-2"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">🔥 Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
-        <div class="card animate-in delay-3"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">☁️ Google Drive</div><div class="text-2xl font-bold text-[--drive]" id="sheetsData">0</div></div>
-        <div class="card animate-in delay-4"><div class="text-[--muted] text-xs uppercase tracking-wide mb-1">⏳ Pending Sync</div><div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div></div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 no-print">
+        <div class="card stat-card animate-in delay-1">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center"><svg class="w-5 h-5 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+            <div><div class="text-[--muted] text-xs uppercase tracking-wide">Total Data</div><div class="text-2xl font-bold" id="totalData">0</div></div>
+          </div>
+        </div>
+        <div class="card stat-card animate-in delay-2">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-[--firebase]" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg></div>
+            <div><div class="text-[--muted] text-xs uppercase tracking-wide">Firebase</div><div class="text-2xl font-bold text-[--success]" id="sentData">0</div></div>
+          </div>
+        </div>
+        <div class="card stat-card animate-in delay-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-[--drive]" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg></div>
+            <div><div class="text-[--muted] text-xs uppercase tracking-wide">Google Drive</div><div class="text-2xl font-bold text-[--drive]" id="sheetsData">0</div></div>
+          </div>
+        </div>
+        <div class="card stat-card animate-in delay-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-[--warning]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+            <div><div class="text-[--muted] text-xs uppercase tracking-wide">Pending</div><div class="text-2xl font-bold text-[--warning]" id="pendingData">0</div></div>
+          </div>
+        </div>
       </div>
 
       <!-- Grid Form + History -->
-      <div class="grid lg:grid-cols-5 gap-8">
+      <div class="grid lg:grid-cols-5 gap-8 grid-form-history">
 
         <!-- FORM INPUT -->
         <div class="lg:col-span-3 no-print">
@@ -909,336 +816,345 @@
             <div id="editModeContainer"></div>
             
             <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--drive]/20 to-[--sheets]/20 flex items-center justify-center">
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[--drive]/20 to-[--sheets]/20 flex items-center justify-center border border-[--drive]/20">
                 <svg class="w-5 h-5 text-[--drive]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
               </div>
               <div>
-                <h2 class="text-lg font-semibold">Form Pengajuan</h2>
+                <h2 class="text-lg font-bold">Form Pengajuan</h2>
                 <p class="text-sm text-[--muted]">Simpan ke Firebase → File otomatis ke Google Drive</p>
               </div>
             </div>
 
-            <form id="dataForm" class="space-y-4">
+            <form id="dataForm" class="space-y-5" novalidate>
               <div class="grid md:grid-cols-2 gap-4">
                 <div><label class="field-label" for="tanggal">Tanggal Invoice<span class="required-star">*</span></label><input type="date" id="tanggal" name="tanggal" class="input-field" required></div>
-                <div><label class="field-label" for="lokasi">Lokasi<span class="required-star">*</span></label><input type="text" id="lokasi" name="lokasi" class="input-field" placeholder="Contoh: Lt.1" required></div>
+                <div><label class="field-label" for="lokasi">Lokasi<span class="required-star">*</span></label><input type="text" id="lokasi" name="lokasi" class="input-field" placeholder="Contoh: Lt.1, Gudang" required></div>
               </div>
 
               <div class="grid md:grid-cols-2 gap-4">
-                <div><label class="field-label" for="jenis_pengajuan">Jenis Pengajuan<span class="required-star">*</span></label><input type="text" id="jenis_pengajuan" name="jenis_pengajuan" class="input-field" placeholder="Masukkan jenis pengajuan" required></div>
-                <div><label class="field-label" for="kode">Kode<span class="required-star">*</span></label><input type="text" id="kode" name="kode" class="input-field mono" placeholder="Masukkan kode" required></div>
+                <div><label class="field-label" for="jenis_pengajuan">Jenis Pengajuan<span class="required-star">*</span></label><input type="text" id="jenis_pengajuan" name="jenis_pengajuan" class="input-field" placeholder="Operasional, Maintenance, dll" required></div>
+                <div><label class="field-label" for="kode">Kode Transaksi<span class="required-star">*</span></label><input type="text" id="kode" name="kode" class="input-field mono" placeholder="TRX-001" required></div>
               </div>
 
               <div class="grid md:grid-cols-2 gap-4">
-                <div><label class="field-label" for="no_invoice">No Invoice / Berkas</label><input type="text" id="no_invoice" name="no_invoice" class="input-field mono" placeholder="(opsional)"></div>
+                <div><label class="field-label" for="no_invoice">No Invoice / Berkas</label><input type="text" id="no_invoice" name="no_invoice" class="input-field mono" placeholder="(Auto-generate / opsional)"></div>
                 <div><label class="field-label" for="status">Status Pembayaran<span class="required-star">*</span></label><select id="status" name="status" class="input-field" required><option value="">Pilih status</option><option value="Lunas">Lunas</option><option value="Belum Lunas">Belum Lunas</option></select></div>
               </div>
 
               <div>
-                <div class="flex justify-between items-center mb-2">
-                  <label class="field-label">Rincian Barang / Jasa<span class="required-star">*</span></label>
-                  <span class="text-xs text-[--muted]">Minimal 1 item wajib diisi</span>
+                <div class="flex justify-between items-center mb-3">
+                  <label class="field-label mb-0">Rincian Barang / Jasa<span class="required-star">*</span></label>
+                  <span class="text-xs text-[--muted] bg-[--bg-secondary] px-3 py-1 rounded-full">Minimal 1 item</span>
                 </div>
-                <div id="itemsContainer" class="space-y-2"></div>
-                <button type="button" onclick="addFormItem()" class="btn-add-item mt-3">+ Tambah Item Baru</button>
+                <div id="itemsContainer" class="space-y-3"></div>
+                <button type="button" onclick="addFormItem()" class="btn-add-item mt-3"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>Tambah Item Baru</button>
               </div>
 
               <div class="grid md:grid-cols-2 gap-4">
-                <div><label class="field-label">Total Nominal (Otomatis)</label><div class="currency-wrapper"><span class="prefix">Rp</span><input type="text" id="grandTotalDisplay" class="input-field mono" readonly placeholder="0" style="background: rgba(255,255,255,0.05);"></div></div>
+                <div><label class="field-label">Total Nominal (Otomatis)</label><div class="currency-wrapper"><span class="prefix">Rp</span><input type="text" id="grandTotalDisplay" class="input-field mono" readonly placeholder="0" style="background: rgba(255,255,255,0.03);"></div></div>
                 <div id="paymentDateContainer"><label class="field-label" for="tanggal_pembayaran">Tanggal Pembayaran</label><input type="date" id="tanggal_pembayaran" name="tanggal_pembayaran" class="input-field"></div>
               </div>
 
-              <div><label class="field-label" for="dibayarkan_kepada">Dibayarkan Kepada<span class="required-star">*</span></label><input type="text" id="dibayarkan_kepada" name="dibayarkan_kepada" class="input-field" placeholder="Nama penerima pembayaran" required></div>
+              <div><label class="field-label" for="dibayarkan_kepada">Dibayarkan Kepada<span class="required-star">*</span></label><input type="text" id="dibayarkan_kepada" name="dibayarkan_kepada" class="input-field" placeholder="Nama vendor/penerima pembayaran" required></div>
 
-              <!-- UPLOAD FILE - BASE64 MODE -->
+              <!-- File Upload -->
               <div>
                 <div class="flex items-center justify-between mb-2">
-                  <label class="field-label">Upload Bukti Dokumen</label>
-                  <span class="drive-badge">📁 Google Drive</span>
+                  <label class="field-label mb-0">Upload Bukti Dokumen</label>
+                  <span class="badge badge-drive text-[10px]">Google Drive</span>
                 </div>
                 <div id="uploadArea" class="upload-area" onclick="document.getElementById('fileInput').click()">
                   <input type="file" id="fileInput" accept="image/*,.pdf" multiple hidden onchange="handleFileSelect(this)">
                   <div id="uploadPlaceholder">
-                    <svg class="w-8 h-8 mx-auto mb-2 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                    <p class="text-sm text-[--muted]">Klik untuk upload bukti invoice/foto</p>
-                    <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, PDF (Maks 750KB per file)</p>
-                    <p class="text-xs text-blue-400 mt-1">File akan disimpan ke Google Drive via Apps Script (delay 5-10 menit)</p>
+                    <svg class="w-10 h-10 mx-auto mb-3 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    <p class="text-sm text-[--muted] font-medium">Klik atau drag untuk upload bukti</p>
+                    <p class="text-xs text-gray-500 mt-1">JPG, PNG, PDF (Max 750KB per file)</p>
+                    <p class="text-xs text-blue-400 mt-2">File akan otomatis sync ke Google Drive</p>
                   </div>
-                  <div id="fileListDisplay" class="text-left mt-2 space-y-1"></div>
+                  <div id="fileListDisplay" class="text-left mt-3 space-y-2"></div>
                 </div>
               </div>
 
-              <div><label class="field-label" for="catatan_tambahan">Catatan Tambahan <span class="text-[--muted] font-normal">(opsional)</span></label><textarea id="catatan_tambahan" name="catatan_tambahan" rows="2" class="input-field resize-none" placeholder="Tambahkan catatan khusus..."></textarea></div>
+              <div><label class="field-label" for="catatan_tambahan">Catatan Tambahan <span class="text-[--muted] font-normal">(opsional)</span></label><textarea id="catatan_tambahan" name="catatan_tambahan" rows="3" class="input-field resize-none" placeholder="Tambahkan catatan jika diperlukan..."></textarea></div>
 
-              <div id="validationError" class="validation-error">
-                <strong style="color:#fca5a5;font-size:14px;margin-bottom:8px;display:block;">Mohon lengkapi field berikut:</strong>
-                <ul id="validationErrorList"></ul>
-              </div>
+              <!-- Validation Error Container -->
+              <div id="validationError" class="validation-error"><strong style="color:#fca5a5;font-size:14px;margin-bottom:10px;display:block;">Mohon lengkapi field berikut:</strong><ul id="validationErrorList"></ul></div>
 
-              <div class="flex flex-wrap items-center gap-3 pt-4">
-                <button type="submit" id="submitBtn" class="btn-submit">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                  <span>💾 Simpan ke Firebase</span>
+              <!-- Action Buttons -->
+              <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-[--border]">
+                <button type="submit" id="submitBtn" class="btn-primary"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 3z"/></svg><span>Simpan ke Firebase</span></button>
+                
+                <button type="button" id="previewBtn" class="btn-secondary"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>Preview Dokumen</button>
+                
+                <button type="button" id="forceSyncBtn" class="btn-sync" onclick="triggerManualSync()" title="Force sync ke Google Drive">
+                  <svg class="w-4 h-4 sync-icon-spin" id="syncIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span id="syncBtnText">Sync Sekarang</span>
                 </button>
-                <button type="button" id="previewBtn" class="btn-print">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943 9.542 7-4.477 0z"/></svg>
-                  <span>Preview & PDF</span>
-                </button>
-                <!-- 🆕 Tombol Force Sync ke Google Drive -->
-                <button type="button" id="forceSyncBtn" class="btn-drive-sync" onclick="triggerManualSync()" title="Paksa sinkronisasi ke Google Drive sekarang">
-                  <svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                  <span>Sync Sekarang</span>
-                </button>
-                <button type="reset" class="text-[--muted] hover:text-[--fg] transition-colors text-sm">Reset</button>
+                
+                <button type="reset" class="text-[--muted] hover:text-[--error] transition-colors text-sm ml-auto">Reset Form</button>
               </div>
             </form>
           </div>
         </div>
 
-        <!-- HISTORY -->
+        <!-- HISTORY PANEL -->
         <div class="lg:col-span-2 no-print">
           <div class="card animate-in delay-4">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold">Riwayat Transaksi</h2>
-              <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors">Hapus Semua</button>
+              <h2 class="text-lg font-bold">Riwayat Transaksi</h2>
+              <button id="clearHistory" class="text-xs text-[--muted] hover:text-[--error] transition-colors font-medium">Hapus Semua</button>
             </div>
 
-            <div class="flex gap-1 mb-3 p-1 bg-[--bg-secondary] rounded-lg">
-              <button class="tab-btn active flex-1" data-tab="Lunas">Lunas</button>
-              <button class="tab-btn flex-1" data-tab="Belum Lunas">Belum Lunas</button>
+            <!-- Tabs -->
+            <div class="flex gap-1 mb-4 p-1 bg-[--bg-secondary] rounded-xl">
+              <button class="tab-btn active flex-1 rounded-lg" data-tab="all">Semua</button>
+              <button class="tab-btn flex-1 rounded-lg" data-tab="Lunas">Lunas</button>
+              <button class="tab-btn flex-1 rounded-lg" data-tab="Belum Lunas">Pending</button>
             </div>
 
-            <div class="mb-3 p-3 bg-[--bg-secondary] rounded-lg" id="dateFilterSection">
-              <div class="flex items-center gap-2 mb-2">
-                <svg class="w-4 h-4 text-[--muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2 2V7a2 2 0 00-2-2H5a2 2 0 00-2 2V7zM5 21h14a2 2 0 002-4 2V7zM5 21H5z"/></svg>
-                <span class="text-xs font-medium text-[--muted]">FILTER TANGGAL</span>
+            <!-- Search & Filter -->
+            <div class="space-y-3 mb-4 p-3 bg-[--bg-secondary] rounded-xl">
+              <div class="search-box">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input type="text" id="searchInput" class="input-field text-sm" placeholder="Cari kode, nama, jenis..." style="padding-left: 38px;">
               </div>
+              
               <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="text-[10px] text-[--muted] block mb-1">Dari</label>
-                  <input type="date" id="filterDateFrom" class="input-field text-xs" style="padding:8px 10px;">
-                </div>
-                <div>
-                  <label class="text-[10px] text-[--muted] block mb-1">Sampai</label>
-                  <input type="date" id="filterDateTo" class="input-field text-xs" style="padding:8px 10px;">
-                </div>
+                <div><label class="text-[10px] text-[--muted] block mb-1 font-medium uppercase tracking-wide">Dari</label><input type="date" id="filterDateFrom" class="input-field text-xs" style="padding:8px 10px;"></div>
+                <div><label class="text-[10px] text-[--muted] block mb-1 font-medium uppercase tracking-wide">Sampai</label><input type="date" id="filterDateTo" class="input-field text-xs" style="padding:8px 10px;"></div>
               </div>
-              <button onclick="clearDateFilter()" class="text-[10px] text-[--firebase] hover:underline mt-2 block">Reset Filter</button>
+              <button onclick="clearFilters()" class="text-[11px] text-[--firebase] hover:underline font-medium w-full text-center">Reset Filter</button>
             </div>
 
-            <div id="historyList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-              <div class="text-center py-10 text-[--muted]">
-                <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <p class="text-sm">Belum ada data</p>
-                <p class="text-xs mt-2 text-[--drive]">File otomatis tersimpan ke Google Drive</p>
+            <!-- History List -->
+            <div id="historyList" class="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+              <div class="text-center py-12 text-[--muted]">
+                <svg class="w-12 h-12 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <p class="text-sm font-medium">Belum ada data</p>
+                <p class="text-xs mt-2 text-[--drive]">File akan otomatis tersimpan ke Google Drive</p>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </main>
 
   <!-- SETUP MODAL -->
   <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true">
-    <div class="modal-content">
-      <div class="flex items-center justify-between mb-5">
-        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">⚙️</span> Konfigurasi Firebase</h2>
-        <button onclick="closeSetupModal()" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    <div class="modal-content" style="max-width:650px;">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--firebase] to-[--firebase-orange] flex items-center justify-center text-black text-lg">⚙️</span>Konfigurasi Firebase</h2>
+        <button onclick="closeSetupModal()" class="w-9 h-9 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
 
-      <div class="space-y-6">
+      <div class="space-y-5">
         
+        <!-- Step 1: Firebase Config -->
         <div class="setup-step">
-          <div class="flex items-start gap-3">
+          <div class="flex items-start gap-4">
             <div class="step-number">1</div>
             <div class="flex-1">
-              <h3 class="font-semibold text-base mb-2">🔥 Firebase Configuration</h3>
-              <p class="text-sm text-[--muted] mb-3">Hanya butuh Firestore (Gratis, tanpa kartu kredit).</p>
+              <h3 class="font-bold text-base mb-2">Firebase Configuration</h3>
+              <p class="text-sm text-[--muted] mb-4">Butuh Firestore saja (Gratis, tanpa kartu kredit).</p>
               
               <div class="example-config-box wrong-example">
                 <div class="flex items-center gap-2 mb-2"><span class="text-lg">❌</span><strong class="text-red-400 text-sm">Jangan copy ini:</strong></div>
-                <div class="config-box text-red-300" style="color:#fca5a5;">// Import...<br>const firebaseConfig = {<br>&nbsp;&nbsp;apiKey: "...",<br>&nbsp;&nbsp;...<br>};<br>const app = initializeApp(...);</div>
+                <div class="config-box text-red-300" style="color:#fca5a5;font-size:10px;">// Import statements...<br>const firebaseConfig = {<br>&nbsp;&nbsp;apiKey: "...",<br>&nbsp;&nbsp;authDomain: "...",<br>};<br>const app = initializeApp(config);<br>const db = getFirestore(app);</div>
               </div>
 
               <div class="example-config-box">
-                <div class="flex items-center gap-2 mb-2"><span class="text-lg">✅</span><strong class="text-green-400 text-sm">Copy HANYA ini:</strong></div>
-                <div class="config-box">{<br>&nbsp;&nbsp;"apiKey": "AIzaSy...",<br>&nbsp;&nbsp;"authDomain": "...",<br>&nbsp;&nbsp;"projectId": "...",<br>&nbsp;&nbsp;...<br>}</div>
+                <div class="flex items-center gap-2 mb-2"><span class="text-lg">✅</span><strong class="text-green-400 text-sm">Copy HANYA object config:</strong></div>
+                <div class="config-box">{<br>&nbsp;&nbsp;"apiKey": "AIzaSy...",<br>&nbsp;&nbsp;"authDomain": "your-app.firebaseapp.com",<br>&nbsp;&nbsp;"projectId": "your-project-id",<br>&nbsp;&nbsp;"storageBucket": "...",<br>&nbsp;&nbsp;"messagingSenderId": "...",<br>&nbsp;&nbsp;"appId": "..."<br>}</div>
               </div>
 
-              <div class="mt-3">
-                <label class="field-label">Paste Firebase Config:</label>
-                <textarea id="firebaseConfigInput" class="input-field resize-none" rows="4" placeholder='{"apiKey": "...", ...}' style="font-family:'JetBrains Mono',monospace;font-size:11px;"></textarea>
-                <div id="configError" class="text-xs text-red-400 mt-2 hidden"></div>
+              <div class="mt-4">
+                <label class="field-label">Paste Firebase Config JSON:</label>
+                <textarea id="firebaseConfigInput" class="input-field resize-none" rows="4" placeholder='{"apiKey": "...", "projectId": "..."}' style="font-family:'JetBrains Mono',monospace;font-size:11px;"></textarea>
+                <div id="configError" class="text-xs text-red-400 mt-2 hidden font-medium"></div>
               </div>
               
-              <button onclick="saveFirebaseConfig()" class="copy-btn mt-3 w-full">💾 Simpan & Connect</button>
+              <button onclick="saveFirebaseConfig()" class="btn-primary w-full mt-4 justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>Simpan & Connect</button>
             </div>
           </div>
+        </div>
 
-          <div class="setup-step">
-            <div class="flex items-start gap-3">
-              <div class="step-number">2</div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-base mb-2">📖 Cara Kerja File → Google Drive</h3>
-                
-                <div class="bg-blue-900/30 rounded-xl p-4 border border-blue-700/30">
-                  <div class="space-y-3 text-sm text-gray-300">
-                    <div class="flex items-start gap-2">
-                      <span class="text-yellow-300 font-bold">1️⃣</span>
-                      <div>User upload file → Dikonversi jadi <strong class="text-blue-300">Base64</strong></div>
-                    </div>
-                    <div class="flex items-start gap-2">
-                      <span class="text-green-300 font-bold">2️⃣</span>
-                      <div>Data + Base64 disimpan ke <strong class="text-yellow-300">Firebase Firestore</strong></div>
-                    </div>
-                    <div class="flex items-start gap-2">
-                      <span class="text-blue-300 font-bold">3️⃣</span>
-                      <div><strong>Apps Script</strong> membuat file di <strong class="text-blue-300">Google Drive</strong> & dapat link shareable</div>
-                    </div>
-                    <div class="flex items-start gap-2">
-                      <span class="text-purple-300 font-bold">4️⃣</span>
-                      <div>Status otomatis <strong class="text-purple-300">update</strong> di aplikasi (real-time listener)</div>
-                    </div>
+        <!-- Step 2: How It Works -->
+        <div class="setup-step" style="border-left-color: var(--drive);">
+          <div class="flex items-start gap-4">
+            <div class="step-number" style="background: linear-gradient(135deg, var(--drive), var(--sheets));">2</div>
+            <div class="flex-1">
+              <h3 class="font-bold text-base mb-2">Cara Kerja File → Google Drive</h3>
+              
+              <div class="bg-blue-900/20 rounded-xl p-4 border border-blue-700/25">
+                <div class="space-y-3 text-sm text-gray-300">
+                  <div class="flex items-start gap-3">
+                    <span class="w-6 h-6 rounded-full bg-yellow-500/20 text-yellow-300 flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+                    <div>User upload file → Dikonversi jadi <strong class="text-blue-300">Base64 string</strong></div>
                   </div>
+                  <div class="flex items-start gap-3">
+                    <span class="w-6 h-6 rounded-full bg-green-500/20 text-green-300 flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+                    <div>Data + Base64 disimpan ke <strong class="text-yellow-300">Firebase Firestore</strong></div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <span class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+                    <div><strong class="text-purple-300">Google Apps Script</strong> trigger → Buat file di <strong class="text-blue-300">Google Drive</strong></div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center text-xs font-bold flex-shrink-0">4</span>
+                    <div>Status sync <strong class="text-purple-300">update real-time</strong> di aplikasi</div>
+                  </div>
+                </div>
 
-                  <div class="mt-3 p-3 bg-[--bg] rounded-lg border border-[--border]">
-                    <p class="text-xs text-[--muted] mb-2 font-semibold">⚠️ BATASAN:</p>
-                    <ul class="text-xs text-gray-400 space-y-1 list-disc list-inside ml-4">
-                      <li>Maksimal <strong class="text-white">750KB per file</strong> (limit Firestore document)</li>
-                      <li>File muncul di Drive setelah <strong class="text-white">5-10 menit</strong> (Apps Script trigger)</li>
-                      <li>Tidak perlu kartu kredit!</li>
-                      <li>Status sync otomatis ter-update via real-time listener</li>
-                    </ul>
-                  </div>
+                <div class="mt-4 p-3 bg-[--bg] rounded-lg border border-[--border]">
+                  <p class="text-xs text-[--muted] mb-2 font-semibold uppercase tracking-wide">Batasan:</p>
+                  <ul class="text-xs text-gray-400 space-y-1.5 list-disc list-inside">
+                    <li>Maksimal <strong class="text-white">750KB per file</strong></li>
+                    <li>File muncul di Drive dalam <strong class="text-white">5-10 menit</strong></li>
+                    <li>Tidak perlu kartu kredit!</li>
+                  </ul>
                 </div>
               </div>
             </div>
-            
-            <button onclick="closeSetupModal()" class="copy-btn mt-4 w-full">Tutup & Mulai Pakai</button>
           </div>
         </div>
+
+        <button onclick="closeSetupModal()" class="btn-secondary w-full justify-center">Tutup & Mulai Pakai</button>
       </div>
+    </div>
   </div>
 
   <!-- DOCUMENT PREVIEW MODAL -->
   <div id="documentModal" class="modal-overlay" role="dialog" aria-modal="true">
-    <div class="modal-content modal-document">
+    <div class="modal-content modal-document" style="max-width:95vw;padding:0;overflow:hidden;border-radius:16px;">
+      
+      <!-- Toolbar -->
       <div class="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 no-print page-toolbar">
-        <h2 class="text-lg font-semibold text-slate-800">Preview Dokumen</h2>
+        <h2 class="text-base font-bold text-slate-800">Preview Dokumen</h2>
         <div class="flex items-center gap-2 flex-wrap">
-          <button class="btn-pdf" onclick="downloadAsPDF()">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m0 0l-3 3m3 3v12"/></svg>
-            Download PDF
-          </button>
-          <button class="btn-print-doc" onclick="window.print()">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2 2v-4a2 2 0 003-3-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            Print
-          </button>
-          <button onclick="closeDocumentModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+          <button class="btn-pdf" onclick="downloadAsPDF()"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m0 0l-3 3m3-3v12"/></svg>Download PDF</button>
+          <button class="btn-secondary" onclick="window.print()" style="background:#334155;color:white;border:none;"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>Print</button>
+          <button onclick="closeDocumentModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-600" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
+      </div>
 
-        <div class="documents-container">
-          <div id="pdf-wrapper" class="pdf-wrapper">
-            <!-- HALAMAN 1 -->
-            <div class="document-page" id="documentPage1">
-              <div class="doc-header-center">
-                <img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo Nusantara Mineral Sukses Abadi" class="doc-company-logo" onerror="this.style.display='none'">
-                <div class="doc-form-title">FORMULIR PENGAJUAN HO</div>
-              </div>
-              <div class="doc-info-grid">
-                <div class="doc-info-item"><span class="doc-info-label">Lokasi</span><span class="doc-info-value" id="p1_lokasi"></span></div>
-                <div class="doc-info-item"><span class="doc-info-label">Tanggal</span><span class="doc-info-value" id="p1_tanggal"></span></div>
-                <div class="doc-info-item"><span class="doc-info-label">Kode</span><span class="doc-info-value" id="p1_kode"></span></div>
-                <div class="doc-info-item"><span class="doc-info-label">Jenis</span><span class="doc-info-value" id="p1_jenis"></span></div>
-              </div>
-              <table class="doc-table">
-                <thead><tr><th class="col-no">NO</th><th class="col-item">ITEM</th><th class="col-vol">JUMLAH / VOLUME</th><th class="col-nominal">Total (Rp)</th><th class="col-ket">KETERANGAN</th></tr></thead>
-                <tbody id="p1_table_body"></tbody>
-                <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right" id="p1_total"></td><td></td></tr></tfoot>
-              </table>
-              <div id="p1_notes_manual_wrapper" style="display:none;"><div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN:</div><div class="doc-notes-manual" id="p1_notes_manual"></div></div></div>
-              <div class="doc-signatures-p1">
-                <div class="doc-sig-box"><div class="doc-sig-label">DIBUAT OLEH</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_dibuat"></div></div>
-                <div class="doc-sig-box"><div class="doc-sig-label">DISETUJUI</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_disetujui"></div></div>
-              </div>
-              <div class="doc-notes"><div class="doc-notes-title">NOTE :</div><div class="docs-notes-content">Dokumen ini adalah bukti pengajuan resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div></div></div>
+      <!-- Document Content -->
+      <div class="documents-container">
+        <div id="pdf-wrapper" class="pdf-wrapper">
+          
+          <!-- PAGE 1: Form Pengajuan HO -->
+          <div class="document-page" id="documentPage1">
+            <div class="doc-header-center">
+              <img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo Nusantara Mineral Sukses Abadi" class="doc-company-logo" onerror="this.style.display='none'">
+              <div class="doc-form-title">FORMULIR PENGAJUAN HO</div>
             </div>
+            
+            <div class="doc-info-grid">
+              <div class="doc-info-item"><span class="doc-info-label">Lokasi</span><span class="doc-info-value" id="p1_lokasi"></span></div>
+              <div class="doc-info-item"><span class="doc-info-label">Tanggal</span><span class="doc-info-value" id="p1_tanggal"></span></div>
+              <div class="doc-info-item"><span class="doc-info-label">Kode</span><span class="doc-info-value" id="p1_kode"></span></div>
+              <div class="doc-info-item"><span class="doc-info-label">Jenis</span><span class="doc-info-value" id="p1_jenis"></span></div>
+            </div>
+            
+            <table class="doc-table">
+              <thead><tr><th class="col-no">NO</th><th class="col-item">ITEM</th><th class="col-vol">JUMLAH / VOLUME</th><th class="col-nominal">Total (Rp)</th><th class="col-ket">KETERANGAN</th></tr></thead>
+              <tbody id="p1_table_body"></tbody>
+              <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right;font-weight:700;">TOTAL</td><td style="text-align:right;font-weight:700;" id="p1_total"></td><td></td></tr></tfoot>
+            </table>
+            
+            <div id="p1_notes_manual_wrapper" style="display:none;"><div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN TAMBAHAN:</div><div class="doc-notes-manual" id="p1_notes_manual"></div></div></div>
+            
+            <div class="doc-signatures-p1">
+              <div class="doc-sig-box"><div class="doc-sig-label">DIBUAT OLEH</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_dibuat"></div></div>
+              <div class="doc-sig-box"><div class="doc-sig-label">DISETUJUI</div><div class="doc-sig-space"></div><div class="doc-sig-name" id="p1_disetujui"></div></div>
+            </div>
+            
+            <div class="doc-notes"><div class="doc-notes-title">CATATAN :</div><div class="doc-notes-content">Dokumen ini adalah bukti pengajuan resmi PT. Nusantara Mineral Sukses Abadi. Harap simpan sebagai arsip.</div></div>
+          </div>
 
-            <!-- HALAMAN 2 -->
-            <div class="document-page" id="documentPage2">
-              <div class="doc-header-flex">
-                <div class="doc-header-left"><img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo Nusantara Mineral Sukses Abadi" class="doc-company-logo" onerror="this.style.display='none'"></div>
-                <div class="doc-header-right">
-                  <div class="doc-form-title-right">BUKTI PENGELUARAN KAS / BANK</div>
-                  <div class="doc-tanggal-box">Tanggal : <span id="p2_tanggal"></span></div>
-                </div>
+          <!-- PAGE 2: Bukti Pengeluaran -->
+          <div class="document-page" id="documentPage2">
+            <div class="doc-header-flex">
+              <div class="doc-header-left"><img src="https://i.ibb.co.com/jN7Khby/Logo-Nusantara-Mineral-Abadi.webp" alt="Logo" class="doc-company-logo" onerror="this.style.display='none'"></div>
+              <div class="doc-header-right">
+                <div class="doc-form-title-right">BUKTI PENGELUARAN KAS / BANK</div>
+                <div class="doc-tanggal-box">Tanggal : <span id="p2_tanggal"></span></div>
               </div>
-              <div class="doc-payment-info">
-                <div class="doc-payment-row"><span class="doc-payment-label">Kode</span><span class="doc-payment-value" id="p2_kode"></span></div>
-                <div class="doc-payment-row"><span class="doc-payment-label">Dibayarkan kepada</span><span class="doc-payment-value" id="p2_dibayarkan"></span></div>
-                <div class="doc-payment-row"><span class="doc-payment-label">Jenis Pengajuan</span><span class="doc-payment-value" id="p2_jenis"></span></div>
-                <div class="doc-payment-row"><span class="doc-payment-label">Dibayarkan dengan</span><span class="doc-payment-value"><span class="doc-check">&nbsp;</span> Cek <span style="margin-left:16px;"><span class="doc-check">X</span> Transfer</span></span></div>
+            </div>
+            
+            <div class="doc-payment-info">
+              <div class="doc-payment-row"><span class="doc-payment-label">Kode</span><span class="doc-payment-value" id="p2_kode"></span></div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Dibayarkan kepada</span><span class="doc-payment-value" id="p2_dibayarkan"></span></div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Jenis Pengajuan</span><span class="doc-payment-value" id="p2_jenis"></span></div>
+              <div class="doc-payment-row"><span class="doc-payment-label">Dibayarkan dengan</span><span class="doc-payment-value"><span class="doc-check">&nbsp;</span> Cek/Giro<span style="margin-left:20px;"><span class="doc-check">X</span> Transfer</span></span></div>
+            </div>
+            
+            <table class="doc-table">
+              <thead><tr><th style="width:40px;text-align:center">NO</th><th>URAIAN BARANG / JASA</th><th style="width:70px;text-align:center">QTY</th><th style="width:120px;text-align:right">JUMLAH (Rp)</th></tr></thead>
+              <tbody id="p2_table_body"></tbody>
+              <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right;font-weight:700;">TOTAL</td><td style="text-align:right;font-weight:700;" id="p2_total"></td></tr></tfoot>
+            </table>
+            
+            <div id="p2_notes_manual_wrapper" style="display:none;"><div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN TAMBAHAN:</div><div class="doc-notes-manual" id="p2_notes_manual"></div></div></div>
+            
+            <div class="doc-signatures-2x2">
+              <div class="doc-sig-row">
+                <div class="sig-block-page2"><div class="sig-action">DI VERIFIKASI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_keuangan"></div><div class="sig-title">Keuangan</div></div>
+                <div class="sig-block-page2"><div class="sig-action">DISETUJUI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_dirkeuangan"></div><div class="sig-title">Dir. Keuangan</div></div>
               </div>
-              <table class="doc-table">
-                <thead><tr><th style="width:40px;text-align:center">NO</th><th>URAIAN BARANG / JASA</th><th style="width:70px;text-align:center">QTY</th><th style="width:120px;text-align:right">JUMLAH (Rp)</th></tr></thead>
-                <tbody id="p2_table_body"></tbody>
-                <tfoot><tr class="doc-total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right" id="p2_total"></td></td></tr></tfoot>
-              </table>
-              <div id="p2_notes_manual_wrapper" style="display:none;"><div class="doc-notes" style="margin-top:20px"><div class="doc-notes-title">CATATAN:</div><div class="docs-notes-manual" id="p2_notes_manual"></div></div></div>
-              <div class="doc-signatures-2x2">
-                <div class="doc-sig-row">
-                  <div class="sig-block-page2"><div class="sig-action">DI VERIFIKASI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_keuangan"></div><div class="sig-title">Keuangan</div></div>
-                  <div class="sig-block-page2"><div class="sig-action">DISETUJUI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_dirkeuangan"></div><div class="sig-title">Dir. Keuangan</div></div>
-                  <div class="sig-row">
-                    <div class="sig-block-page2"><div class="sig-action">DISETUJUI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_direktur"></div><div class="sig-title">Direktur Utama</div></div>
-                    <div class="sig-block-page2"><div class="sig-action">DIBUKUKAN</div><div class="sig-space"></div><div class="sig-name" id="p2_name_accounting"></div><div class="sig-title">Accounting</div></div>
-                  </div>
-                </div>
+              <div class="doc-sig-row">
+                <div class="sig-block-page2"><div class="sig-action">DISETUJUI</div><div class="sig-space"></div><div class="sig-name" id="p2_name_direktur"></div><div class="sig-title">Direktur Utama</div></div>
+                <div class="sig-block-page2"><div class="sig-action">DIBUKUKAN</div><div class="sig-space"></div><div class="sig-name" id="p2_name_accounting"></div><div class="sig-title">Accounting</div></div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-  </div>
 
-  <!-- DELETE CONFIRMATION MODAL -->
-  <div id="deleteConfirmModal" class="modal-overlay" role="dialog" aria-modal="true">
-    <div class="modal-content" style="max-width:420px">
-      <div class="text-center">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-900/30 flex items-center justify-center">
-          <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-        </div>
-        <h3 class="text-xl font-semibold text-white mb-2">Hapus Data Ini?</h3>
-        <p class="text-sm text-gray-300 mb-6" id="deleteItemInfo">Kode: INV-001 • Rp 1.500.000</p>
-        <div class="flex gap-3 justify-center">
-          <button onclick="closeDeleteModal()" class="btn-secondary px-8">Batal</button>
-          <button onclick="confirmDelete()" class="px-8 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors">Ya, Hapus</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" class="toast" role="alert"></div>
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div id="deleteConfirmModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width:420px;text-align:center;">
+      <div class="w-16 h-16 mx-auto mb-5 rounded-full bg-red-900/30 flex items-center justify-center">
+        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </div>
+      <h3 class="text-xl font-bold mb-2">Hapus Data Ini?</h3>
+      <p class="text-sm text-gray-400 mb-6" id="deleteItemInfo">Kode: INV-001 • Rp 1.500.000</p>
+      <div class="flex gap-3 justify-center">
+        <button onclick="closeDeleteModal()" class="btn-secondary px-8">Batal</button>
+        <button onclick="confirmDelete()" class="px-8 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all hover:scale-105">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- JAVASCRIPT - BASE64 MODE + GOOGLE DRIVE SYNC TRACKING -->
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+  <!-- ============================================ -->
+  <!-- JAVASCRIPT APPLICATION LOGIC               -->
+  <!-- ============================================ -->
   <script>
     // =============================================
-    // ⚙️ CONFIGURATION (UPDATED!)
+    // CONFIGURATION CONSTANTS
     // =============================================
     const CONFIG_KEYS = {
-      FIREBASE_CONFIG: 'financesync_firebase_config_v33',
-      APPS_SCRIPT_URL: 'financesync_apps_script_url_v33' // 🆕 DITAMBAHKAN!
+      FIREBASE_CONFIG: 'financesync_firebase_config_v40',
+      APPS_SCRIPT_URL: 'financesync_apps_script_url_v40'
     };
 
+    const MAX_FILE_SIZE = 750 * 1024;
+
+    // =============================================
+    // APPLICATION STATE
+    // =============================================
     let db = null;
     let state = {
       isConnected: false,
       isConnecting: true,
       history: [],
-      currentTab: 'Lunas',
+      currentTab: 'all',
       lastFormData: null,
       lastSavedDocId: null,
       items: [{ ket: '', qty: '', nominal: 0, keterangan: '' }],
@@ -1247,27 +1163,77 @@
       pendingDeleteKode: null,
       filterDateFrom: '',
       filterDateTo: '',
+      searchQuery: '',
       editingDocId: null,
       selectedFiles: [],
       driveSyncListeners: {},
       pollingInterval: null,
-      
-      // 🆕 UNTUK DITAMBAHKAN!
       isSyncing: false,
-      appsScriptUrl: localStorage.getItem(CONFIG_KEYS.APPS_SCRIPT_URL) || ''
+      appsScriptUrl: localStorage.getItem(CONFIG_KEYS.APPS_SCRIPT_URL) || '',
+      activeDropdown: null
     };
 
     let elements = {};
+    let toastTimeout = null;
+
+    // =============================================
+    // UTILITY FUNCTIONS
+    // =============================================
+    
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function formatNumber(num) {
+      if (isNaN(num) || num === null || num === undefined) return '0';
+      return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        return new Date(dateStr + 'T00:00:00').toLocaleDateString('id-ID', options);
+      } catch (e) { return dateStr; }
+    }
+
+    function toRoman(num) {
+      const vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+      const syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+      let result = '';
+      for (let i = 0; i < vals.length; i++) {
+        while (num >= vals[i]) { result += syms[i]; num -= vals[i]; }
+      }
+      return result;
+    }
+
+    function showToast(message, type = 'info', duration = 4000) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      if (toastTimeout) clearTimeout(toastTimeout);
+
+      toast.className = 'toast ' + type;
+      toast.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✗' : type === 'drive' ? '☁️' : type === 'firebase' ? '🔥' : 'ℹ'}</span><span>${escapeHtml(message)}</span>`;
+      
+      requestAnimationFrame(() => { toast.classList.add('show'); });
+      toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, duration);
+    }
+
+    function withTimeout(promise, ms, label = 'Operation') {
+      return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' timeout')), ms))]);
+    }
 
     // =============================================
     // MODAL FUNCTIONS
     // =============================================
     function openSetupModal() {
-      console.log('[Setup] Opening modal...');
-      var modal = document.getElementById('setupModal');
+      const modal = document.getElementById('setupModal');
       if (modal) {
         modal.classList.add('show');
-        var savedConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
+        const savedConfig = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
         if (savedConfig && elements.firebaseConfigInput) {
           elements.firebaseConfigInput.value = savedConfig;
         }
@@ -1275,12 +1241,34 @@
     }
 
     function closeSetupModal() {
-      var modal = document.getElementById('setupModal');
+      const modal = document.getElementById('setupModal');
       if (modal) modal.classList.remove('show');
+    }
+
+    function closeDocumentModal() {
+      const modal = document.getElementById('documentModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function openDeleteModal(id, kode, nominal) {
+      state.pendingDeleteId = id;
+      state.pendingDeleteKode = kode;
+      const infoEl = document.getElementById('deleteItemInfo');
+      if (infoEl) infoEl.textContent = `Kode: ${kode} • Rp ${formatNumber(nominal)}`;
+      const modal = document.getElementById('deleteConfirmModal');
+      if (modal) modal.classList.add('show');
+    }
+
+    function closeDeleteModal() {
+      const modal = document.getElementById('deleteConfirmModal');
+      if (modal) modal.classList.remove('show');
+      state.pendingDeleteId = null;
+      state.pendingDeleteKode = null;
     }
 
     window.openSetupModal = openSetupModal;
     window.closeSetupModal = closeSetupModal;
+    window.closeDocumentModal = closeDocumentModal;
 
     // =============================================
     // INITIALIZATION
@@ -1296,10 +1284,7 @@
           documentModal: document.getElementById('documentModal'),
           deleteConfirmModal: document.getElementById('deleteConfirmModal'),
           setupBtn: document.getElementById('setupBtn'),
-          closeModal: document.getElementById('closeModal'),
-          closeDocModal: document.getElementById('closeDocModal'),
           clearHistory: document.getElementById('clearHistory'),
-          toast: document.getElementById('toast'),
           totalData: document.getElementById('totalData'),
           sentData: document.getElementById('sentData'),
           sheetsData: document.getElementById('sheetsData'),
@@ -1309,7 +1294,7 @@
           statusInput: document.getElementById('status'),
           paymentDateContainer: document.getElementById('paymentDateContainer'),
           connectionBanner: document.getElementById('connectionBanner'),
-          bannerTitle: document.getElementById('bannerTitle'),
+          bannerTitle:   document.getElementById('bannerTitle'),
           bannerMessage: document.getElementById('bannerMessage'),
           statusDot: document.getElementById('statusDot'),
           statusText: document.getElementById('statusText'),
@@ -1325,15 +1310,17 @@
           forceSyncBtn: document.getElementById('forceSyncBtn'),
           driveStatusBanner: document.getElementById('driveStatusBanner'),
           driveStatusText: document.getElementById('driveStatusText'),
-          driveStatusBadge: document.getElementById('driveStatusBadge')
+          driveStatusBadge: document.getElementById('driveStatusBadge'),
+          searchInput: document.getElementById('searchInput')
         };
 
         loadSavedConfigs();
-        document.getElementById('tanggal').valueAsDate = new Date();
+        
+        const today = new Date();
+        document.getElementById('tanggal').valueAsDate = today;
 
-        var now = new Date();
-        var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-        var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         state.filterDateFrom = firstDay.toISOString().split('T')[0];
         state.filterDateTo = lastDay.toISOString().split('T')[0];
         document.getElementById('filterDateFrom').value = state.filterDateFrom;
@@ -1342,45 +1329,90 @@
         renderFormItems();
         setupEventListeners();
         initConnection();
-        generateInvoiceAfterConnection();
 
+        generateInvoiceAfterConnection();
         startDriveStatusPolling();
 
-        window.addEventListener('beforeunload', function() {
+        window.addEventListener('beforeunload', () => {
           if (state.unsubscribeListener) state.unsubscribeListener();
           stopDriveStatusPolling();
         });
+
       } catch (error) {
         console.error('[Init Error]:', error);
         showToast('Error saat inisialisasi: ' + error.message, 'error');
       }
     }
 
-    async function generateInvoiceAfterConnection() {
-      var attempts = 0;
-      var checkInterval = setInterval(async function() {
-        attempts++;
-        if (db && state.isConnected) {
-          clearInterval(checkInterval);
-          try {
-            var inv = await autoGenerateInvoice();
-            if (inv && !document.getElementById('no_invoice').value) {
-              document.getElementById('no_invoice').value = inv;
-            }
-          } catch (e) { console.warn('[Auto Invoice] Failed:', e.message); }
-        } else if (attempts >= 20) {
-          clearInterval(checkInterval);
-        }
-      }, 500);
-    }
-
     function loadSavedConfigs() {
       const saved = localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
-      if (saved && elements.firebaseConfigInput) elements.firebaseConfigInput.value = saved;
-      
-      // Load Apps Script URL
+      if (saved && elements.firebaseConfigInput) {
+        elements.firebaseConfigInput.value = saved;
+      }
       const scriptUrl = localStorage.getItem(CONFIG_KEYS.APPS_SCRIPT_URL);
       if (scriptUrl) state.appsScriptUrl = scriptUrl;
+    }
+
+    // =============================================
+    // CONNECTION MANAGEMENT
+    // =============================================
+    async function initConnection() {
+      showBanner('connecting', 'Menyiapkan Koneksi...', 'Menghubungkan ke Firebase Firestore...');
+      
+      const hasConfig = !!localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
+
+      if (!hasConfig) {
+        setTimeout(() => { 
+          openSetupModal(); 
+          showBanner('error', 'Belum Terkonfigurasi', 'Klik tombol Setup untuk konfigurasi Firebase Anda.');
+        }, 1500);
+        return;
+      }
+
+      try {
+        const config = JSON.parse(localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG));
+        
+        if (!firebase.apps.length) firebase.initializeApp(config);
+        
+        db = firebase.firestore();
+        
+        await withTimeout(db.collection('submissions').limit(1).get(), 10000, 'Connection test');
+        
+        state.isConnected = true;
+        console.log('[Firebase] Connected successfully!');
+        
+        if (elements.archBanner) elements.archBanner.style.display = 'block';
+        updateConnectionUI(true);
+        applyDateFilter();
+        
+      } catch (error) {
+        console.error('[Firebase Error]:', error);
+        state.isConnected = false;
+        showBanner('error', 'Koneksi Gagal', error.message || 'Periksa konfigurasi Firebase Anda.');
+        showToast('Gagal terhubung ke Firebase: ' + error.message, 'error');
+      }
+    }
+
+    function updateConnectionUI(connected) {
+      const dot = elements.statusDot;
+      const text = elements.statusText;
+      if (!dot || !text) return;
+      
+      if (connected) {
+        elements.connectionBanner.className = 'connection-banner connected no-print';
+        dot.className = 'status-dot success';
+        text.textContent = 'Connected';
+        text.className = 'text-sm text-[--success] font-medium';
+        elements.bannerTitle.textContent = 'Firebase Terhubung';
+        elements.bannerMessage.textContent = 'Data & File (Base64) akan disimpan ke Firestore. Apps Script akan sinkronkan ke Google Drive.';
+      } else {
+        elements.connectionBanner.className = 'connection-banner error no-print';
+        dot.className = 'status-dot error';
+        text.textContent = 'Disconnected';
+        text.className = 'text-sm text-[--error] font-medium';
+        elements.bannerTitle.textContent = 'Koneksi Gagal';
+        elements.bannerMessage.textContent = 'Periksa konfigurasi Firebase dan coba lagi.';
+      }
     }
 
     function showBanner(type, title, message) {
@@ -1393,69 +1425,7 @@
     }
 
     // =============================================
-    // CONNECTION (Firestore Only - No Storage!)
-    // =============================================
-    async function initConnection() {
-      showBanner('connecting', 'Menyiapkan Koneksi...', 'Menghubungkan Firebase Firestore...');
-      
-      const hasConfig = !!localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG);
-
-      if (!hasConfig) {
-        setTimeout(function() { 
-          openSetupModal(); 
-          showBanner('error', 'Belum Terkonfigurasi', 'Klik Setup untuk konfigurasi Firebase');
-        }, 1500);
-        return;
-      }
-
-      try {
-        const config = JSON.parse(localStorage.getItem(CONFIG_KEYS.FIREBASE_CONFIG));
-        
-        if (!firebase.apps.length) firebase.initializeApp(config);
-        
-        db = firebase.firestore();
-        
-        await db.collection('submissions').limit(1).get();
-        
-        state.isConnected = true;
-        console.log('[Firebase] ✅ Connected (Firestore Only - No Storage)!');
-
-        if (elements.archBanner) elements.archBanner.style.display = 'block';
-        updateConnectionUI(true);
-        applyDateFilter();
-        
-      } catch (error) {
-        console.error('[Firebase Error]:', error);
-        state.isConnected = false;
-        showBanner('error', 'Koneksi Gagal', error.message);
-        showToast('Firebase error: ' + error.message, 'error');
-      }
-    }
-
-    function updateConnectionUI(connected) {
-      const dot = elements.statusDot;
-      const text = elements.statusText;
-      if (!dot || !text) return;
-      
-      if (connected) {
-        elements.connectionBanner.className = 'connection-banner connected no-print';
-        dot.className = 'status-dot success';
-        text.textContent = 'Firestore Connected';
-        text.className = 'status-text status-text-success';
-        elements.bannerTitle.textContent = '✅ Firebase Terhubung';
-        elements.bannerMessage.textContent = 'Data & File (Base64) akan disimpan ke Firestore. Apps Script akan sync ke Google Drive.';
-      } else {
-        elements.connectionBanner.className = 'connection-banner error no-print';
-        dot.className = 'status-dot error';
-        text.textContent = 'Tidak Terhubung';
-        text.className = 'status-text status-text-error';
-        elements.bannerTitle.textContent = '❌ Koneksi Gagal';
-        elements.bannerMessage.textContent = 'Periksa konfigurasi Firebase Anda.';
-      }
-    }
-
-    // =============================================
-    // SAVE CONFIG
+    // SAVE CONFIGURATION
     // =============================================
     window.saveFirebaseConfig = async function() {
       try {
@@ -1464,25 +1434,27 @@
         const errorEl = document.getElementById('configError');
         
         if (errorEl) { errorEl.classList.add('hidden'); errorEl.textContent = ''; }
-        if (!inputStr) { showError('Paste Firebase config!'); return; }
+        
+        if (!inputStr) { showErrorConfig('Paste konfigurasi Firebase terlebih dahulu!'); return; }
         
         let config;
         try { config = JSON.parse(inputStr); }
-        catch (parseErr) { showError('Format JSON tidak valid!'); return; }
+        catch (parseErr) { showErrorConfig('Format JSON tidak valid! Pastikan copy yang benar.'); return; }
         
-        if (!config.apiKey || !config.projectId) { showError('Config tidak lengkap!'); return; }
+        if (!config.apiKey || !config.projectId) { showErrorConfig('Config tidak lengkap! Pastikan apiKey dan projectId ada.'); return; }
         
         localStorage.setItem(CONFIG_KEYS.FIREBASE_CONFIG, JSON.stringify(config));
-        showToast('Config tersimpan! Menghubungkan...', 'info');
+        showToast('Konfigurasi tersimpan! Menghubungkan...', 'info');
         closeSetupModal();
         await initConnection();
+        
       } catch (error) {
         console.error('[Save Config Error]:', error);
-        showError('Gagal menyimpan: ' + error.message);
+        showErrorConfig('Gagal menyimpan: ' + error.message);
       }
     };
 
-    function showError(msg) {
+    function showErrorConfig(msg) {
       const el = document.getElementById('configError');
       if (el) { el.textContent = msg; el.classList.remove('hidden'); }
       showToast(msg, 'error');
@@ -1492,11 +1464,17 @@
     // EVENT LISTENERS
     // =============================================
     function setupEventListeners() {
-      if (elements.form) elements.form.addEventListener('submit', handleSubmit);
-      if (elements.previewBtn) elements.previewBtn.addEventListener('click', handlePreview);
-      
+      if (elements.form) {
+        elements.form.addEventListener('submit', handleSubmit);
+        elements.form.addEventListener('reset', handleFormReset);
+      }
+
+      if (elements.previewBtn) {
+        elements.previewBtn.addEventListener('click', handlePreview);
+      }
+
       if (elements.statusInput) {
-        elements.statusInput.addEventListener('change', function(e) {
+        elements.statusInput.addEventListener('change', (e) => {
           if (elements.paymentDateContainer) {
             elements.paymentDateContainer.style.display = e.target.value === 'Lunas' ? 'block' : 'none';
           }
@@ -1507,39 +1485,33 @@
       }
 
       if (elements.setupBtn) {
-        elements.setupBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          openSetupModal();
-        });
+        elements.setupBtn.addEventListener('click', (e) => { e.preventDefault(); openSetupModal(); });
       }
 
-      if (elements.closeModal) elements.closeModal.addEventListener('click', closeSetupModal);
       if (elements.setupModal) {
-        elements.setupModal.addEventListener('click', function(e) {
-          if (e.target === elements.setupModal) closeSetupModal();
-        });
+        elements.setupModal.addEventListener('click', (e) => { if (e.target === elements.setupModal) closeSetupModal(); });
       }
-      if (elements.closeDocModal) elements.closeDocModal.addEventListener('click', closeDocumentModal);
-      
+
+      if (elements.documentModal) {
+        elements.documentModal.addEventListener('click', (e) => { if (e.target === elements.documentModal) closeDocumentModal(); });
+      }
+
+      if (elements.deleteConfirmModal) {
+        elements.deleteConfirmModal.addEventListener('click', (e) => { if (e.target === elements.deleteConfirmModal) closeDeleteModal(); });
+      }
+
       if (elements.clearHistory) {
-        elements.clearHistory.addEventListener('click', function() {
-          if (confirm('Hapus SEMUA data dari Firebase?')) {
-            if (db) {
-              db.collection('submissions').get().then(function(snapshot) {
-                var batch = db.batch();
-                snapshot.docs.forEach(function(doc) { batch.delete(doc.ref); });
-                return batch.commit();
-              }).then(function() { showToast('Semua data dihapus', 'success'); })
-               .catch(function(err) { showToast('Error: ' + err.message, 'error'); });
-            }
+        elements.clearHistory.addEventListener('click', () => {
+          if (confirm('Hapus SEMUA data dari Firebase? Tindakan ini tidak dapat dibatalkan.')) {
+            clearAllData();
           }
         });
       }
 
       if (elements.tabBtns) {
-        elements.tabBtns.forEach(function(btn) {
-          btn.addEventListener('click', function() {
-            elements.tabBtns.forEach(function(b) { b.classList.remove('active'); });
+        elements.tabBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            elements.tabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             state.currentTab = btn.dataset.tab;
             renderHistory();
@@ -1547,33 +1519,61 @@
         });
       }
 
-      var filterFrom = document.getElementById('filterDateFrom');
-      var filterTo = document.getElementById('filterDateTo');
-      if (filterFrom) filterFrom.addEventListener('change', function() { state.filterDateFrom = this.value; applyDateFilter(); });
-      if (filterTo) filterTo.addEventListener('change', function() { state.filterDateTo = this.value; applyDateFilter(); });
+      const filterFrom = document.getElementById('filterDateFrom');
+      const filterTo = document.getElementById('filterDateTo');
+      if (filterFrom) {
+        filterFrom.addEventListener('change', (e) => { state.filterDateFrom = e.target.value; applyDateFilter(); });
+      }
+      if (filterTo) {
+        filterTo.addEventListener('change', (e) => { state.filterDateTo = e.target.value; applyDateFilter(); });
+      }
 
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') { closeSetupModal(); closeDocumentModal(); closeDeleteModal(); }
-      });
-
-      if (elements.form) {
-        elements.form.addEventListener('reset', function() {
-          setTimeout(function() {
-            state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
-            state.selectedFiles = [];
-            updateFileDisplay();
-            renderFormItems();
-            clearEditMode();
-          }, 10);
+      if (elements.searchInput) {
+        let searchTimeout;
+        elements.searchInput.addEventListener('input', (e) => {
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            state.searchQuery = e.target.value.toLowerCase().trim();
+            renderHistory();
+          }, 300);
         });
       }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeSetupModal();
+          closeDocumentModal();
+          closeDeleteModal();
+          closeActiveDropdown();
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.action-dropdown') && !e.target.closest('.btn-action-menu')) {
+          closeActiveDropdown();
+        }
+      });
+    }
+
+    function handleFormReset() {
+      setTimeout(() => {
+        state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+        state.selectedFiles = [];
+        updateFileDisplay();
+        renderFormItems();
+        clearEditMode();
+        
+        if (elements.paymentDateContainer && elements.statusInput?.value !== 'Lunas') {
+          elements.paymentDateContainer.style.display = 'none';
+        }
+      }, 10);
     }
 
     // =============================================
-    // 🆕 FILE HANDLING - BASE64 MODE (Updated Limit)
+    // FILE HANDLING
     // =============================================
     window.handleFileSelect = function(input) {
-      var files = Array.from(input.files);
+      const files = Array.from(input.files);
       
       if (files.length === 0) {
         state.selectedFiles = [];
@@ -1581,23 +1581,20 @@
         return;
       }
       
-      // Validasi ukuran maksimal 750KB
-      var maxSize = 750 * 1024;
-      var oversized = files.filter(f => f.size > maxSize);
-      
+      const oversized = files.filter(f => f.size > MAX_FILE_SIZE);
       if (oversized.length > 0) {
-        showToast('File ' + oversized[0].name + ' terlalu besar! Maksimal 750KB.', 'error');
+        showToast(`File "${oversized[0].name}" terlalu besar! Maksimal 750KB.`, 'error');
         input.value = '';
         return;
       }
       
       state.selectedFiles = [];
-      var processed = 0;
+      let processed = 0;
       
-      files.forEach(function(file, index) {
-        var reader = new FileReader();
+      files.forEach((file) => {
+        const reader = new FileReader();
         
-        reader.onload = function(e) {
+        reader.onload = (e) => {
           state.selectedFiles.push({
             name: file.name,
             type: file.type,
@@ -1609,18 +1606,25 @@
           processed++;
           if (processed === files.length) {
             updateFileDisplay();
-          console.log('[Files] Ready:', state.selectedFiles.length, 'files (~' + 
-              Math.round(state.selectedFiles.reduce((acc, f) => acc + (f.base64?.length || 0), 0) / 1024 / 1024 * 0.75).toFixed(2)) + 'MB)');
+            const totalSize = Math.round(state.selectedFiles.reduce((acc, f) => acc + (f.base64?.length || 0), 0) * 0.75 / 1024);
+            console.log(`[Files] Ready: ${state.selectedFiles.length} files (~${totalSize}KB)`);
           }
         };
         
-        reader.onerror = function() {
-          showToast('Gagal membaca file: ' + file.name, 'error');
-        };
-        
+        reader.onerror = () => { showToast(`Gagal membaca file: ${file.name}`, 'error'); };
         reader.readAsDataURL(file);
-      };
+      });
     };
+
+    function removeFile(index) {
+      state.selectedFiles.splice(index, 1);
+      updateFileDisplay();
+      
+      if (state.selectedFiles.length === 0) {
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) fileInput.value = '';
+      }
+    }
 
     function updateFileDisplay() {
       const display = elements.fileListDisplay;
@@ -1633,17 +1637,23 @@
         placeholder.style.display = 'none';
         area.classList.add('has-file');
         
-        display.innerHTML = state.selectedFiles.map(function(file) {
-          var sizeKB = (file.size / 1024).toFixed(1);
-          var icon = file.type.startsWith('image/') ? '🖼️' : '📄';
-          var base64SizeKB = Math.round((file.base64?.length || 0) * 0.75 / 1024);
+        display.innerHTML = state.selectedFiles.map((file, index) => {
+          const sizeKB = (file.size / 1024).toFixed(1);
+          const icon = file.type.startsWith('image/') ? '🖼️' : '📄';
+          const base64SizeKB = Math.round((file.base64?.length || 0) * 0.75 / 1024);
           
-          return '<div class="file-item">' +
-            '<span style="font-size:16px">' + icon + '</span>' +
-            '<span class="text-green-400 text-xs truncate flex-1">' + escapeHtml(file.name) + '</span>' +
-            '<span class="text-gray-500 text-xs">' + sizeKB + ' KB</span>' +
-            '<span class="drive-badge">' + base64SizeKB + 'KB</span>' +
-          '</div>';
+          return `
+            <div class="file-item">
+              <span style="font-size:18px">${icon}</span>
+              <span class="text-[--fg] text-sm truncate flex-1">${escapeHtml(file.name)}</span>
+              <span class="text-[--muted] text-xs">${sizeKB} KB</span>
+              <span class="badge badge-info text-[10px]">${base64SizeKB}KB B64</span>
+              <button type="button" onclick="removeFile(${index})" class="file-remove" title="Hapus file">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+              </button>
+            </div>
+          `;
         }).join('');
       } else {
         placeholder.style.display = 'block';
@@ -1652,52 +1662,71 @@
       }
     }
 
+    window.removeFile = removeFile;
+
     // =============================================
-    // FORM ITEMS
+    // FORM ITEMS MANAGEMENT
     // =============================================
     function renderFormItems() {
-      var container = document.getElementById('itemsContainer');
+      const container = document.getElementById('itemsContainer');
       if (!container) return;
       
       container.innerHTML = '';
-      state.items.forEach(function(item, index) {
-        var row = document.createElement('div');
-        row.className = 'grid grid-cols-12 gap-2 items-start';
-        row.innerHTML = '<div class="col-span-4">' +
-          '<label class="field-label text-[10px]">Item<span class="required-star">*</span></label>' +
-          '<input type="text" class="input-field text-sm" placeholder="Nama barang/jasa" value="' + escapeHtml(item.ket) + '" oninput="updateItem(' + index + ', \'ket\', this.value)">' +
-          '</div>' +
-          '<div class="col-span-2">' +
-          '<label class="field-label text-[10px]">Jumlah</label>' +
-          '<input type="text" class="input-field text-sm text-center" placeholder="1" value="' + escapeHtml(item.qty) + '" oninput="updateItem(' + index + ', \'qty\', this.value)">' +
-          '</div>' +
-          '<div class="col-span-3">' +
-          '<label class="field-label text-[10px]">Nominal<span class="required-star">*</span></label>' +
-          '<div class="currency-wrapper">' +
-          '<span class="prefix" style="font-size:12px">Rp</span>' +
-          '<input type="number" class="input-field text-sm mono" placeholder="0" value="' + (item.nominal || '') + '" oninput="updateItem(' + index + ', \'nominal\', this.value)">' +
-          '</div></div>' +
-          '<div class="col-span-2">' +
-          '<label class="field-label text-[10px]">Ket.</label>' +
-          '<input type="text" class="input-field text-sm" placeholder="Keterangan" value="' + escapeHtml(item.keterangan || '') + '" oninput="updateItem(' + index + ', \'keterangan\', this.value)">' +
-          '</div>' +
-          '<div class="col-span-1 flex justify-end">' +
-          (state.items.length > 1
-            ? '<button type="button" onclick="removeFormItem(' + index + ')" class="btn-remove-item" title="Hapus"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>'
-            : '<div style="height:38px"></div>') +
-          '</div>';
+      state.items.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'grid grid-cols-12 gap-3 items-start';
+        row.innerHTML = `
+          <div class="col-span-5 sm:col-span-4">
+            <label class="field-label text-[11px]">Item<span class="required-star">*</span></label>
+            <input type="text" class="input-field text-sm" placeholder="Nama barang/jasa" value="${escapeHtml(item.ket)}" onchange="updateItem(${index}, 'ket', this.value)" oninput="updateItem(${index}, 'ket', this.value)">
+          </div>
+          <div class="col-span-2 sm:col-span-2">
+            <label class="field-label text-[11px]">Qty</label>
+            <input type="text" class="input-field text-sm text-center" placeholder="1" value="${escapeHtml(item.qty)}" onchange="updateItem(${index}, 'qty', this.value)">
+          </div>
+          <div class="col-span-3 sm:col-span-3">
+            <label class="field-label text-[11px]">Nominal<span class="required-star">*</span></label>
+            <div class="currency-wrapper">
+              <span class="prefix" style="font-size:11px">Rp</span>
+              <input type="number" class="input-field text-sm mono" placeholder="0" value="${item.nominal || ''}" onchange="updateItem(${index}, 'nominal', this.value)" oninput="updateItem(${index}, 'nominal', this.value)">
+            </div>
+          </div>
+          <div class="col-span-2 sm:col-span-2">
+            <label class="field-label text-[11px]">Ket</label>
+            <input type="text" class="input-field text-sm" placeholder="Opsional" value="${escapeHtml(item.keterangan || '')}" onchange="updateItem(${index}, 'keterangan', this.value)">
+          </div>
+          <div class="col-span-0 sm:col-span-1 flex justify-end">
+            ${state.items.length > 1 ? `<button type="button" onclick="removeFormItem(${index})" class="btn-remove-item" title="Hapus item"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : '<div style="height:42px"></div>'}
+          </div>
+        `;
         container.appendChild(row);
       });
       calculateTotal();
     }
 
-    window.addFormItem = function() { state.items.push({ ket: '', qty: '', nominal: 0, keterangan: '' }); renderFormItems(); };
-    window.removeFormItem = function(index) { if (state.items.length <= 1) return; state.items.splice(index, 1); renderFormItems(); };
-    window.updateItem = function(index, key, value) { state.items[index][key] = value; if (key === 'nominal') calculateTotal(); };
+    window.addFormItem = function() {
+      state.items.push({ ket: '', qty: '', nominal: 0, keterangan: '' });
+      renderFormItems();
+    };
+
+    window.removeFormItem = function(index) {
+      if (state.items.length <= 1) return;
+      state.items.splice(index, 1);
+      renderFormItems();
+    };
+
+    window.updateItem = function(index, key, value) {
+      if (state.items[index]) {
+        state.items[index][key] = value;
+        if (key === 'nominal') calculateTotal();
+      }
+    };
 
     function calculateTotal() {
-      var total = state.items.reduce(function(acc, curr) { return acc + (parseInt(curr.nominal) || 0); }, 0);
-      if (elements.grandTotalDisplay) elements.grandTotalDisplay.value = formatNumber(total);
+      const total = state.items.reduce((acc, curr) => acc + (parseInt(curr.nominal) || 0), 0);
+      if (elements.grandTotalDisplay) {
+        elements.grandTotalDisplay.value = formatNumber(total);
+      }
       return total;
     }
 
@@ -1705,26 +1734,29 @@
     // VALIDATION
     // =============================================
     function validateForm() {
-      var errors = [];
-      var fd = new FormData(elements.form);
+      const errors = [];
+      const fd = new FormData(elements.form);
 
       if (!fd.get('tanggal')) errors.push('Tanggal Invoice wajib diisi');
       if (!fd.get('lokasi')) errors.push('Lokasi wajib diisi');
       if (!fd.get('jenis_pengajuan')) errors.push('Jenis Pengajuan wajib diisi');
-      if (!fd.get('kode')) errors.push('Kode wajib diisi');
+      if (!fd.get('kode')) errors.push('Kode Transaksi wajib diisi');
       if (!fd.get('status')) errors.push('Status Pembayaran wajib dipilih');
       if (!fd.get('dibayarkan_kepada')) errors.push('Dibayarkan Kepada wajib diisi');
 
-      if (state.items.length === 0 || state.items.every(function(i) { return !i.ket.trim(); })) errors.push('Minimal 1 item barang/jasa harus diisi');
-      else {
-        state.items.forEach(function(item, idx) {
-          if (!item.ket.trim()) errors.push('Item #' + (idx + 1) + ': Nama kosong');
-          if (!item.nominal || parseInt(item.nominal) <= 0) errors.push('Item #' + (idx + 1) + ': Nominal harus > 0');
+      const hasValidItems = state.items.some(i => i.ket?.trim());
+      if (!hasValidItems) {
+        errors.push('Minimal 1 item barang/jasa harus diisi');
+      } else {
+        state.items.forEach((item, idx) => {
+          if (item.ket?.trim() && (!item.nominal || parseInt(item.nominal) <= 0)) {
+            errors.push(`Item #${idx + 1} "${item.ket}": Nominal harus > 0`);
+          }
         });
       }
 
       if (errors.length > 0 && elements.validationErrorList && elements.validationError) {
-        elements.validationErrorList.innerHTML = errors.map(function(e) { return '<li>' + escapeHtml(e) + '</li>'; }).join('');
+        elements.validationErrorList.innerHTML = errors.map(e => `<li>${escapeHtml(e)}</li>`).join('');
         elements.validationError.classList.add('show');
         return false;
       }
@@ -1737,7 +1769,7 @@
     // GET FORM DATA
     // =============================================
     function getFormData() {
-      var fd = new FormData(elements.form);
+      const fd = new FormData(elements.form);
       return {
         tanggal: fd.get('tanggal') || '',
         lokasi: fd.get('lokasi') || '',
@@ -1745,40 +1777,53 @@
         jenis_pengajuan: fd.get('jenis_pengajuan') || '',
         no_invoice: fd.get('no_invoice') || '',
         status: fd.get('status') || '',
-        items: state.items.map(function(i) { return { ket: i.ket, qty: i.qty, nominal: parseInt(i.nominal) || 0, keterangan: i.keterangan }; }),
+        items: state.items.map(i => ({
+          ket: i.ket,
+          qty: i.qty,
+          nominal: parseInt(i.nominal) || 0,
+          keterangan: i.keterangan
+        })),
         total_nominal: calculateTotal(),
         tanggal_pembayaran: fd.get('tanggal_pembayaran') || '',
         dibayarkan_kepada: fd.get('dibayarkan_kepada') || '',
         catatan_tambahan: fd.get('catatan_tambahan') || '',
-        source: 'FinanceSync Pro v3.3 (Drive Edition)',
+        source: 'FinanceSync Pro v4.0 (Drive Edition)',
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        created_at: new Date().toISOString(),
         dibuat_oleh: 'Nur Wahyudi',
         disetujui_oleh: 'Harijon',
         keuangan: 'Andi Dhiya Salsabila',
         dir_keuangan: 'Harijon',
         direktur_utama: 'H. Andi Nursyam Halid',
-        accounting: 'Sri Ekowati',
-        synced_to_sheets: false,
-        synced_at: null,
-        sheets_error: null
+        accounting: 'Sri Ekowati'
       };
     }
 
     // =============================================
-    // DOCUMENT FUNCTIONS
+    // DOCUMENT PREVIEW
     // =============================================
     function handlePreview() {
-      var data = getFormData();
-      if (data.items.length === 0 || data.items.every(function(i) { return !i.ket; })) { showToast('Lengkapi minimal 1 item', 'error'); return; }
+      const data = getFormData();
+      const hasItems = data.items.some(i => i.ket?.trim());
+      
+      if (!hasItems) {
+        showToast('Lengkapi minimal 1 item terlebih dahulu', 'error');
+        return;
+      }
+      
       state.lastFormData = data;
       populateDocuments(data);
       if (elements.documentModal) elements.documentModal.classList.add('show');
     }
 
     function populateDocuments(data) {
-      var ft = 'Rp ' + formatNumber(data.total_nominal);
+      const ft = 'Rp ' + formatNumber(data.total_nominal);
       
-      var setVal = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || '-'; };
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val || '-';
+      };
+
       setVal('p1_lokasi', data.lokasi);
       setVal('p1_tanggal', formatDate(data.tanggal));
       setVal('p1_kode', data.kode);
@@ -1786,7 +1831,7 @@
       setVal('p1_total', ft);
       setVal('p1_dibuat', data.dibuat_oleh);
       setVal('p1_disetujui', data.disetujui_oleh);
-      
+
       setVal('p2_tanggal', formatDate(data.tanggal));
       setVal('p2_kode', data.kode);
       setVal('p2_dibayarkan', data.dibayarkan_kepada);
@@ -1797,275 +1842,295 @@
       setVal('p2_name_direktur', data.direktur_utama);
       setVal('p2_name_accounting', data.accounting);
 
-      var p1_body = document.getElementById('p1_table_body');
-      var p2_body = document.getElementById('p2_table_body');
+      const p1Body = document.getElementById('p1_table_body');
+      const p2Body = document.getElementById('p2_table_body');
       
-      if (p1_body) p1_body.innerHTML = data.items.map(function(item, idx) {
-        return '<tr><td class="col-no">' + (idx+1) + '</td><td class="col-item">' + escapeHtml(item.ket) + '</td><td class="col-vol">' + escapeHtml(item.qty) + '</td><td class="col-nominal">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td><td class="col-ket">' + escapeHtml(item.keterangan || '-') + '</td></tr>';
-      }).join('');
+      if (p1Body) {
+        p1Body.innerHTML = data.items.map((item, idx) => `
+          <tr>
+            <td class="col-no">${idx + 1}</td>
+            <td class="col-item">${escapeHtml(item.ket)}</td>
+            <td class="col-vol">${escapeHtml(item.qty)}</td>
+            <td class="col-nominal">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td>
+            <td class="col-ket">${escapeHtml(item.keterangan || '-')}</td>
+          </tr>
+        `).join('');
+      }
       
-      if (p2_body) p2_body.innerHTML = data.items.map(function(item, idx) {
-        return '<tr><td style="text-align:center">' + (idx+1) + '</td><td>' + escapeHtml(item.ket) + '</td><td style="text-align:center">' + escapeHtml(item.qty) + '</td><td style="text-align:right">' + (item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-') + '</td></tr>';
-      }).join('');
+      if (p2Body) {
+        p2Body.innerHTML = data.items.map((item, idx) => `
+          <tr>
+            <td style="text-align:center">${idx + 1}</td>
+            <td>${escapeHtml(item.ket)}</td>
+            <td style="text-align:center">${escapeHtml(item.qty)}</td>
+            <td style="text-align:right">${item.nominal ? 'Rp ' + formatNumber(item.nominal) : '-'}</td>
+          </tr>
+        `).join('');
+      }
 
-      var hasNote = data.catatan_tambahan && data.catatan_tambahan.trim;
-      ['p1_notes_manual_wrapper', 'p2_notes_manual_wrapper'].forEach(function(id) {
-        var el = document.getElementById(id);
+      const hasNote = data.catatan_tambahan?.trim();
+      ['p1_notes_manual_wrapper', 'p2_notes_manual_wrapper'].forEach(id => {
+        const el = document.getElementById(id);
         if (el) el.style.display = hasNote ? 'block' : 'none';
       });
       
       if (hasNote) {
-        var p1n = document.getElementById('p1_notes_manual');
-        var p2n = document.getElementById('p2_notes_manual');
+        const p1n = document.getElementById('p1_notes_manual');
+        const p2n = document.getElementById('p2_notes_manual');
         if (p1n) p1n.textContent = data.catatan_tambahan.trim();
         if (p2n) p2n.textContent = data.catatan_tambahan.trim();
       }
     }
 
-    function closeDocumentModal() {
-      if (elements.documentModal) elements.documentModal.classList.remove('show');
-    }
-    window.closeDocumentModal = closeDocumentModal;
-
     async function downloadAsPDF() {
-      var element = document.getElementById('pdf-wrapper');
+      const element = document.getElementById('pdf-wrapper');
       if (!element) return;
       
-      var opt = {
+      const opt = {
         margin: 0,
-        filename: 'Invoice_' + (state.lastFormData?.kode || 'FinanceSync') + '_' + new Date().toISOString().split('T')[0] + '.pdf',
+        filename: `Invoice_${state.lastFormData?.kode || 'FinanceSync'}_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, letterRendering: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
       showToast('Membuat PDF...', 'info');
+      
       try {
         await html2pdf().set(opt).from(element).save();
         showToast('PDF berhasil didownload!', 'success');
       } catch (error) {
-        console.error('[PDF] Error:', error);
+        console.error('[PDF Error]:', error);
         showToast('Gagal membuat PDF: ' + error.message, 'error');
       }
     }
+
     window.downloadAsPDF = downloadAsPDF;
 
     // =============================================
-    // HELPERS
+    // AUTO GENERATE INVOICE NUMBER
     // =============================================
-    function toRoman(num) {
-      var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1], syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'], result = '';
-      for (var i = 0; i < vals.length; i++) { while (num >= vals[i]) { result += syms[i]; num -= vals[i]; } }
-      return result;
-    }
-
     async function autoGenerateInvoice() {
       if (!db) return null;
+      
       try {
-        var now = new Date(), month = now.getMonth(), year = now.getFullYear();
-        var startDate = year + '-' + String(month+1).padStart(2,'0') + '-01';
-        var endDate = year + '-' + String(month+1).padStart(2,'0') + '-31';
+        const now = new Date();
+        const month = now.getMonth();
+        const year = now.getFullYear();
+        const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+        const endDate = `${year}-${String(month + 1).padStart(2, '0')}-31`;
 
-        var snapshot = await db.collection('submissions')
+        const snapshot = await db.collection('submissions')
           .where('tanggal', '>=', startDate)
           .where('tanggal', '<=', endDate)
           .orderBy('tanggal', 'desc')
           .get();
 
-        var maxNum = 0;
-        snapshot.forEach(function(doc) {
-          var parts = (doc.data().no_invoice || '').split('/');
-          var match = parts[parts.length-1]?.match(/^(\d+)$/);
-          if (match) { var n = parseInt(match[1]); if (n > maxNum) maxNum = n; }
+        let maxNum = 0;
+        snapshot.forEach(doc => {
+          const parts = (doc.data().no_invoice || '').split('/');
+          const match = parts[parts.length - 1]?.match(/^(\d+)$/);
+          if (match) {
+            const n = parseInt(match[1]);
+            if (n > maxNum) maxNum = n;
+          }
         });
 
-        return 'BKK-NMSA/' + toRoman(month+1) + '/' + year + '/' + String(maxNum+1).padStart(4,'0');
+        return `BKK-NMSA/${toRoman(month + 1)}/${year}/${String(maxNum + 1).padStart(4, '0')}`;
       } catch (error) {
         console.warn('[Auto Invoice Error]:', error.message);
-        return 'BKK-NMSA/' + toRoman(new Date().getMonth()+1) + '/' + new Date().getFullYear() + '/0001';
+        return `BKK-NMSA/${toRoman(new Date().getMonth() + 1)}/${new Date().getFullYear()}/0001`;
       }
     }
 
+    async function generateInvoiceAfterConnection() {
+      let attempts = 0;
+      const checkInterval = setInterval(async () => {
+        attempts++;
+        if (db && state.isConnected) {
+          clearInterval(checkInterval);
+          try {
+            const inv = await autoGenerateInvoice();
+            const noInvInput = document.getElementById('no_invoice');
+            if (inv && noInvInput && !noInvInput.value) {
+              noInvInput.value = inv;
+            }
+          } catch (e) {
+            console.warn('[Auto Invoice] Failed:', e.message);
+          }
+        } else if (attempts >= 20) {
+          clearInterval(checkInterval);
+        }
+      }, 500);
+    }
+
+    // =============================================
+    // CHECK DUPLICATE
+    // =============================================
     async function checkDuplicate(data) {
       if (!db) return false;
+      
       try {
-        var snapshot = await db.collection('submissions')
+        const snapshot = await db.collection('submissions')
           .where('tanggal', '==', data.tanggal)
           .where('total_nominal', '==', data.total_nominal)
           .where('dibayarkan_kepada', '==', data.dibayarkan_kepada)
           .get();
 
-        var dup = false;
-        snapshot.forEach(function(doc) {
-          var e = doc.data();
-          if (e.lokasi === data.lokasi && e.kode === data.kode && e.jenis_pengajuan === data.jenis_pengajuan && e.status === data.status && JSON.stringify(e.items||[]) === JSON.stringify(data.items)) dup = true;
+        let dup = false;
+        snapshot.forEach(doc => {
+          const e = doc.data();
+          if (e.lokasi === data.lokasi && 
+              e.kode === data.kode && 
+              e.jenis_pengajuan === data.jenis_pengajuan && 
+              e.status === data.status &&
+              JSON.stringify(e.items || []) === JSON.stringify(data.items)) {
+            dup = true;
+          }
         });
         return dup;
-      } catch (e) { return false; }
-    }
-
-    function clearEditMode() {
-      state.editingDocId = null;
-      if (elements.editModeContainer) elements.editModeContainer.innerHTML = '';
-    }
-
-    window.cancelEdit = function() {
-      clearEditMode();
-      if (elements.form) elements.form.reset();
-      state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
-      state.selectedFiles = [];
-      updateFileDisplay();
-      renderFormItems();
-      var t = document.getElementById('tanggal');
-      if (t) t.valueAsDate = new Date();
-      if (elements.statusInput?.value !== 'Lunas' && elements.paymentDateContainer) elements.paymentDateContainer.style.display = 'none';
-      resetSubmitButton();
-      showToast('Mode edit dibatalkan', 'info');
-    };
-
-    function withTimeout(promise, ms, label) {
-      return Promise.race([promise, new Promise(function(_, reject) { setTimeout(function() { reject(new Error(label + ' timeout')); }, ms); })]);
+      } catch (e) {
+        return false;
+      }
     }
 
     // =============================================
-    // 🎯 MAIN SUBMIT - BASE64 MODE + DRIVE SYNC TRACKING
+    // MAIN SUBMIT HANDLER
     // =============================================
     async function handleSubmit(e) {
       e.preventDefault();
 
-      if (!validateForm()) { showToast('Mohon lengkapi semua field yang ditandai *', 'error'); return; }
-      if (!db) { showToast('Firebase belum terhubung. Setup dulu.', 'error'); openSetupModal(); return; }
-
-      var data = getFormData();
-      var isEditMode = !!state.editingDocId;
-      var saveSuccess = false;
-
-      if (!isEditMode) {
-        elements.submitBtn.disabled = true;
-        elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengecek duplikat...</span>';
-
-        if (await checkDuplicate(data)) {
-          showToast('Transaksi duplikat!', 'error');
-          elements.submitBtn.disabled = false;
-          resetSubmitButton();
-          return;
-        }
-
-        if (!data.no_invoice.trim()) {
-          elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Generate No Invoice...</span>';
-          data.no_invoice = await autoGenerateInvoice();
-          var ni = document.getElementById('no_invoice');
-          if (ni) ni.value = data.no_invoice;
-        }
+      if (!validateForm()) {
+        showToast('Mohon lengkapi semua field yang ditandai *', 'error');
+        return;
       }
 
+      if (!db) {
+        showToast('Firebase belum terhubung. Silakan setup terlebih dahulu.', 'error');
+        openSetupModal();
+        return;
+      }
+
+      const data = getFormData();
+      const isEditMode = !!state.editingDocId;
+      let saveSuccess = false;
+
       elements.submitBtn.disabled = true;
-      elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Menyimpan...</span>';
+      setSubmitButtonLoading('Memproses...');
 
       try {
-        var uploadedFiles = [];
-        if (state.selectedFiles.length > 0) {
-          elements.submitBtn.innerHTML = '<div class="spinner"></div><span>Mengkonversi ' + state.selectedFiles.length + ' file ke Base64...</span>';
+        if (!isEditMode) {
+          setSubmitButtonLoading('Mengecek duplikat...');
           
-          uploadedFiles = state.selectedFiles.map(function(file) {
-            return {
-              name: file.name,
-              type: file.type,
-              size: file.size,
-              base64Data: file.base64,
-              uploadedAt: new Date().toISOString(),
-              status: 'pending_drive_upload',
-              driveUrl: null,
-              syncedAt: null
-            };
-          });
-          
-          console.log('[Submit] Files converted to Base64:', uploadedFiles.length, 'files');
+          if (await checkDuplicate(data)) {
+            showToast('Transaksi duplikat terdeteksi!', 'error');
+            resetSubmitButton(isEditMode);
+            return;
+          }
+
+          if (!data.no_invoice.trim()) {
+            setSubmitButtonLoading('Generate No. Invoice...');
+            data.no_invoice = await autoGenerateInvoice();
+            const ni = document.getElementById('no_invoice');
+            if (ni) ni.value = data.no_invoice;
+          }
         }
 
-        var firebaseData = {
-          tanggal: data.tanggal,
-          lokasi: data.lokasi,
-          kode: data.kode,
-          jenis_pengajuan: data.jenis_pengajuan,
-          no_invoice: data.no_invoice,
-          status: data.status,
-          items: data.items,
-          total_nominal: data.total_nominal,
-          tanggal_pembayaran: data.tanggal_pembayaran,
-          dibayarkan_kepada: data.dibayarkan_kepada,
-          catatan_tambahan: data.catatan_tambahan,
-          source: data.source,
-          dibuat_oleh: data.dibuat_oleh,
-          disetujui_oleh: data.disetujui_oleh,
-          keuangan: data.keuangan,
-          dir_keuangan: data.dir_keuangan,
-          direktur_utama: data.direktur_utama,
-          accounting: data.accounting,
+        setSubmitButtonLoading('Menyimpan data...');
+
+        let uploadedFiles = [];
+        if (state.selectedFiles.length > 0) {
+          setSubmitButtonLoading(`Mengkonversi ${state.selectedFiles.length} file...`);
+          
+          uploadedFiles = state.selectedFiles.map(file => ({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            base64Data: file.base64,
+            uploadedAt: new Date().toISOString(),
+            status: 'pending_drive_upload',
+            driveUrl: null,
+            syncedAt: null
+          }));
+        }
+
+        const firebaseData = {
+          ...data,
           files: uploadedFiles,
           synced_to_sheets: false,
           synced_at: null,
           sheets_error: null
         };
 
-        var firebasePromise;
+        setSubmitButtonLoading('Menyimpan ke Firebase...');
+        let docRef;
+        
         if (isEditMode) {
-          firebasePromise = db.collection('submissions').doc(state.editingDocId).update(firebaseData);
+          docRef = await withTimeout(
+            db.collection('submissions').doc(state.editingDocId).update(firebaseData),
+            15000,
+            'Firebase update'
+          );
+          docRef = { id: state.editingDocId };
         } else {
           firebaseData.created_at = new Date().toISOString();
-          firebaseData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-          firebasePromise = db.collection('submissions').add(firebaseData);
+          docRef = await withTimeout(
+            db.collection('submissions').add(firebaseData),
+            15000,
+            'Firebase write'
+          );
         }
 
-        var docRef = await withTimeout(firebasePromise, 15000, 'Firebase write');
-
-        var savedDocId = isEditMode ? state.editingDocId : docRef.id;
-        console.log('[Firebase] ✅ ' + (isEditMode ? 'Updated' : 'Saved') + '! ID:', savedDocId);
+        const savedDocId = isEditMode ? state.editingDocId : docRef.id;
+        console.log(`[Firebase] ${isEditMode ? 'Updated' : 'Saved'} successfully! ID: ${savedDocId}`);
         
         state.lastSavedDocId = savedDocId;
-        state.lastFormData = Object.assign({}, data, { id: savedDocId });
+        state.lastFormData = { ...data, id: savedDocId };
         saveSuccess = true;
 
-        showToast((isEditMode ? 'Berhasil diupdate!' : '✅ Berhasil Disimpan!') + ' Menunggu sync ke Google Drive...', 'drive');
+        showToast(`${isEditMode ? 'Berhasil diupdate!' : 'Berhasil Disimpan!'} Menunggu sync ke Google Drive...`, 'drive');
         
-        updateDriveStatusBanner('pending', '⏳ Menunggu sync ke Spreadsheet... (Klik "Sync Sekarang" untuk langsung!)');
+        updateDriveStatusBanner('pending', 'Menunggu sinkronisasi ke Google Drive...');
         
         populateDocuments(data);
         if (elements.documentModal) elements.documentModal.classList.add('show');
 
-        // 🆕 AUTO-TRIGGER SETELAH SUBMIT (2 detik)
-        if (state.appsScriptUrl) {
-          setTimeout(function() {
-            console.log('[Auto-Trigger] Calling triggerManualSync in 2 seconds...');
-            triggerManualSync();
-          }, 2000);
+        if (uploadedFiles.length > 0) {
+          setTimeout(() => triggerManualSync(), 2000);
         }
 
       } catch (error) {
-        console.error('[Firebase Save Error]:', error);
+        console.error('[Submit Error]:', error);
         let errorMsg = error.message || 'Unknown error';
-        if (errorMsg.indexOf('PERMISSION_DENIED') > -1 || errorMsg.indexOf('Missing or insufficient permissions') > -1) {
-          errorMsg = 'Permission denied! Cek Firestore Rules.';
+        
+        if (errorMsg.includes('PERMISSION_DENIED') || errorMsg.includes('permission-denied')) {
+          errorMsg = 'Permission denied! Periksa aturan keamanan Firestore Anda.';
+        } else if (errorMsg.includes('timeout')) {
+          errorMsg = 'Koneksi timeout. Coba lagi.';
         }
+        
         showToast('Gagal menyimpan: ' + errorMsg, 'error');
       }
 
-      elements.submitBtn.disabled = false;
-
       if (saveSuccess) {
         clearEditMode();
-        if (elements.form) elements.form.reset();
+        elements.form.reset();
         state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
         state.selectedFiles = [];
         updateFileDisplay();
         renderFormItems();
-        var t = document.getElementById('tanggal');
-        if (t) t.valueAsDate = new Date();
-        if (elements.statusInput?.value !== 'Lunas' && elements.paymentDateContainer) elements.paymentDateContainer.style.display = 'none';
-        resetSubmitButton();
         
-        autoGenerateInvoice().then(function(inv) {
-          var ni = document.getElementById('no_invoice');
+        const t = document.getElementById('tanggal');
+        if (t) t.valueAsDate = new Date();
+        
+        if (elements.statusInput?.value !== 'Lunas' && elements.paymentDateContainer) {
+          elements.paymentDateContainer.style.display = 'none';
+        }
+        
+        resetSubmitButton(false);
+        
+        autoGenerateInvoice().then(inv => {
+          const ni = document.getElementById('no_invoice');
           if (inv && ni) ni.value = inv;
         });
       } else {
@@ -2073,115 +2138,348 @@
       }
     }
 
+    function setSubmitButtonLoading(text) {
+      if (!elements.submitBtn) return;
+      elements.submitBtn.innerHTML = `<div class="spinner"></div><span>${text}</span>`;
+    }
+
     function resetSubmitButton(isEdit) {
       if (!elements.submitBtn) return;
       if (isEdit) {
-        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002-4 2v-5m-1.414-9.414a2 2 0 112.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span>Update Transaksi</span>';
+        elements.submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2v-2a2 2 0 01-2 2H9a2 2 0 002-2 2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2m-6 0a2 2 0 002 2m0 0H9"/></svg><span>Update Data</span>`;
       } else {
-        elements.submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 3z"/></svg><span>💾 Simpan ke Firebase</span>';
+        elements.submitBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 3z"/></svg><span>Simpan ke Firebase</span>`;
       }
     }
 
     // =============================================
-    // 🆕 GOOGLE DRIVE SYNC FUNCTIONS (UPDATED!)
+    // EDIT MODE
     // =============================================
+    function startEdit(docId) {
+      const item = state.history.find(h => h.id === docId);
+      if (!item) return;
 
-    /**
-     * Start real-time listener untuk satu document
-     * Mendeteksi perubahan status sync dari Apps Script
-     */
-    function startDriveSyncListener(docId) {
-      if (!db || !docId) return;
+      state.editingDocId = docId;
+      state.items = (item.items || []).map(i => ({ ...i })) || [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+      state.selectedFiles = (item.files || []).map(f => ({
+        name: f.name || 'file',
+        type: f.type || '',
+        size: f.size || 0,
+        base64: f.base64Data || ''
+      }));
 
-      if (state.driveSyncListeners[docId]) {
-        state.driveSyncListeners[docId]();
+      document.getElementById('tanggal').value = item.tanggal || '';
+      document.getElementById('lokasi').value = item.lokasi || '';
+      document.getElementById('jenis_pengajuan').value = item.jenis_pengajuan || '';
+      document.getElementById('kode').value = item.kode || '';
+      document.getElementById('no_invoice').value = item.no_invoice || '';
+      document.getElementById('status').value = item.status || '';
+      document.getElementById('dibayarkan_kepada').value = item.dibayarkan_kepada || '';
+      document.getElementById('catatan_tambahan').value = item.catatan_tambahan || '';
+
+      if (item.tanggal_pembayaran) {
+        document.getElementById('tanggal_pembayaran').value = item.tanggal_pembayaran;
       }
 
-      console.log('[Drive Sync] Starting listener for:', docId);
+      renderFormItems();
+      updateFileDisplay();
+      calculateTotal();
 
-      state.driveSyncListeners[docId] = db.collection('submissions').doc(docId).onSnapshot(
-        function(docSnapshot) {
-          if (!docSnapshot.exists) {
-            console.warn('[Drive Sync] Document not found:', docId);
-            return;
-          }
+      if (elements.editModeContainer) {
+        elements.editModeContainer.innerHTML = `
+          <div class="edit-banner">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-[--firebase]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2v-2a2 2 0 01-2 2H9a2 2 0 002-2 2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2m-6 0a2 2 0 002 2m0 0H9"/></svg>
+              <span class="text-sm font-medium text-[--firebase]">Mode Edit: ${escapeHtml(item.kode)}</span>
+            </div>
+            <button onclick="cancelEdit()" class="text-sm text-[--muted] hover:text-[--error] font-medium">Batalkan</button>
+          </div>
+        `;
+      }
 
-          var data = docSnapshot.data();
-          var files = data.files || [];
+      resetSubmitButton(true);
+      elements.form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
-          // Cek apakah ada file yang sudah sync
-          var syncedFiles = files.filter(function(f) {
-            var fData = f.mapValue?.fields || f;
-            return fData.driveUrl?.stringValue || fData.driveUrl;
+    function clearEditMode() {
+      state.editingDocId = null;
+      if (elements.editModeContainer) elements.editModeContainer.innerHTML = '';
+    }
+
+    window.cancelEdit = cancelEdit;
+    window.startEdit = startEdit;
+
+    function cancelEdit() {
+      clearEditMode();
+      elements.form.reset();
+      state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+      state.selectedFiles = [];
+      updateFileDisplay();
+      renderFormItems();
+      
+      const t = document.getElementById('tanggal');
+      if (t) t.valueAsDate = new Date();
+      
+      if (elements.statusInput?.value !== 'Lunas' && elements.paymentDateContainer) {
+        elements.paymentDateContainer.style.display = 'none';
+      }
+      
+      resetSubmitButton(false);
+      showToast('Mode edit dibatalkan', 'info');
+    }
+
+    // =============================================
+    // DELETE FUNCTION
+    // =============================================
+    async function confirmDelete() {
+      if (!state.pendingDeleteId || !db) return;
+
+      try {
+        await db.collection('submissions').doc(state.pendingDeleteId).delete();
+        showToast('Data berhasil dihapus', 'success');
+        closeDeleteModal();
+      } catch (error) {
+        console.error('[Delete Error]:', error);
+        showToast('Gagal menghapus: ' + error.message, 'error');
+      }
+    }
+
+    window.confirmDelete = confirmDelete;
+
+    async function clearAllData() {
+      if (!db) return;
+      
+      try {
+        const snapshot = await db.collection('submissions').get();
+        const batch = db.batch();
+        snapshot.docs.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+        showToast('Semua data berhasil dihapus', 'success');
+      } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+      }
+    }
+
+    // =============================================
+    // ACTION DROPDOWN MENU
+    // =============================================
+    function toggleActionMenu(docId, event) {
+      event.stopPropagation();
+      
+      if (state.activeDropdown && state.activeDropdown !== docId) {
+        closeActiveDropdown();
+      }
+
+      const btn = event.currentTarget;
+      const existingDropdown = btn.querySelector('.action-dropdown');
+      
+      if (existingDropdown) {
+        existingDropdown.remove();
+        state.activeDropdown = null;
+        return;
+      }
+
+      const item = state.history.find(h => h.id === docId);
+      if (!item) return;
+
+      const dropdown = document.createElement('div');
+      dropdown.className = 'action-dropdown';
+      dropdown.innerHTML = `
+        <button onclick="event.stopPropagation(); startEdit('${docId}'); closeActiveDropdown();" class="action-edit">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2v-2a2 2 0 01-2 2H9a2 2 0 002-2 2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2m-6 0a2 2 0 002 2m0 0H9"/></svg>Edit
+        </button>
+        <button onclick="event.stopPropagation(); previewDoc('${docId}'); closeActiveDropdown();" class="action-edit">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>Preview
+        </button>
+        <div class="dropdown-divider"></div>
+        <button onclick="event.stopPropagation(); openDeleteModal('${docId}', '${escapeHtml(item.kode)}', ${item.total_nominal || 0}); closeActiveDropdown();" class="action-delete">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Hapus
+        </button>
+      `;
+
+      btn.appendChild(dropdown);
+      state.activeDropdown = docId;
+    }
+
+    function closeActiveDropdown() {
+      const dropdowns = document.querySelectorAll('.action-dropdown');
+      dropdowns.forEach(d => d.remove());
+      state.activeDropdown = null;
+    }
+
+    window.toggleActionMenu = toggleActionMenu;
+    window.closeActiveDropdown = closeActiveDropdown;
+
+    function previewDoc(docId) {
+      const item = state.history.find(h => h.id === docId);
+      if (!item) return;
+
+      state.lastFormData = item;
+      populateDocuments(item);
+      if (elements.documentModal) elements.documentModal.classList.add('show');
+    }
+
+    window.previewDoc = previewDoc;
+
+    // =============================================
+    // GOOGLE DRIVE SYNC FUNCTIONS
+    // =============================================
+    function updateDriveStatusBanner(status, message) {
+      if (!elements.driveStatusBanner) return;
+
+      elements.driveStatusBanner.style.display = 'flex';
+      elements.driveStatusBanner.className = 'drive-status-banner no-print ' + (status === 'synced' ? 'active' : '');
+      
+      if (elements.driveStatusText) elements.driveStatusText.textContent = message;
+
+      if (elements.driveStatusBadge) {
+        elements.driveStatusBadge.className = 'badge ' + (
+          status === 'synced' ? 'badge-success' :
+          status === 'pending' ? 'badge-warning' :
+          status === 'error' ? 'badge-error' : 'badge-info'
+        );
+        elements.driveStatusBadge.innerHTML = status === 'synced' ? 'Synced ✓' :
+                                               status === 'pending' ? 'Pending...' :
+                                               status === 'error' ? 'Error' : 'Info';
+      }
+    }
+
+    function hideDriveStatusBanner() {
+      if (elements.driveStatusBanner) elements.driveStatusBanner.style.display = 'none';
+    }
+
+    // =============================================
+    // TRIGGER MANUAL SYNC (LENGKAP)
+    // =============================================
+    window.triggerManualSync = async function() {
+      if (!db) {
+        showToast('Firebase belum terhubung!', 'error');
+        return;
+      }
+
+      const btn = elements.forceSyncBtn;
+      const icon = document.getElementById('syncIcon');
+      const text = document.getElementById('syncBtnText');
+      
+      if (!btn) return;
+
+      btn.disabled = true;
+      btn.classList.add('syncing');
+      if (icon) icon.classList.add('sync-icon-spin');
+      if (text) text.textContent = 'Checking...';
+
+      try {
+        let targetDocId = state.lastSavedDocId;
+        
+        if (!targetDocId) {
+          const pendingDoc = state.history.find(h => {
+            const files = h.files || [];
+            return files.length > 0 && files.some(f => !f.driveUrl);
           });
-
-          var pendingFiles = files.filter(function(f) {
-            var fData = f.mapValue?.fields || f;
-            return !fData.driveUrl?.stringValue && !fData.driveUrl && fData.status !== 'synced';
-          });
-
-          var errorFiles = files.filter(function(f) {
-            var fData = f.mapValue?.fields || f;
-            return fData.status?.stringValue === 'error' || fData.status === 'error';
-          });
-
-          console.log('[Drive Sync] Doc:', docId, '- Synced:', syncedFiles.length, '- Pending:', pendingFiles.length, '- Error:', errorFiles.length);
-
-          // Update UI berdasarkan status
-          if (syncedFiles.length === files.length && files.length > 0) {
-            updateDriveStatusBanner('synced', '✅ Semua file berhasil disinkronkan ke Google Spreadsheet!');
-            showToast('✅ File berhasil sync ke Google Spreadsheet!', 'drive');
-            
-            updateStats();
-            renderHistory();
-            
-            // Stop listener setelah success (optional)
-            // state.driveSyncListeners[docId]();
-          } else if (errorFiles.length > 0) {
-            updateDriveStatusBanner('error', '❌ Error sync: ' + errorFiles[0].mapValue?.fields?.errorMessage?.stringValue || 'Unknown'));
-            showToast('Error sync Drive: ' + errorFiles[0].mapValue?.fields?.errorMessage || 'Unknown'), 'error');
-          } else if (pendingFiles.length > 0) {
-            updateDriveStatusBanner('pending', '⏳ Menunggu ' + pendingFiles.length + ' file untuk sync ke Google Spreadsheet...');
-          } else if (files.length === 0) {
-            hideDriveStatusBanner();
-          }
-        },
-        function(error) {
-          console.error('[Drive Listener Error]:', error);
-          updateDriveStatusBanner('error', '❌ Error monitoring sync status');
+          if (pendingDoc) targetDocId = pendingDoc.id;
         }
-      );
+
+        if (!targetDocId) {
+          showToast('Tidak ada data dengan file untuk disinkronkan.', 'info');
+          resetSyncButton();
+          return;
+        }
+
+        const docSnap = await db.collection('submissions').doc(targetDocId).get();
+        
+        if (!docSnap.exists) {
+          showToast('Document tidak ditemukan!', 'error');
+          resetSyncButton();
+          return;
+        }
+
+        const data = docSnap.data();
+        const files = data.files || [];
+
+        if (files.length === 0) {
+          showToast('Tidak ada file pada transaksi ini.', 'info');
+          resetSyncButton();
+          return;
+        }
+
+        const syncedCount = files.filter(f => f.driveUrl || f.driveUrl?.stringValue).length;
+        const pendingCount = files.filter(f => !f.driveUrl && !f.driveUrl?.stringValue && f.status !== 'synced' && f.status !== 'error').length;
+        const errorCount = files.filter(f => f.status === 'error' || f.status?.stringValue === 'error').length;
+
+        if (syncedCount === files.length && files.length > 0) {
+          showToast(`✅ Semua file (${files.length}) berhasil tersinkron ke Google Drive!`, 'drive');
+          
+          if (icon) icon.classList.remove('sync-icon-spin');
+          icon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+          if (text) text.textContent = 'All Synced ✓';
+          btn.classList.remove('syncing');
+          btn.classList.add('synced');
+          
+          updateDriveStatusBanner('synced', '✅ Semua file berhasil disinkronkan ke Google Drive!');
+          updateStats();
+          
+          setTimeout(resetSyncButton, 4000);
+
+        } else if (errorCount > 0) {
+          showToast(`❌ ${errorCount} file error. Periksa log Apps Script.`, 'error');
+          if (text) text.textContent = 'Error - Retry';
+          updateDriveStatusBanner('error', '❌ Error sinkronisasi: Periksa Apps Script');
+          resetSyncButton();
+
+        } else if (pendingCount > 0) {
+          showToast(`⏳ ${pendingCount}/${files.length} file masih menunggu... Apps Script akan proses otomatis.`, 'info');
+          if (text) text.textContent = `Pending (${pendingCount})`;
+          updateDriveStatusBanner('pending', `⏳ ${pendingCount} file menunggu sinkronisasi ke Google Drive...`);
+          resetSyncButton();
+        }
+
+      } catch (error) {
+        console.error('[Force Sync Error]:', error);
+        showToast('Error: ' + error.message, 'error');
+        resetSyncButton();
+      }
+    };
+
+    function resetSyncButton() {
+      const btn = elements.forceSyncBtn;
+      const icon = document.getElementById('syncIcon');
+      const text = document.getElementById('syncBtnText');
+      
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('syncing', 'synced');
+      }
+      if (icon) {
+        icon.classList.remove('sync-icon-spin');
+        icon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`;
+      }
+      if (text) text.textContent = 'Sync Sekarang';
     }
 
     /**
-     * Start polling untuk cek overall status Drive sync
-     * Jalankan setiap 30 detik
+     * Start polling untuk cek overall Drive sync status
      */
     function startDriveStatusPolling() {
-      state.pollingInterval = setInterval(function() {
-        if (!db || !state.isConnected) return;
+      state.pollingInterval = setInterval(() => {
+        if (!db || !state.isConnected || state.history.length === 0) return;
 
-        var totalPending = state.history.filter(function(h) {
-          if (!h.files || h.files.length === 0) return false;
-          return h.files.some(function(f) {
-            var fData = f.mapValue?.fields || f;
-            return !fData.driveUrl?.stringValue && !fData.driveUrl && fData.status !== 'synced';
-          });
+        const totalPendingDocs = state.history.filter(h => {
+          const files = h.files || [];
+          return files.length > 0 && files.some(f => !f.driveUrl && f.status !== 'synced');
         }).length;
 
-        var totalSynced = state.history.filter(function(h) {
-          if (!h.files || h.files.length === 0) return false;
-          return h.files.every(function(f) {
-            var fData = f.mapValue?.fields || f;
-            return fData.driveUrl?.stringValue || fData.driveUrl;
-          });
-        });
+        const totalSyncedDocs = state.history.filter(h => {
+          const files = h.files || [];
+          return files.length > 0 && files.every(f => f.driveUrl || f.status === 'synced');
+        }).length;
 
-        if (totalPending > 0 && elements.driveStatusBanner) {
+        if (totalPendingDocs > 0 && elements.driveStatusBanner) {
           if (elements.driveStatusBanner.style.display === 'none') {
             elements.driveStatusBanner.style.display = 'flex';
           }
-          elements.driveStatusText.textContent = totalPending + ' file menunggu sync ke Google Spreadsheet...';
+          if (elements.driveStatusText) {
+            elements.driveStatusText.textContent = `${totalPendingDocs} transaksi menunggu sync ke Google Drive...`;
+          }
         }
 
       }, 30000);
@@ -2189,16 +2487,13 @@
       console.log('[Drive Sync] Polling started (every 30s)');
     }
 
-    /**
-     * Stop polling
-     */
     function stopDriveStatusPolling() {
       if (state.pollingInterval) {
         clearInterval(state.pollingInterval);
         state.pollingInterval = null;
       }
 
-      Object.keys(state.driveSyncListeners).forEach(function(docId) {
+      Object.keys(state.driveSyncListeners).forEach(docId => {
         if (state.driveSyncListeners[docId]) {
           state.driveSyncListeners[docId]();
         }
@@ -2206,285 +2501,44 @@
       state.driveSyncListeners = {};
     }
 
-    /**
-     * Update Drive Status Banner UI
-     */
-    function updateDriveStatusBanner(status, message) {
-      if (!elements.driveStatusBanner) return;
-
-      elements.driveStatusBanner.style.display = 'flex';
-      elements.driveStatusBanner.className = 'drive-status-banner no-print ' + (status === 'synced' ? 'active' : '');
-      elements.driveStatusText.textContent = message;
-
-      if (elements.driveStatusBadge) {
-        elements.driveStatusBadge.className = 'drive-status-badge ' + status;
-        if (status === 'synced') {
-          elements.driveStatusBadge.innerHTML = '✅ Done';
-        } else if (status === 'pending') {
-          elements.driveStatusBadge.innerHTML = '⏳ Pending';
-        } else if (status === 'error') {
-          elements.driveStatusBadge.innerHTML = '❌ Error';
-        }
-      }
-    }
-
-    /**
-     * Hide Drive Status Banner
-     */
-    function hideDriveStatusBanner() {
-      if (elements.driveStatusBanner) {
-        elements.driveStatusBanner.style.display = 'none';
-      }
-    }
-
-    /**
-     * 🆕 FORCE SYNC BUTTON HANDLER (UPDATED!)
-     * Memberikan instruksi manual untuk trigger Apps Script
-     */
-    window.triggerManualSync = async function() {
-      if (!db) {
-        showToast('Firebase belum terhubung!', 'error');
-        return;
-      }
-
-      var btn = elements.forceSyncBtn;
-      if (!btn) return;
-
-      // Disable button sementara
-      btn.disabled = true;
-      btn.classList.add('syncing');
-      btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v1a3 3 0 003 3 3h10a3 3 0 002-4 2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>Checking...</span>');
-
-      try {
-        // Cek document terakhir yang disimpan
-        if (!state.lastSavedDocId) {
-          showToast('Tidak ada data untuk di-sync. Submit form dulu!', 'info');
-          return;
-        }
-
-        // Ambil data terbaru
-        var docSnap = await db.collection('submissions').doc(state.lastSavedDocId).get();
-        
-        if (!docSnap.exists) {
-          showToast('Document tidak ditemukan!', 'error');
-          return;
-        }
-
-        var data = docSnap.data();
-        var files = data.files || [];
-
-        if (files.length === 0) {
-          showToast('Tidak ada file untuk di-sync pada transaksi ini.', 'info');
-          return;
-        }
-
-        // Cek status masing-masing file
-        var syncedCount = files.filter(function(f) {
-          var fData = f.mapValue?.fields || f;
-          return fData.driveUrl?.stringValue || fData.driveUrl;
-        });
-
-        var pendingCount = files.filter(function(f) {
-          var fData = f.mapValue?.fields || f;
-          return !fData.driveUrl?.stringValue && !fData.driveUrl && fData.status !== 'synced';
-        });
-
-        var errorCount = files.filter(function(f) {
-          var fData = f.mapValue?.fields || f;
-          return fData.status?.stringValue === 'error' || fData.status === 'error';
-        });
-
-        // Tampilkan hasil
-        if (syncedCount === files.length && files.length > 0) {
-          showToast('✅ Semua file (' + syncedCount + ') berhasil tersinkron ke Google Spreadsheet!', 'drive');
-          
-          btn.classList.remove('syncing');
-          btn.classList.add('synced');
-          btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m-4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg><span>All Synced ✓</span>';
-          
-          // Re-enable button setelah 3 detik
-          setTimeout(function() {
-            btn.disabled = false;
-            btn.classList.remove('synced');
-            btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3 3h10a3 3 0 002-4 2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>Sync Sekarang</span>';
-          }, 3000);
-
-        } else if (errorCount > 0) {
-          showToast('❌ ' + errorCount + ' file error. Cek log Apps Script.', 'error');
-          btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 0l-3-3m0 0l-3 3m3-3v12"/></svg><span>Error - Retry</span>';
-        } else {
-          showToast('⏳ ' + pendingCount + '/' + files.length + ' file masih pending. Apps Script akan proses otomatis.', 'info');
-          btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l-4-4m0 0L8 8m4-4v12"/></svg><span>Pending (' + pendingCount + ')</span>');
-        }
-
-      } catch (error) {
-        console.error('[Force Sync Error]:', error);
-        showToast('Error: ' + error.message, 'error');
-        btn.disabled = false;
-        btn.classList.remove('syncing');
-        btn.innerHTML = '<svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3 3h10a3 3 0 002-4 2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>Retry</span>';
-      }
-    };
-
-    /**
-     * Show modal untuk setup Apps Script URL
-     */
-    function showModalAppsScriptSetup() {
-      var url = prompt(
-        '📝 Masukkan URL Web App Apps Script:\n\n' +
-        '1. Buka Google Apps Script Editor\n' +
-        '2. Deploy → New deployment\n' +
-        '3. Type: Web app\n' +
-        '4. Execute as: Me (email Anda)\n' +
-        '5. Who has access: Anyone\n' +
-        '6. Deploy → Copy URL di bawah\n\n' +
-        'URL:'
-      );
-
-      if (url && url.trim()) {
-        try {
-          new URL(url);
-          state.appsScriptUrl = url.trim();
-          localStorage.setItem(CONFIG_KEYS.APPS_SCRIPT_URL, state.appsScriptUrl);
-          showToast('✅ URL Apps Script disimpan! Menguhubungi...', 'success');
-          
-          // Auto-trigger setelah save
-          setTimeout(triggerManualSync, 1000);
-        } catch (e) {
-          console.error('Invalid URL:', e);
-        }
-      }
-    }
-
-    /**
-     * Expose ke global untuk dipanggil dari luar
-     */
-    window.triggerManualSync = triggerManualSync;
-    window.showModalAppsScriptSetup = showModalAppsScriptSetup;
-
     // =============================================
-    // DATE FILTER & LISTENER
+    // DATE FILTER & REALTIME LISTENER
     // =============================================
+    
     function applyDateFilter() {
       if (!db) return;
-      var from = state.filterDateFrom, to = state.filterDateTo;
+      
+      const from = state.filterDateFrom;
+      const to = state.filterDateTo;
 
-      if (!from && !to) { startRealtimeListener(); return; }
+      if (state.unsubscribeListener) {
+        state.unsubscribeListener();
+      }
 
-      var query = db.collection('submissions').orderBy('tanggal', 'desc');
+      let query = db.collection('submissions').orderBy('timestamp', 'desc');
+      
       if (from) query = query.where('tanggal', '>=', from);
       if (to) query = query.where('tanggal', '<=', to);
 
-      if (state.unsubscribeListener) state.unsubscribeListener();
+      query = query.limit(100);
 
-      state.unsubscribeListener = query.limit(100).onSnapshot(
-        function(snapshot) {
-          state.history = snapshot.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+      state.unsubscribeListener = query.onSnapshot(
+        snapshot => {
+          state.history = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
           renderHistory();
           updateStats();
           updateOverallDriveStatus();
         },
-        function(error) { console.error('[Listener] Error:', error); showToast('Filter error: ' + error.message, 'error'); }
+        error => {
+          console.error('[Listener Error]:', error);
+          showToast('Error memuat data: ' + error.message, 'error');
+        }
       );
-    }
-
-    window.clearDateFilter = function() {
-      state.filterDateFrom = ''; state.filterDateTo = '';
-      var f = document.getElementById('filterDateFrom'), t = document.getElementById('filterDateTo');
-      if (f) f.value = ''; if (t) t.value = '';
-      if (f) state.filterDateFrom = f.value;
-      if (t) state.filterDateTo = t.value;
-      startRealtimeListener();
-      showToast('Filter tanggal direset', 'info');
-    };
-
-    function startRealtimeListener() {
-      if (state.unsubscribeListener) state.unsubscribeListener();
-      state.unsubscribeListener = db.collection('submissions').orderBy('timestamp', 'desc').limit(50).onSnapshot(
-        function(snapshot) {
-          state.history = snapshot.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
-          renderHistory();
-          updateStats();
-          updateOverallDriveStatus();
-        },
-        function(error) { console.error('[Listener] Error:', error); }
-      );
-    }
-
-    /**
-     * Update overall Drive sync status berdasarkan semua data
-     */
-    function updateOverallDriveStatus() {
-      if (!state.history || state.history.length === 0) {
-        hideDriveStatusBanner();
-        return;
-      }
-
-      var totalPendingDocs = 0;
-      var totalSyncedDocs = 0;
-
-      state.history.forEach(function(item) {
-        var files = item.files || [];
-        if (files.length === 0) return;
-
-        var hasPending = files.some(function(f) {
-          var fData = f.mapValue?.fields || f;
-          return !fData.driveUrl?.stringValue && !fData.driveUrl && fData.status !== 'synced';
-        });
-
-        if (hasPending) totalPendingDocs++;
-        else totalSyncedDocs++;
-      });
-
-      if (totalPendingDocs > 0) {
-        updateDriveStatusBanner('pending', totalPendingDocs + ' transaksi dengan file menunggu sync ke Google Spreadsheet...');
-      } else if (totalSyncedDocs > 0) {
-        updateDriveStatusBanner('synced', '✅ Semua file (' + totalSyncedDocs + ') sudah sync ke Google Spreadsheet!');
-        
-        // Auto-hide setelah 5 detik
-        setTimeout(hideDriveStatusBanner, 5000);
-      } else {
-        hideDriveStatusBanner();
-      }
     }
 
     // =============================================
-    // RENDER HISTORY (Enhanced with Drive Status)
+    // CLEAR FILTERS FUNCTION (YANG HILANG/TERPUTUS)
     // =============================================
-    function renderHistory() {
-      if (!elements.historyList) return;
-
-      var filtered = state.currentTab === 'Lunas'
-        ? state.history.filter(h => h.status === 'Lunas')
-        : state.currentTab === 'Belum Lunas'
-          ? state.history.filter(h => h.status !== 'Lunas')
-          : state.history;
-
-      if (filtered.length === 0) {
-        elements.historyList.innerHTML = '<div class="text-center py-10 text-[--muted]">' +
-          '<svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2zm3zM12 9a9 0 0h6m-6 4h6m2 5H7a2 2 0 012-2zm3zM9 12h6m-6 4h6m2 5H7a2 2 0 012-2z"/></svg>' +
-          '<p class="text-sm">Tidak ada data ' + state.currentTab + '</p>' +
-          '<p class="text-xs mt-2 text-[--drive]">File otomatis tersimpan ke Google Drive</p></div>'
-      );
-
-      elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item) {
-        var dateStr = formatDate(item.tanggal);
-        var itemsSummary = (item.items||[]).map(function(i) { return i.ket; }).filter(k => k).join(', ');
-        var displayItems = itemsSummary.length > 50 ? itemsSummary.substring(0, 50) + '...' : itemsSummary || '-';
-        var safeId = item.id||'', safeKode = (item.kode||'').replace(/"/g, '\\"', '\\\\"), '\\\\'')).replace(/'/g, '\\\\\\")), safeLabel = (item.no_invoice||item.kode||'-').replace(/'/g, '\\\"), '\\\\'')).replace(/'/g, '\\\")), safeLabel = (item.no_invoice||item.kode||'-').replace(/'/g, '\\\"), '\\\\'')).replace(/'/g, '\\\"));
-
-        var isLunas = item.status==='Lunas';
-        var statusBadge = isLunas ? '<span class="bg-green-500/20 text-green-400 border border green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>' : '<span class="bg-red-500/20 text-red-400 border red-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Belum Lunas</span>';
-
-        // 🆕 Enhanced Sync Indicator dengan detail
-        var syncIndicator = '';
-        var syncClass = '';
-
-        if (item.files && item.files.length > 0) {
-          var syncedCount = item.files.filter(function(f) {
-            var fData = f.mapValue?.fields || f;
-            return fData.driveUrl?.stringValue || fData.driveUrl;
-          });
-
-          if (syncedCount === item.files.length) {
-            syncIndicator = '<span class="sync-indicator synced" title="Semua file synced ke
+    window.clearFilters = function() {
+      state.filterDateFrom = '';
+      state.filterDateTo = '';
