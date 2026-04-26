@@ -2531,9 +2531,370 @@
       }
     }
 
-    // =============================================
-    // RENDER HISTORY (COMPLETE & FIXED!)
-    // =============================================
-    function renderHistory() {
-      if (!elements.historyList) return;
+// =============================================
+// RENDER HISTORY (COMPLETE & FIXED!)
+// =============================================
+function renderHistory() {
+  if (!elements.historyList) return;
 
+  var filtered = state.currentTab === 'Lunas'
+    ? state.history.filter(h => h.status === 'Lunas')
+    : state.currentTab === 'Belum Lunas'
+      ? state.history.filter(h => h.status !== 'Lunas')
+      : state.history;
+
+  if (filtered.length === 0) {
+    elements.historyList.innerHTML = 
+      '<div class="text-center py-10 text-[--muted]">' +
+        '<svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>' +
+        '</svg>' +
+        '<p class="text-sm">Tidak ada data ' + escapeHtml(state.currentTab) + '</p>' +
+        '<p class="text-xs mt-2 text-[--drive]">File otomatis tersimpan ke Google Drive</p>' +
+      '</div>';
+    return;
+  }
+
+  elements.historyList.innerHTML = filtered.slice(0, 30).map(function(item) {
+    var dateStr = formatDate(item.tanggal);
+    var itemsSummary = (item.items || []).map(function(i) { return i.ket; }).filter(k => k).join(', ');
+    var displayItems = itemsSummary.length > 50 ? itemsSummary.substring(0, 50) + '...' : itemsSummary || '-';
+    
+    var safeId = item.id || '';
+    var safeKode = escapeHtml(item.kode || '-');
+    var safeLabel = escapeHtml(item.no_invoice || item.kode || '-');
+    var safeNominal = item.total_nominal || 0;
+    
+    var isLunas = item.status === 'Lunas';
+    var statusBadge = isLunas 
+      ? '<span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Lunas</span>'
+      : '<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-xs font-semibold shadow-sm">Belum Lunas</span>';
+
+    // Sync Indicator dengan detail file
+    var syncIndicator = '';
+    var historyItemClass = 'history-item';
+    
+    if (item.files && item.files.length > 0) {
+      var syncedCount = item.files.filter(function(f) {
+        var fData = f.mapValue?.fields || f;
+        return fData.driveUrl?.stringValue || fData.driveUrl;
+      }).length;
+      
+      var pendingCount = item.files.filter(function(f) {
+        var fData = f.mapValue?.fields || f;
+        return !fData.driveUrl?.stringValue && !fData.driveUrl && fData.status !== 'synced';
+      }).length;
+      
+      var errorCount = item.files.filter(function(f) {
+        var fData = f.mapValue?.fields || f;
+        return fData.status?.stringValue === 'error' || fData.status === 'error';
+      }).length;
+
+      if (syncedCount === item.files.length && item.files.length > 0) {
+        syncIndicator = '<span class="sync-indicator synced" title="Semua file synced ke Google Drive">✓ Synced</span>';
+        historyItemClass += ' synced';
+      } else if (errorCount > 0) {
+        syncIndicator = '<span class="sync-indicator error" title="Error sync">⚠ Error</span>';
+        historyItemClass += ' sync-error';
+      } else if (pendingCount > 0) {
+        syncIndicator = '<span class="sync-indicator pending" title="' + pendingCount + ' file pending">⏳ ' + pendingCount + ' pending</span>';
+        historyItemClass += ' pending-sync';
+      }
+    }
+
+    // File list mini display
+    var fileListHtml = '';
+    if (item.files && item.files.length > 0) {
+      fileListHtml = '<div class="mt-2 space-y-1">';
+      item.files.forEach(function(f) {
+        var fData = f.mapValue?.fields || f;
+        var fName = fData.name?.stringValue || fData.name || 'file';
+        var fStatus = fData.status?.stringValue || fData.status || 'pending';
+        var driveUrl = fData.driveUrl?.stringValue || fData.driveUrl;
+        
+        var fileIcon = '📄';
+        if (fName.toLowerCase().includes('.jpg') || fName.toLowerCase().includes('.png')) fileIcon = '🖼️';
+        if (fName.toLowerCase().includes('.pdf')) fileIcon = '📕';
+        
+        var statusIcon = '⏳';
+        var statusClass = 'pending';
+        if (driveUrl) { statusIcon = '✅'; statusClass = 'synced'; }
+        if (fStatus === 'error') { statusIcon = '❌'; statusClass = 'error'; }
+        
+        fileListHtml += 
+          '<div class="file-item-drive ' + statusClass + '">' +
+            '<span>' + fileIcon + '</span>' +
+            '<span class="file-name-drive">' + escapeHtml(fName) + '</span>' +
+            (driveUrl 
+              ? '<a href="' + escapeHtml(driveUrl) + '" target="_blank" class="file-link-drive">Buka →</a>'
+              : '<span class="file-size-drive">' + statusIcon + '</span>'
+            ) +
+          '</div>';
+      });
+      fileListHtml += '</div>';
+    }
+
+    return 
+      '<div class="' + historyItemClass + '" data-id="' + safeId + '">' +
+        '<div class="flex justify-between items-start mb-2">' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="flex items-center gap-2 flex-wrap">' +
+              '<span class="font-semibold text-sm text-[--fg]">' + safeKode + '</span>' +
+              statusBadge +
+              syncIndicator +
+            '</div>' +
+            '<div class="text-xs text-[--muted] mt-1">' + dateStr + ' • ' + safeLabel + '</div>' +
+          '</div>' +
+          '<div class="flex items-center gap-1 ml-2">' +
+            '<button onclick="previewFromHistory(\'' + safeId + '\')" class="btn-action-menu" title="Preview Dokumen">' +
+              '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>' +
+            '</button>' +
+            '<button onclick="editTransaction(\'' + safeId + '\')" class="btn-action-menu" title="Edit Data">' +
+              '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002-4 2v-5m-1.414-9.414a2 2 0 112.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+            '</button>' +
+            '<button onclick="openDeleteModal(\'' + safeId + '\', \'' + safeKode.replace(/'/g, "\\'") + '\', ' + safeNominal + ')" class="btn-action-menu" title="Hapus Data" style="color: var(--error);">' +
+              '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+        
+        '<div class="text-xs text-[--muted] mb-2 line-clamp-2">' + escapeHtml(displayItems) + '</div>' +
+        
+        '<div class="flex justify-between items-center">' +
+          '<span class="text-sm font-bold text-[--firebase]">Rp ' + formatNumber(safeNominal) + '</span>' +
+          '<span class="text-xs text-[--muted]">→ ' + escapeHtml(item.dibayarkan_kepada || '-') + '</span>' +
+        '</div>' +
+        
+        fileListHtml +
+      '</div>';
+  }).join('');
+}
+
+// =============================================
+// EDIT TRANSACTION FROM HISTORY
+// =============================================
+window.editTransaction = async function(docId) {
+  if (!db || !docId) {
+    showToast('Tidak dapat mengedit: Firebase tidak terhubung', 'error');
+    return;
+  }
+
+  try {
+    // Scroll to form
+    document.querySelector('.lg\\:col-span-3')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Show loading state in edit banner
+    if (elements.editModeContainer) {
+      elements.editModeContainer.innerHTML = 
+        '<div class="edit-banner">' +
+          '<div class="flex items-center gap-2">' +
+            '<svg class="w-5 h-5 text-[--firebase] animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>' +
+            '<span class="text-sm font-medium text-[--firebase]">Memuat data...</span>' +
+          '</div>' +
+        '</div>';
+    }
+
+    // Fetch document
+    var docSnap = await db.collection('submissions').doc(docId).get();
+    
+    if (!docSnap.exists) {
+      showToast('Data tidak ditemukan!', 'error');
+      clearEditMode();
+      return;
+    }
+
+    var data = docSnap.data();
+    
+    // Set state
+    state.editingDocId = docId;
+    state.lastSavedDocId = docId;
+    
+    // Populate form fields
+    var setVal = function(id, val) {
+      var el = document.getElementById(id);
+      if (el) el.value = val || '';
+    };
+
+    setVal('tanggal', data.tanggal);
+    setVal('lokasi', data.lokasi);
+    setVal('jenis_pengajuan', data.jenis_pengajuan);
+    setVal('kode', data.kode);
+    setVal('no_invoice', data.no_invoice);
+    setVal('status', data.status);
+    setVal('tanggal_pembayaran', data.tanggal_pembayaran);
+    setVal('dibayarkan_kepada', data.dibayarkan_kepada);
+    setVal('catatan_tambahan', data.catatan_tambahan);
+
+    // Populate items
+    if (data.items && data.items.length > 0) {
+      state.items = data.items.map(function(i) {
+        return {
+          ket: i.ket || '',
+          qty: i.qty || '',
+          nominal: i.nominal || 0,
+          keterangan: i.keterangan || ''
+        };
+      });
+    } else {
+      state.items = [{ ket: '', qty: '', nominal: 0, keterangan: '' }];
+    }
+
+    // Handle files (convert back from stored format if needed)
+    state.selectedFiles = [];
+    if (data.files && data.files.length > 0) {
+      state.selectedFiles = data.files.map(function(f) {
+        var fData = f.mapValue?.fields || f;
+        return {
+          name: fData.name?.stringValue || fData.name || 'file',
+          type: fData.type?.stringValue || fData.type || 'application/octet-stream',
+          size: parseInt(fData.size?.integerValue || fData.size || 0),
+          base64: fData.base64Data?.stringValue || fData.base64Data || ''
+        };
+      }).filter(f => f.base64);
+    }
+
+    // Update UI
+    renderFormItems();
+    updateFileDisplay();
+    
+    // Show payment date field if Lunas
+    if (data.status === 'Lunas' && elements.paymentDateContainer) {
+      elements.paymentDateContainer.style.display = 'block';
+    } else if (elements.paymentDateContainer) {
+      elements.paymentDateContainer.style.display = 'none';
+    }
+
+    // Update submit button for edit mode
+    resetSubmitButton(true);
+
+    // Show edit mode banner
+    if (elements.editModeContainer) {
+      elements.editModeContainer.innerHTML = 
+        '<div class="edit-banner">' +
+          '<div class="flex items-center gap-2">' +
+            '<svg class="w-5 h-5 text-[--firebase]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002-4 2v-5m-1.414-9.414a2 2 0 112.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+            '<div>' +
+              '<span class="text-sm font-bold text-[--firebase]">MODE EDIT</span>' +
+              '<span class="text-xs text-[--muted] ml-2">Mengedit: <strong>' + escapeHtml(data.kode) + '</strong></span>' +
+            '</div>' +
+          '</div>' +
+          '<button onclick="cancelEdit()" class="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded hover:bg-red-500/30 transition-colors">Batal Edit</button>' +
+        '</div>';
+    }
+
+    showToast('Data dimuat! Silakan edit lalu simpan.', 'info');
+
+  } catch (error) {
+    console.error('[Edit Error]:', error);
+    showToast('Gagal memuat data: ' + error.message, 'error');
+    clearEditMode();
+  }
+};
+
+// =============================================
+// PREVIEW DOCUMENT FROM HISTORY
+// =============================================
+window.previewFromHistory = async function(docId) {
+  if (!docId) {
+    showToast('ID dokumen tidak valid', 'error');
+    return;
+  }
+
+  try {
+    var docSnap;
+    
+    if (db) {
+      docSnap = await db.collection('submissions').doc(docId).get();
+    } else {
+      // Try to find in local history state
+      var found = state.history.find(h => h.id === docId);
+      if (found) {
+        docSnap = { exists: true, data: function() { return found; } };
+      }
+    }
+
+    if (!docSnap || !docSnap.exists) {
+      showToast('Data tidak ditemukan!', 'error');
+      return;
+    }
+
+    var data = docSnap.data();
+
+    // Convert data format for preview
+    var previewData = {
+      tanggal: data.tanggal,
+      lokasi: data.lokasi,
+      kode: data.kode,
+      jenis_pengajuan: data.jenis_pengajuan,
+      no_invoice: data.no_invoice,
+      status: data.status,
+      items: data.items || [],
+      total_nominal: data.total_nominal || 0,
+      tanggal_pembayaran: data.tanggal_pembayaran,
+      dibayarkan_kepada: data.dibayarkan_kepada,
+      catatan_tambahan: data.catatan_tambahan,
+      dibuat_oleh: data.dibuat_oleh || 'Nur Wahyudi',
+      disetujui_oleh: data.disetujui_olejui || 'Harijon',
+      keuangan: data.keuangan || 'Andi Dhiya Salsabila',
+      dir_keuangan: data.dir_keuangan || 'Harijon',
+      direktur_utama: data.direktur_utama || 'H. Andi Nursyam Halid',
+      accounting: data.accounting || 'Sri Ekowati'
+    };
+
+    state.lastFormData = previewData;
+    populateDocuments(previewData);
+
+    if (elements.documentModal) {
+      elements.documentModal.classList.add('show');
+    }
+
+  } catch (error) {
+    console.error('[Preview Error]:', error);
+    showToast('Gagal memuat preview: ' + error.message, 'error');
+  }
+};
+
+// =============================================
+// AUTO INITIALIZATION
+// =============================================
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('[FinanceSync Pro v3.3] Initializing...');
+  
+  // Small delay to ensure all DOM elements are ready
+  setTimeout(function() {
+    init();
+    console.log('[FinanceSync Pro v3.3] ✅ Ready!');
+  }, 100);
+});
+
+// Backup initialization if DOMContentLoaded already fired
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  setTimeout(init, 200);
+}
+
+// =============================================
+// KEYBOARD SHORTCUTS (Bonus)
+// =============================================
+document.addEventListener('keydown', function(e) {
+  // Ctrl/Cmd + S to submit form
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (elements.form && !elements.submitBtn.disabled) {
+      elements.form.dispatchEvent(new Event('submit'));
+    }
+  }
+  
+  // Ctrl/Cmd + P to preview (when not in modal)
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    if (!elements.documentModal?.classList.contains('show')) {
+      e.preventDefault();
+      handlePreview();
+    }
+  }
+});
+
+console.log('%c🚀 FinanceSync Pro v3.3 - Google Drive Edition', 'font-size: 18px; font-weight: bold; color: #ffca28; background: #0c1222; padding: 10px 20px; border-radius: 8px;');
+console.log('%c⚙️ Powered by Firebase Firestore + Google Apps Script', 'font-size: 11px; color: #64748b;');
+  </script>
+</body>
+</html>
