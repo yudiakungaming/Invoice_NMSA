@@ -16,7 +16,7 @@ function syncFromFirebase() {
     "Lokasi",
     "Kode",
     "No Invoice",
-    "Jenis Pengajuan",        // ← Kolom ini akan terisi sekarang!
+    "Jenis Pengajuan",
     "Nominal (Rp)",
     "Status",
     "Dibayarkan Kepada",
@@ -25,23 +25,67 @@ function syncFromFirebase() {
 
   if (!result.documents) return;
 
-  result.documents.forEach((doc, index) => {
+  // ──────────────────────────────────────────────
+  // STEP 1: Kumpulkan semua data ke array dulu
+  // ──────────────────────────────────────────────
+  const rows = [];
 
+  result.documents.forEach((doc) => {
     const f = doc.fields || {};
+    
+    rows.push({
+      tanggal: f.tanggal?.stringValue || "",
+      timestamp: f.timestamp?.timestampValue || "",  // waktu input di Firebase
+      lokasi: f.lokasi?.stringValue || "",
+      kode: f.kode?.stringValue || "",
+      no_invoice: f.no_invoice?.stringValue || "",
+      jenis_pengajuan: f.jenis_pengajuan?.stringValue || "",
+      total_nominal: f.total_nominal?.integerValue || "",
+      status: f.status?.stringValue || "",
+      dibayarkan_kepada: f.dibayarkan_kepada?.stringValue || "",
+      catatan_tambahan: f.catatan_tambahan?.stringValue || ""
+    });
+  });
 
+  // ──────────────────────────────────────────────
+  // STEP 2: URUTKAN DATA
+  //   - Utama: Tanggal Invoice (asc)
+  //   - Tiebreaker: Timestamp Input (asc)
+  //   → Yang terbaru ada di BAWAH
+  // ──────────────────────────────────────────────
+  rows.sort((a, b) => {
+    // Parse tanggal (format DD/MM/YYYY atau YYYY-MM-DD)
+    const dateA = parseDate(a.tanggal);
+    const dateB = parseDate(b.tanggal);
+
+    if (dateA.getTime() !== dateB.getTime()) {
+      return dateA.getTime() - dateB.getTime();  // tanggal asc
+    }
+
+    // Jika tanggal sama, urutkan berdasarkan timestamp Firebase
+    if (a.timestamp && b.timestamp) {
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+    }
+
+    return 0;
+  });
+
+  // ──────────────────────────────────────────────
+  // STEP 3: Tulis data yang sudah terurut ke sheet
+  // ──────────────────────────────────────────────
+  rows.forEach((row, index) => {
     sheet.appendRow([
       index + 1,
-      f.tanggal?.stringValue || "",
-      f.lokasi?.stringValue || "",
-      f.kode?.stringValue || "",
-      f.no_invoice?.stringValue || "",
-      f.jenis_pengajuan?.stringValue || "",       // ✅ SUDAH DIPERBAIKI (dari jenis_pengajuan_summary)
-      f.total_nominal?.integerValue || "",
-      f.status?.stringValue || "",
-      f.dibayarkan_kepada?.stringValue || "",
-      f.catatan_tambahan?.stringValue || ""
+      row.tanggal,
+      row.lokasi,
+      row.kode,
+      row.no_invoice,
+      row.jenis_pengajuan,
+      row.total_nominal,
+      row.status,
+      row.dibayarkan_kepada,
+      row.catatan_tambahan
     ]);
-
   });
 
   // Format nominal ke Rupiah
@@ -49,5 +93,29 @@ function syncFromFirebase() {
   if (lastRow > 1) {
     sheet.getRange(2, 7, lastRow - 1).setNumberFormat('"Rp" #,##0');
   }
+}
 
+// ──────────────────────────────────────────────
+// HELPER: Parse tanggal dari berbagai format
+// ──────────────────────────────────────────────
+function parseDate(dateStr) {
+  if (!dateStr) return new Date(0);  // tanggal kosong → paling atas
+
+  // Coba format DD/MM/YYYY
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      // Asumsi format: DD/MM/YYYY
+      return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+  }
+
+  // Coba format ISO (YYYY-MM-DD)
+  if (dateStr.includes('-')) {
+    const parsed = new Date(dateStr);
+    if (!isNaN(parsed)) return parsed;
+  }
+
+  // Fallback
+  return new Date(dateStr) || new Date(0);
 }
