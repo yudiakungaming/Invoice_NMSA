@@ -250,42 +250,6 @@
     .history-item:hover .btn-action-menu { opacity: 1; }
     .btn-action-menu:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--fg); }
 
-    .action-dropdown {
-      position: fixed;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      z-index: 9999;
-      min-width: 130px;
-      overflow: hidden;
-      animation: slideUp 0.15s ease-out;
-    }
-
-    .action-dropdown button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      padding: 8px 12px;
-      border: none;
-      background: transparent;
-      color: var(--fg);
-      font-size: 12px;
-      font-family: 'Space Grotesk', sans-serif;
-      cursor: pointer;
-      transition: background 0.15s;
-      white-space: nowrap;
-      text-align: left;
-    }
-
-    .action-dropdown button:hover { background: rgba(255, 255, 255, 0.08); }
-    .action-dropdown button.action-edit { color: var(--firebase); }
-    .action-dropdown button.action-edit:hover { background: rgba(255, 202, 40, 0.1); }
-    .action-dropdown button.action-delete { color: var(--error); }
-    .action-dropdown button.action-delete:hover { background: rgba(239, 68, 68, 0.1); }
-    .action-dropdown .dropdown-divider { height: 1px; background: var(--border); margin: 2px 0; }
-
     /* 🆕 Google Drive Sync Button */
     .btn-drive-sync {
       background: linear-gradient(135deg, var(--drive), #34a853);
@@ -822,6 +786,20 @@
       background: rgba(66, 133, 244, 0.2);
       text-decoration: underline;
     }
+    
+    /* Apps Script Display Box */
+    .gas-code-display {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        overflow-x: auto;
+        white-space: pre;
+        max-height: 300px;
+        border: 1px solid var(--border);
+    }
   </style>
 </head>
 <body>
@@ -851,6 +829,10 @@
           <button id="setupBtn" class="btn-setup" onclick="openSetupModal()" aria-label="Pengaturan Firebase">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31 2.37 2.37a1.724 1.724 0 00-1.065-2.573c-.94-1.543.826-3.31 2.573c-.94-1.543.826-3.31 2.573c-.94-1.543.826-3.31 2.37a1.724 1.724 0 00-1.066-2.573c-.94-1.543.826-3.31 2.37.996.608.608.608.608.608Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <span>Setup Firebase</span>
+          </button>
+          
+          <button class="btn-secondary" onclick="openGasModal()" title="Salin Kode Apps Script">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
           </button>
         </div>
       </div>
@@ -1122,6 +1104,22 @@
     </div>
   </div>
 
+  <!-- APPS SCRIPT MODAL -->
+  <div id="gasModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 900px;">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg font-semibold flex items-center gap-2"><span class="text-2xl">📜</span> Kode Google Apps Script (Backend)</h2>
+        <button onclick="closeGasModal()" class="w-8 h-8 rounded-lg hover:bg-[--bg-secondary] flex items-center justify-center transition-colors" aria-label="Tutup"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      
+      <div class="space-y-4">
+        <p class="text-sm text-[--muted]">Salin kode di bawah ini dan tempelkan ke dalam editor <strong>Google Apps Script</strong> (script.google.com).</p>
+        <button onclick="copyGasCode()" class="copy-btn">📋 Salin Kode Backend</button>
+        <div class="gas-code-display" id="gasCodeContent"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- DOCUMENT PREVIEW MODAL -->
   <div id="documentModal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content modal-document">
@@ -1224,7 +1222,7 @@
   <!-- Toast -->
   <div id="toast" class="toast" role="alert"></div>
 
-  <!-- JAVASCRIPT - COMPLETE VERSION -->
+  <!-- JAVASCRIPT - CLIENT SIDE -->
   <script>
     // =============================================
     // ⚙️ CONFIGURATION
@@ -1260,7 +1258,7 @@
     let toastTimeout = null;
 
     // =============================================
-    // UTILITY FUNCTIONS (YANG HILANG!)
+    // UTILITY FUNCTIONS
     // =============================================
     function formatNumber(num) {
       if (!num && num !== 0) return '0';
@@ -1305,7 +1303,7 @@
       if (!state.history) return;
       
       var total = state.history.length;
-      var sent = total; // All data is in Firebase
+      var sent = total; 
       var synced = 0;
       var pending = 0;
 
@@ -1353,6 +1351,16 @@
       var modal = document.getElementById('setupModal');
       if (modal) modal.classList.remove('show');
     }
+    
+    function openGasModal() {
+        var modal = document.getElementById('gasModal');
+        if (modal) modal.classList.add('show');
+    }
+    
+    function closeGasModal() {
+        var modal = document.getElementById('gasModal');
+        if (modal) modal.classList.remove('show');
+    }
 
     function openDeleteModal(docId, kode, nominal) {
       state.pendingDeleteId = docId;
@@ -1384,8 +1392,11 @@
       }
     }
 
+    // Global exports
     window.openSetupModal = openSetupModal;
     window.closeSetupModal = closeSetupModal;
+    window.openGasModal = openGasModal;
+    window.closeGasModal = closeGasModal;
     window.openDeleteModal = openDeleteModal;
     window.closeDeleteModal = closeDeleteModal;
     window.confirmDelete = confirmDelete;
@@ -1401,6 +1412,7 @@
           previewBtn: document.getElementById('previewBtn'),
           historyList: document.getElementById('historyList'),
           setupModal: document.getElementById('setupModal'),
+          gasModal: document.getElementById('gasModal'),
           documentModal: document.getElementById('documentModal'),
           deleteConfirmModal: document.getElementById('deleteConfirmModal'),
           setupBtn: document.getElementById('setupBtn'),
@@ -1660,7 +1672,7 @@
       if (filterTo) filterTo.addEventListener('change', function() { state.filterDateTo = this.value; applyDateFilter(); });
 
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') { closeSetupModal(); closeDocumentModal(); closeDeleteModal(); }
+        if (e.key === 'Escape') { closeSetupModal(); closeDocumentModal(); closeDeleteModal(); closeGasModal(); }
       });
 
       if (elements.form) {
@@ -2855,23 +2867,37 @@ window.previewFromHistory = async function(docId) {
 };
 
 // =============================================
-// AUTO INITIALIZATION
+// KEYBOARD SHORTCUTS (Bonus)
 // =============================================
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('[FinanceSync Pro v3.3] Initializing...');
+document.addEventListener('keydown', function(e) {
+  // Ctrl/Cmd + S to submit form
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (elements.form && !elements.submitBtn.disabled) {
+      elements.form.dispatchEvent(new Event('submit'));
+    }
+  }
   
-  // Small delay to ensure all DOM elements are ready
-  setTimeout(function() {
-    init();
-    console.log('[FinanceSync Pro v3.3] ✅ Ready!');
-  }, 100);
+  // Ctrl/Cmd + P to preview (when not in modal)
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    if (!elements.documentModal?.classList.contains('show')) {
+      e.preventDefault();
+      handlePreview();
+    }
+  }
 });
 
-// Backup initialization if DOMContentLoaded already fired
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  setTimeout(init, 200);
-}
-    /**
+console.log('%c🚀 FinanceSync Pro v3.3 - Google Drive Edition', 'font-size: 18px; font-weight: bold; color: #ffca28; background: #0c1222; padding: 10px 20px; border-radius: 8px;');
+console.log('%c⚙️ Powered by Firebase Firestore + Google Apps Script', 'font-size: 11px; color: #64748b;');
+  </script>
+
+  <!-- ============================================ -->
+  <!-- SERVER SIDE CODE (GOOGLE APPS SCRIPT)     -->
+  <!-- KODE INI TIDAK DIJALANKAN DI BROWSER       -->
+  <!-- TAPI DI SERVER GOOGLE                       -->
+  <!-- ============================================ -->
+  <script type="text/plain" id="backend-script-code">
+/**
  * ============================================
  * FINANCESYNC PRO v3.4 - AUTO MONTHLY SHEETS
  * ============================================
@@ -2906,7 +2932,8 @@ const CONFIG = {
   
   // Header untuk semua sheet
   SPREADSHEET_HEADERS: [
-    'No',
+    'ID',
+    'Timestamp', 
     'Tanggal', 
     'Lokasi', 
     'Kode', 
@@ -2956,7 +2983,7 @@ function doGet(e) {
  */
 function doPost(e) {
   try {
-    console.log('['[POST] Manual/Direct trigger at', new Date().toISOString());
+    console.log('[POST] Manual/Direct trigger at', new Date().toISOString());
     
     var result = syncPendingSubmissions();
     
@@ -3028,769 +3055,233 @@ function syncPendingSubmissions() {
     // STEP 4: Proses setiap kelompok bulanan
     Object.keys(groupedByMonth).forEach(function(monthKey) {
       var docsInMonth = groupedByMonth[monthKey];
-      console.log('\n[PROCESSING MONTH]', monthKey, '-', docsInMonth.length, 'documents');
-      
-      // Buat atau ambil sheet untuk bulan ini
-      var sheetInfo = getOrCreateMonthlySheet(ss, monthKey, docsInMonth[0]?.data?.tanggal);
-      var sheet = sheetInfo.sheet;
-      var isNewSheet = sheetInfo.isNew;
-      
-      // Sort data: terbaru dulu (DESCENDING by tanggal/timestamp)
+
+      console.log('[Processing Month]', monthKey, '->', docsInMonth.length, 'docs');
+
+      // Sorting: Data Terbaru di ATAS (Descending by Timestamp)
       docsInMonth.sort(function(a, b) {
-        var dateA = a.data.tanggal || a.data.timestamp || a.data.created_at;
-        var dateB = b.data.tanggal || b.data.timestamp || b.data.created_at || b.data.created_at;
-        return (dateB > dateA) ? 1 : (dateA < dateB) ? -1 : 0;
+        var dateA = new Date(a.timestamp || a.created_at || 0);
+        var dateB = new Date(b.timestamp || b.created_at || 0);
+        return dateB - dateA;
       });
-      
-      // Write ke sheet (append mode - cek duplikat)
-      var writeStats = writeDocumentsToSheet(sheet, docsInMonth, monthKey);
-      
-      stats.totalProcessed += docsInMonth.length;
-      stats.totalSynced += writeStats.synced;
-      stats.totalSkipped += writeStats.skipped;
-      stats.totalErrors += writeStats.errors;
-      
-      if (isNewSheet) {
-        stats.sheetsCreated.push(monthKey);
+
+      try {
+        // 4a. Buat atau Ambil Sheet bulan tersebut
+        var sheet = getOrCreateSheet(ss, monthKey);
+        
+        // 4b. Insert data (Insert di Row 2 agar Header di Row 1 tetap)
+        docsInMonth.forEach(function(doc) {
+          var rowData = formatRowData(doc, monthKey);
+          
+          // Insert baris baru di posisi 2 (teks di bawah header)
+          sheet.insertRowBefore(2);
+          sheet.getRange(2, 1, 1, rowData.length).setValues([rowData]);
+          
+          stats.totalSynced++;
+          stats.details.push({id: doc.id, month: monthKey, status: 'synced'});
+        });
+        
+        console.log('[Success] Synced', docsInMonth.length, 'docs to sheet:', monthKey);
+        
+      } catch (err) {
+        console.error('[Error processing month]', monthKey, err);
+        stats.totalErrors += docsInMonth.length; 
       }
-      
-      // Update status Firestore untuk setiap doc yang berhasil
-      docsInMonth.forEach(function(doc) {
-        if (doc.synced) {
-          updateFirestoreStatus(doc.id, {
-            synced_to_sheets: true,
-            synced_at: new Date().toISOString(),
-            sheet_name: monthKey,
-            sheets_error: null
-          });
-        } else if (doc.error) {
-          updateFirestoreStatus(doc.id, {
-            synced_to_sheets: false,
-            sheets_error: doc.errorMsg || 'Unknown error'
-          });
-        }
-      });
     });
     
-    // Format columns
-    formatAllSheets(ss);
+    // STEP 5: Update status di Firestore untuk dokumen yang berhasil
+    updateFirebaseStatusBatch(stats.details);
     
   } catch (error) {
-    console.error('[FATAL ERROR]:', error);
+    console.error('[SYNC FATAL ERROR]:', error);
     stats.totalErrors++;
-    throw error;
   }
   
   stats.endTime = new Date();
   stats.duration = ((stats.endTime - stats.startTime) / 1000).toFixed(2) + 's';
   
-  console.log('\n' + '='.repeat(50));
-  console.log('[SYNC COMPLETE]', stats.endTime.toISOString());
-  console.log('[STATS]', JSON.stringify(stats, null, 2));
-  
+  console.log('[SYNC END] Duration:', stats.duration, '| Synced:', stats.totalSynced, '| Errors:', stats.totalErrors);
   return stats;
 }
 
 // ============================================
-// 📅 FIRESTORE FUNCTIONS (FIXED AUTH)
+// 🛠️ HELPER FUNCTIONS
 // ============================================
 
-/**
- * Ambil SEMUA document yang pending (synced_to_sheets != true)
- * Support API Key authentication
- */
 function getAllPendingDocuments() {
-  var projectId = CONFIG.FIREBASE_PROJECT_ID;
-  
-  if (!projectId || projectId === 'YOUR_PROJECT_ID_HERE') {
-    throw new Error('⚠️ CONFIG.FIREBASE_PROJECT_ID belum diisi!');
-  }
-  
-  var url = 'https://firestore.googleapis.com/v1/projects/' + projectId + 
-            '/databases/(default)/documents/submissions:runQuery';
-  
-  // Query: cari yang BELUM sync atau synced_to_sheets == false
-  var queryBody = {
-    structuredQuery: {
-      from: [{ collectionId: 'submissions' }],
-      where: {
-        compositeFilter: {
-          op: 'OR',
-          filters: [
-            {
-              fieldFilter: {
-                field: { fieldPath: 'synced_to_sheets' },
-                op: 'EQUAL',
-                value: { booleanValue: false }
-              }
-            },
-            {
-              unaryFilter: {
-                field: { fieldPath: 'synced_to_sheets' },
-                op: 'IS_NULL'
-              }
-            }
-          ]
-        }
-      },
-      orderBy: [
-        { field: { fieldPath: 'timestamp' }, direction: 'DESCENDING' } // 🆕 Terbaru DULUAN!
-      ],
-      limit: 100 // Max 100 per batch
-    }
-  };
-  
-  // Build options dengan API Key kalau ada
-  var headers = { 'Content-Type': 'application/json' };
-  var apiKey = CONFIG.FIREBASE_API_KEY;
-  
-  if (apiKey && apiKey !== '') {
-    url += '?key=' + apiKey;
-  }
+  // Mengambil semua dokumen dari collection 'submissions'
+  var url = 'https://firestore.googleapis.com/v1/projects/' + CONFIG.FIREBASE_PROJECT_ID + '/databases/(default)/documents/submissions?key=' + CONFIG.FIREBASE_API_KEY;
   
   var options = {
-    method: 'POST',
-    contentType: 'application/json',
-    payload: JSON.stringify(queryBody),
-    headers: headers,
-    muteHttpExceptions: true
+    'method': 'get',
+    'contentType': 'application/json',
+    'muteHttpExceptions': true
   };
   
-  try {
-    console.log('[Firestore] Querying...');
-    var response = UrlFetchApp.fetch(url, options);
-    var code = response.getResponseCode();
-    var text = response.getContentText();
-    
-    if (code !== 200) {
-      console.error('[Firestore HTTP', code, ':', text.substring(0, 300));
-      throw new Error('Firestore error: HTTP ' + code);
-    }
-    
-    var result = JSON.parse(text);
-    var documents = [];
-    
-    // Parse response
-    if (result) {
-      var rows = Array.isArray(result) ? result : [result];
-      
-      rows.forEach(function(row) {
-        if (row.document) {
-          var docId = row.document.name.split('/').pop();
-          var flatData = flattenFirestoreFields(row.document.fields || {});
-          
-          documents.push({
-            id: docId,
-            data: flatData,
-            raw: row.document
-          });
-        }
-      });
-    }
-    
-    console.log('[Firestore] ✅ Retrieved', documents.length, 'documents');
-    return documents;
-    
-  } catch (error) {
-    console.error('[Firestore Error]:', error);
-    throw error;
-  }
+  var response = UrlFetchApp.fetch(url, options);
+  var json = JSON.parse(response.getContentText());
+  
+  if (!json.documents) return [];
+  
+  // Filter dokumen yang belum di-sync (synced_to_sheets != true)
+  var pendingDocs = json.documents.filter(function(doc) {
+    var fields = doc.fields || {};
+    var isSynced = fields.synced_to_sheets && fields.synced_to_sheets.booleanValue === true;
+    return !isSynced;
+  });
+  
+  return pendingDocs.map(normalizeFirestoreDocument);
 }
 
-/**
- * Update status satu document di Firestore
- */
-function updateFirestoreStatus(docId, updateData) {
-  var projectId = CONFIG.FIREBASE_PROJECT_ID;
-  var url = 'https://firestore.googleapis.com/v1/projects/' + projectId + 
-            '/databases/(default)/documents/submissions/' + docId;
+function normalizeFirestoreDocument(doc) {
+  // Helper untuk flatten fields dari format Firestore API
+  var fields = doc.fields || {};
+  var flat = {};
   
-  var fields = convertToFirestoreFields(updateData);
-  var body = { fields: fields };
+  Object.keys(fields).forEach(function(key) {
+    var val = fields[key];
+    if (val.stringValue !== undefined) flat[key] = val.stringValue;
+    else if (val.integerValue !== undefined) flat[key] = parseInt(val.integerValue);
+    else if (val.doubleValue !== undefined) flat[key] = parseFloat(val.doubleValue);
+    else if (val.booleanValue !== undefined) flat[key] = val.booleanValue;
+    else if (val.arrayValue) flat[key] = val.arrayValue.values; // Array mentah
+    else if (val.timestampValue) flat[key] = val.timestampValue;
+    else if (val.mapValue) flat[key] = val.mapValue; // Nested object
+    else flat[key] = val;
+  });
   
-  var apiKey = CONFIG.FIREBASE_API_KEY;
-  if (apiKey && apiKey !== '') {
-    url += '?key=' + apiKey;
-  }
-  
-  var options = {
-    method: 'PATCH',
-    contentType: 'application/json',
-    payload: JSON.stringify(body),
-    headers: {},
-    muteHttpExceptions: true
+  return {
+    id: doc.name.split('/').pop(),
+    name: doc.name,
+    ...flat
   };
-  
-  try {
-    var response = UrlFetchApp.fetch(url, options);
-    var code = response.getResponseCode();
-    
-    if (code === 200 || code === 200) {
-      console.log('[Update] ✅', docId);
-    } else {
-      console.warn('[Update] Warning HTTP', code, 'for', docId);
-    }
-  } catch (e) {
-    console.error('[Update Error]', e);
-    // Don't throw - biarkan proses lain lanjut
-  }
 }
 
-// ============================================
-// 📊 SPREADSHEET FUNCTIONS (MONTHLY SHEETS)
-// ============================================
-
-/**
- * Get or create spreadsheet
- */
 function getOrCreateSpreadsheet() {
-  if (cachedSpreadsheet) {
-    try {
-      cachedSpreadsheet.setName('FinanceSync Pro - ' + formatDateSimple(new Date()));
-      return cachedSpreadsheet;
-    } catch (e) {
-      cachedSpreadsheet = null;
-    }
+  if (CONFIG.SPREADSHEET_ID) {
+    return SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
   }
   
-  if (CONFIG.SPREADSHEET_ID && CONFIG.SPREADSHEET_ID !== '') {
-    try {
-      cachedSpreadsheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
-      console.log('[Sheet] Using existing:', CONFIG.SPREADSHEET_ID);
-      return cachedSpreadsheet;
-    } catch (e) {
-      console.warn('[Sheet] Cannot open provided ID. Creating new...');
-    }
-  }
-  
-  // Create new
-  var ss = SpreadsheetApp.create('FinanceSync Pro - Data Transaksi');
+  // Auto create jika ID kosong
+  var ss = SpreadsheetApp.create('FinanceSync Pro v3.4 - Data');
   CONFIG.SPREADSHEET_ID = ss.getId();
+  console.log('[New Spreadsheet Created]', CONFIG.SPREADSHEET_ID);
   
-  // Save to PropertiesScript (persistent)
-  PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', ss.getId());
-  
-  cachedSpreadsheet = ss;
-  console.log('[Sheet] ✅ Created new:', ss.getId());
-  console.log('[Sheet] ⚠️  UPDATE CONFIG.SPREADSHEET_ID with:', ss.getId());
+  // Hapus default "Sheet1" jika ada
+  var defaultSheet = ss.getSheetByName('Sheet1');
+  if (defaultSheet) ss.deleteSheet(defaultSheet);
   
   return ss;
 }
 
-/**
- * Group documents array by Month-Year (format: "2025-01")
- * Contoh output: { "2025-01": [...docs...], "2025-02": [...] }
- */
-function groupDocumentsByMonth(documents) {
+function groupDocumentsByMonth(docs) {
   var groups = {};
-  
-  documents.forEach(function(doc) {
-    var dateStr = doc.data.tanggal; // Format: "YYYY-MM-DD"
-    var monthKey = '';
+  docs.forEach(function(doc) {
+    // Asumsi format tanggal: YYYY-MM-DD (dari input tanggal HTML)
+    var dateStr = doc.tanggal || doc.created_at || '';
+    var dateParts = dateStr.split('-');
     
-    if (dateStr) {
-      try {
-        var parts = dateStr.split('-'); // ["YYYY", "MM", "DD"]
-        if (parts.length >= 2) {
-          monthKey = parts[0] + '-' + parts[1]; // "YYYY-MM"
-        }
-      } catch (e) {
-        console.warn('[Group] Invalid date:', dateStr, 'for doc:', doc.id);
-        monthKey = 'unknown';
-      }
-    } else {
-      // Fallback ke created_at atau timestamp
-      var ts = doc.data.timestamp || doc.data.created_at;
-      if (ts) {
-        try {
-          var d = new Date(ts);
-          monthKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-        } catch (e) {
-          monthKey = 'unknown';
-        }
-      } else {
-        monthKey = 'no-date';
-      }
+    if (dateParts.length >= 2) {
+      var monthKey = dateParts[0] + '-' + dateParts[1]; // "2023-10"
+      if (!groups[monthKey]) groups[monthKey] = [];
+      groups[monthKey].push(doc);
     }
-    
-    if (!groups[monthKey]) {
-      groups[monthKey] = [];
-    }
-    
-    groups[monthKey].push({
-      id: doc.id,
-      data: doc.data,
-      synced: false,
-      errorMsg: null
-    });
   });
   
   return groups;
 }
 
-/**
- * Get or create sheet untuk bulan tertentu
- * Nama sheet: "Januari 2025", "Februari 2025", dll
- * 
- * @param {Spreadsheet} ss Spreadsheet object
- * @param {String} monthKey "YYYY-MM" format
- * @param {String} sampleDate Sample date dari data (untuk ekstrak nama bulan)
- * @returns {Object} { sheet: Sheet, isNew: Boolean }
- */
-function getOrCreateMonthlySheet(ss, monthKey, sampleDate) {
-  var sheetName = getMonthNameFromKey(monthKey);
+function getOrCreateSheet(ss, monthKey) {
+  var sheetName = 'Data ' + monthKey; // Contoh: Data 2023-10
+  var sheet = ss.getSheetByName(sheetName);
   
-  // Cek apakah sheet sudah ada
-  var sheets = ss.getSheets();
-  var existingSheet = null;
-  
-  while (sheets.hasNext()) {
-    var s = sheets.next();
-    if (s.getName() === sheetName) {
-      existingSheet = s;
-      break;
-    }
-  }
-  
-  if (existingSheet) {
-    console.log('[Sheet] Found existing sheet:', sheetName);
-    return { sheet: existingSheet, isNew: false };
-  }
-  
-  // Buat sheet baru
-  console.log('[Sheet] Creating new sheet:', sheetName);
-  var newSheet = ss.insertSheet(sheetName);
-  
-  // Set header
-  newSheet.getRange(1, 1, 1, CONFIG.SPREADSHEET_HEADERS.length)
-    .setValues([CONFIG.SPREADSHEET_HEADERS])
-    .setFontWeight('bold')
-    .setBackground('#4285f4')
-    .setFontColor('white')
-    .setTextAlignment('center');
-  
-  // Freeze header
-  newSheet.setFrozenRows(1);
-  
-  // Column widths
-  newSheet.setColumnWidths([5, 12, 15, 20, 25, 18, 22, 10, 18, 25, 35, 30, 40, 25, 18, 18]);
-  
-  return { sheet: newSheet, isNew: true };
-}
-
-/**
- * Convert "2025-01" → "Januari 2025"
- */
-function getMonthNameFromKey(monthKey) {
-  var months = {
-    '01': 'Januari', '02': 'Februari', '03': 'Maret',
-    '04': 'April',   '05': 'Mei',     '06': 'Juni',
-    '07': 'Juli',    'Agustus',   'September': 'September',
-    '10': 'Oktober', 'November': 'November', '12': 'Desember'
-  };
-  
-  var parts = monthKey.split('-');
-  var monthNum = parts[1];
-  var year = parts[0];
-  
-  var monthName = months[monthNum] || monthKey;
-  return monthName + ' ' + year;
-}
-
-/**
- * Write array of documents ke sheet (terbaru di ATAS)
- * Cek duplikat berdasarkan docId
- * 
- * @returns {Object} { synced, skipped, errors }
- */
-function writeDocumentsToSheet(sheet, docs, monthKey) {
-  var stats = { synced: 0, skipped: 0, errors: 0 };
-  
-  // Cek baris terakhir yang terpakai (untuk append)
-  var lastRow = sheet.getLastRow();
-  var startRow = lastRow + 1; // Append setelah data existing
-  
-  // Array untuk tracking docId yang sudah ditulis (cek duplikat)
-  var writtenDocIds = [];
-  
-  // Ambil range yang mungkin sudah terpakai
-  if (startRow > 1) {
-    var existingData = sheet.getRange(1, 1, startRow - 1, 10).getValues();
-    if (existingData && existingData[0]) {
-      for (var r = 0; r < existingData.length; r++) {
-        var idVal = existingData[r][0]; // Kolom A = ID
-        if (idVal) {
-          writtenDocIds.push(String(idVal).trim());
-        }
-      }
-    }
-  }
-  
-  console.log('[Write] Starting at row', startRow, '- Existing IDs:', writtenDocIds.length);
-  
-  var currentRow = startRow;
-  
-  docs.forEach(function(doc, index) {
-    // SKIP kalau sudah pernah ditulis (berdasarkan kolom ID)
-    if (writtenDocIds.includes(doc.id)) {
-      console.log('[Skip] Already written:', doc.id, '- Skipping...');
-      stats.skipped++;
-      return;
-    }
+  if (!sheet) {
+    console.log('[Creating Sheet]', sheetName);
+    sheet = ss.insertSheet(sheetName);
     
-    try {
-      var d = doc.data;
-      
-      // Prepare row data
-      var itemsSummary = '';
-      if (d.items && d.items.length > 0) {
-        itemsSummary = d.items.map(function(item) {
-          var i = item.mapValue ? item.mapValue.fields : item;
-          var name = (i.ket?.stringValue || i.ket || '');
-          var nominal = i.nominal?.integerValue || i.nominal || 0;
-          return name + (nominal ? ' (Rp ' + Number(nominal).toLocaleString('id-ID') : '');
-        }).join('; ');
-      }
-      
-      var fileLinks = '';
-      if (d.files && d.files.length > 0) {
-        fileLinks = d.files.map(function(f) {
-          var f = f.mapValue ? f.mapValue.fields : f;
-          var url = f.driveUrl?.stringValue || f.driveUrl || '';
-          return url || ('⏳ ' + (f.name?.stringValue || f.name || 'file'));
-        }).join(', ');
-      }
-      
-      var rowData = [
-        doc.id,                                    // A: ID
-        formatDate(d.timestamp || d.created_at),           // B: Timestamp
-        formatDateID(d.tanggal),                     // C: Tanggal
-        d.lokasi || '',                            // D: Lokasi
-        d.kode || '',                                // E: Kode
-        d.jenis_pengajuan || '',                    // F: Jenis
-        d.no_invoice || '',                          // G: No Invoice
-        d.status || '',                              // H: Status
-        Number(d.total_nominal) || 0,                   // I: Total
-        d.dibayarkan_kepada || '',                   // J: Dibayarkan ke
-        itemsSummary,                                 // K: Items
-        d.catatan_tambahan || '',                      // L: Catatan
-        d.drive_folder_url || '',                     // M: Drive Folder
-        fileLinks,                                     // N: File Links
-        formatDate(d.created_at),                       // O: Created
-        new Date().toISOString(),                        // P: Synced At
-        monthKey                                      // Q: Sheet Source
-      ];
-      
-      // Write row
-      sheet.getRange(currentRow, 1, 1, rowData.length)
-        .setValues([rowData])
-        .setFontName('Arial')
-        .setFontSize(9);
-      
-      // Format nominal
-      sheet.getRange(currentRow, 9, currentRow, 9)
-        .setNumberFormat('"Rp"#,##0');
-      
-      // Background warna berdasarkan status
-      if (d.status === 'Lunas') {
-        sheet.getRange(currentRow, 1, 1, rowData.length, 13)
-          .setBackground('#d4edda'); // Hijau muda
-      } else {
-        sheet.getRange(currentRow, 1, 1, rowData.length, 13)
-          .setBackground('#fff3cd'); // Kuning muda
-      }
-      
-      // Track bahwa doc ini sudah ditulis
-      writtenDocIds.push(doc.id);
-      stats.synced++;
-      currentRow++;
-      
-    } catch (docError) {
-      console.error('[Write Error] Doc:', doc.id, '-', docError.message);
-      doc.errorMsg = docError.message.substring(0, 200);
-      stats.errors++;
-    }
-  });
-  
-  // Auto-resize
-  sheet.autoResizeColumns(1, CONFIG.SPREADSHEET_HEADERS.length);
-  
-  console.log('[Write] Result:', stats);
-  return stats;
-}
-
-/**
- * Format semua sheets (header, freeze, resize)
- */
-function formatAllSheets(ss) {
-  var sheets = ss.getSheets();
-  
-  while (sheets.hasNext()) {
-    var sheet = sheets.next();
-    var name = sheet.getName();
+    // Set Header
+    sheet.appendRow(CONFIG.SPREADSHEET_HEADERS);
     
-    // Skip sheet yang bukan data (seperti Config, Log, dll)
-    if (name.indexOf('Data') === -1 && name.indexOf('Transaksi') === -1) {
-      continue;
-    }
+    // Styling Header
+    var headerRange = sheet.getRange(1, 1, 1, CONFIG.SPREADSHEET_HEADERS.length);
+    headerRange.setFontWeight('bold')
+               .setBackground('#4285F4')
+               .setFontColor('#FFFFFF')
+               .setHorizontalAlignment('center');
     
-    // Header formatting
-    var headerRow = 1;
-    var lastCol = sheet.getLastColumn();
-    
-    if (lastCol >= CONFIG.SPREADSHEET_HEADERS.length) {
-      sheet.getRange(headerRow, 1, 1, lastCol)
-        .setFontWeight('bold')
-        .setBackground('#4285f4')
-        .setFontColor('white')
-        .setTextAlignment('center');
-    }
-    
-    // Freeze header
+    // Freeze Header
     sheet.setFrozenRows(1);
-    
-    // Auto-resize
-    sheet.autoResizeColumns(1, Math.min(lastCol, CONFIG.SPREADSHEET_HEADERS.length));
   }
+  
+  return sheet;
 }
 
-// ============================================
-// ☁️ GOOGLE DRIVE FUNCTIONS (Same as before)
-// ============================================
-
-function createDriveFolder(data) {
-  var folderName = (data.kode || data.no_invoice || 'Transaction') + '_' + 
-                   (data.tanggal ? data.tanggal.replace(/-/g, '') : formatDateSimple(new Date()));
-  
-  var folderId;
-  var folderUrl;
-  
-  if (CONFIG.DRIVE_FOLDER_ID) {
-    var parentFolder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
-    var folders = parentFolder.getFoldersByName(folderName);
-    
-    if (folders.hasNext()) {
-      var existingFolder = folders.next();
-      folderId = existingFolder.getId();
-      folderUrl = 'https://drive.google.com/drive/folders/' + folderId;
-    } else {
-      var newFolder = parentFolder.createFolder(folderName);
-      folderId = newFolder.getId();
-      folderUrl = 'https://drive.google.com/drive/folders/' + folderId;
+function formatRowData(doc, monthKey) {
+  // Mapping field data ke urutan kolom header
+  return CONFIG.SPREADSHEET_HEADERS.map(function(header) {
+    switch(header) {
+      case 'ID': return doc.id;
+      case 'Timestamp': return doc.timestamp || new Date().toISOString();
+      case 'Sheet Name': return monthKey;
+      case 'Items Summary': 
+        if (doc.items && Array.isArray(doc.items)) {
+          return doc.items.map(function(i) { 
+             var item = (typeof i === 'object' && !Array.isArray(i)) ? i : {};
+             return item.ket || i; 
+          }).join(', ');
+        }
+        return '';
+      case 'File Links':
+        if (doc.files && Array.isArray(doc.files)) {
+          return doc.files.map(function(f) {
+             // Handle struktur mapValue atau flat dari Firestore
+             var fData = (f.mapValue && f.mapValue.fields) ? normalizeFirestoreDocument({fields: f.mapValue.fields}) : f;
+             return fData.driveUrl || (fData.name ? '(' + fData.name + ')' : ''); 
+          }).join(', ');
+        }
+        return '';
+      case 'Drive Folder URL':
+        // Jika ada folder ID di config, buat link
+        if (CONFIG.DRIVE_FOLDER_ID) return 'https://drive.google.com/drive/folders/' + CONFIG.DRIVE_FOLDER_ID;
+        return '';
+      default:
+        var val = doc[header];
+        if (typeof val === 'object' && val !== null) {
+          // Handle simple nested objects or maps
+          try { return JSON.stringify(val); } catch(e) { return String(val); }
+        }
+        return val || '';
     }
-  } else {
-    var folders = DriveApp.getFoldersByName(folderName);
-    
-    if (folders.hasNext()) {
-      var existingFolder = folders.next();
-      folderId = existingFolder.getId();
-      folderUrl = 'https://drive.google.com/drive/folders/' + folderId;
-    } else {
-      var newFolder = DriveApp.createFolder(folderName);
-      folderId = newFolder.getId();
-      folderUrl = 'https://drive.google.com/drive/folders/' + folderId;
+  });
+}
+
+function updateFirebaseStatusBatch(details) {
+  // Update status synced_to_sheets = true untuk setiap doc yang berhasil
+  details.forEach(function(detail) {
+    try {
+      var docPath = 'projects/' + CONFIG.FIREBASE_PROJECT_ID + '/databases/(default)/documents/submissions/' + detail.id;
+      var url = 'https://firestore.googleapis.com/v1/' + docPath + '?updateMask.fieldPaths=synced_to_sheets&updateMask.fieldPaths=synced_at&key=' + CONFIG.FIREBASE_API_KEY;
       
-      newFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    }
-  }
-  
-  return { folderId: folderId, folderUrl: folderUrl };
-}
-
-function createFileFromBase64(fileData, folderId, parentData) {
-  try {
-    var base64String = fileData.base64Data?.stringValue || fileData.base64Data;
-    var fileName = fileData.name?.stringValue || fileData.name || ('file_' + Date.now());
-    var mimeType = fileData.type?.stringValue || fileData.type || 'application/octet-stream';
-    
-    if (!base64String) {
-      return { success: false, error: 'No base64 data' };
-    }
-    
-    var decoded = Utilities.newBlob(
-      Utilities.base64Decode(base64String),
-      mimeType,
-      fileName
-    );
-    
-    var folder = DriveApp.getFolderById(folderId);
-    var driveFile = folder.createFile(decoded);
-    
-    driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    
-    var fileId = driveFile.getId();
-    var url = 'https://drive.google.com/file/d/' + fileId + '/view';
-    
-    return {
-      success: true,
-      url: url,
-      fileId: fileId,
-      fileName: fileName,
-      size: decoded.getBytes().length
-    };
-    
-  } catch (error) {
-    console.error('[Drive Error]:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-// ============================================
-// 🛠️ UTILITY FUNCTIONS
-// ============================================
-
-function flattenFirestoreFields(fields) {
-  var result = {};
-  if (!fields) return result;
-  
-  Object.keys(fields).forEach(function(key) {
-    var val = fields[key];
-    
-    if (val.stringValue !== undefined) result[key] = val.stringValue;
-    else if (val.integerValue !== undefined) result[key] = parseInt(val.integerValue);
-    else if (val.doubleValue !== undefined) result[key] = parseFloat(val.doubleValue);
-    else if (val.booleanValue !== undefined) result[key] = val.booleanValue;
-    else if (val.timestampValue !== undefined) result[key] = val.timestampValue;
-    else if (val.arrayValue && val.arrayValue.values) {
-      result[key] = val.arrayValue.values.map(function(v) {
-        return flattenFirestoreFields(v.mapValue?.fields || {});
+      var payload = {
+        fields: {
+          synced_to_sheets: { booleanValue: true },
+          synced_at: { timestampValue: new Date().toISOString() }
+        }
+      };
+      
+      UrlFetchApp.fetch(url, {
+        'method': 'PATCH',
+        'contentType': 'application/json',
+        'payload': JSON.stringify(payload),
+        'muteHttpExceptions': true
       });
-    }
-    else if (val.mapValue && val.mapValue.fields) {
-      result[key] = flattenFirestoreFields(val.mapValue.fields);
-    }
-    else if (val.nullValue !== undefined) result[key] = null;
-    else result[key] = val;
-  });
-  
-  return result;
-}
-
-function convertToFirestoreFields(obj) {
-  var result = {};
-  Object.keys(obj).forEach(function(key) {
-    result[key] = convertToFirestoreValue(obj[key]);
-  });
-  return result;
-}
-
-function convertToFirestoreValue(value) {
-  if (value === null || value === undefined) return { nullValue: {} };
-  if (typeof value === 'string') return { stringValue: value };
-  if (typeof value === 'number') {
-    return Number.isInteger(value) ? { integerValue: value } : { doubleValue: value };
-  }
-  if (typeof value === 'boolean') return { booleanValue: value };
-  if (Array.isArray(value)) {
-    return { 
-      arrayValue: { 
-        values: value.map(function(v) {
-          if (typeof v === 'object' && v !== null && !(v instanceof Date)) {
-            return { mapValue: { fields: convertObjectToFirestoreFields(v) } };
-          }
-          return convertToFirestoreValue(v);
-        })
-      } 
-    };
-  }
-  if (typeof value === 'object' && !(value instanceof Date)) {
-    return { mapValue: { fields: convertObjectToFirestoreFields(value) } };
-  }
-  return { stringValue: String(value) };
-}
-
-function convertObjectToFirestoreFields(obj) {
-  var result = {};
-  Object.keys(obj).forEach(function(key) {
-    result[key] = convertToFirestoreValue(obj[key]);
-  });
-  return result;
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  try {
-    var d = new Date(dateStr);
-    return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  } catch (e) { return dateStr; }
-}
-
-function formatDateID(dateStr) {
-  if (!dateStr) return '';
-  try {
-    var d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  } catch (e) { return dateStr; }
-}
-
-function formatDateSimple(date) {
-  return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
-}
-
-function formatNumber(num) {
-  if (!num && num !== 0) return '0';
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
-
-function formatBytes(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  var k = 1024;
-  var sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  var i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-// ============================================
-// ⏰ TRIGGER INSTALLATION (RUN ONCE!)
-// ============================================
-
-/**
- * Install time-driven trigger: setiap 5 menit
- * Jalankan manual: Run → installTrigger
- */
-function installTrigger() {
-  // Hapus trigger lama
-  var triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(function(t) {
-    if (t.getHandlerFunction() === 'syncPendingSubmissions') {
-      ScriptApp.deleteTrigger(t);
+      
+    } catch (e) {
+      console.error('[Update Status Error]', detail.id, e.message);
     }
   });
-  
-  // Buat trigger baru: setiap 5 menit
-  ScriptApp.newTrigger('syncPendingSubmissions')
-    .timeBased()
-    .everyMinutes(5) // 🆕 DIUBAH dari 1 menit jadi 5 menit!
-    .create();
-  
-  console.log('✅ Trigger installed! Will run every 5 minutes.');
-  Logger.log('✅ Trigger installed! Will run every 5 minutes.');
-  Logger.log('📅 Features: Monthly sheets | Latest data on top | Auto-sync');
 }
-
-// =============================================
-// KEYBOARD SHORTCUTS (Bonus)
-// =============================================
-document.addEventListener('keydown', function(e) {
-  // Ctrl/Cmd + S to submit form
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault();
-    if (elements.form && !elements.submitBtn.disabled) {
-      elements.form.dispatchEvent(new Event('submit'));
-    }
-  }
-  
-  // Ctrl/Cmd + P to preview (when not in modal)
-  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-    if (!elements.documentModal?.classList.contains('show')) {
-      e.preventDefault();
-      handlePreview();
-    }
-  }
-});
-
-console.log('%c🚀 FinanceSync Pro v3.3 - Google Drive Edition', 'font-size: 18px; font-weight: bold; color: #ffca28; background: #0c1222; padding: 10px 20px; border-radius: 8px;');
-console.log('%c⚙️ Powered by Firebase Firestore + Google Apps Script', 'font-size: 11px; color: #64748b;');
   </script>
+
 </body>
 </html>
