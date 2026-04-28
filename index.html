@@ -278,13 +278,23 @@
                   <span>Preview & PDF</span>
                 </button>
                 
-                <!-- Force Sync Button -->
-                <button type="button" id="forceSyncBtn" class="btn-drive-sync" onclick="triggerManualSync()" title="Paksa sinkronisasi ke Google Drive sekarang">
-                  <svg class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                  </svg>
-                  <span>Sync Sekarang</span>
-                </button>
+               <!-- Force Sync Button - UPDATED with Status Container -->
+<div class="sync-button-wrapper">
+  <button type="button" id="forceSyncBtn" class="btn-drive-sync" onclick="triggerManualSync()" title="Sinkronisasi data ke Google Sheets">
+    <svg id="syncIcon" class="drive-sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+    </svg>
+    <span id="syncBtnText">Sync ke Sheets</span>
+  </button>
+  
+  <!-- Status Message Container -->
+  <div id="manualSyncStatus" class="manual-sync-status" style="display: none;"></div>
+  
+  <!-- Last Sync Time Info -->
+  <div id="lastSyncInfoContainer" class="last-sync-info-text" style="display: none;">
+    <small>🕐 Terakhir: <span id="lastSyncTimeDisplay">-</span></small>
+  </div>
+</div>
                 
                 <button type="reset" class="text-[--muted] hover:text-[--fg] transition-colors text-sm">Reset</button>
               </div>
